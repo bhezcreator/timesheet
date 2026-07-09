@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['num_order', 'name', 'email', 'password', 'first_name', 'last_name', 'job_title', 'supervisor_id', 'signature', 'photo', 'is_active'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -40,20 +40,11 @@ class User extends Authenticatable
         return $this->hasMany(User::class, 'supervisor_id');
     }
 
-    /*     public function projects()
-    {
-        return $this->belongsToMany(Project::class);
-    } */
-
     public function subProjects()
     {
         return $this->belongsToMany(SubProject::class)
             ->withTimestamps();
     }
-    /*     public function subProjects()
-    {
-        return $this->belongsToMany(SubProject::class);
-    } */
 
     public function activities()
     {

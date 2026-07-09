@@ -28,7 +28,7 @@ return new class extends Migration
                 'soumis',
                 'approuvé',
                 'rejeté'
-            ])->default('draft');
+            ])->default('brouillon');
 
             $table->timestamp('submitted_at')->nullable();
 
