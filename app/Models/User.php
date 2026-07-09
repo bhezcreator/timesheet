@@ -29,4 +29,55 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function supervisor()
+    {
+        return $this->belongsTo(User::class, 'supervisor_id');
+    }
+
+    public function subordinates()
+    {
+        return $this->hasMany(User::class, 'supervisor_id');
+    }
+
+    /*     public function projects()
+    {
+        return $this->belongsToMany(Project::class);
+    } */
+
+    public function subProjects()
+    {
+        return $this->belongsToMany(SubProject::class)
+            ->withTimestamps();
+    }
+    /*     public function subProjects()
+    {
+        return $this->belongsToMany(SubProject::class);
+    } */
+
+    public function activities()
+    {
+        return $this->hasMany(Activity::class);
+    }
+
+    public function monthlyReports()
+    {
+        return $this->hasMany(MonthlyReport::class);
+    }
+
+    public function validatedReports()
+    {
+        return $this->hasMany(ReportValidation::class, 'validator_id');
+    }
+
+    public function projects()
+    {
+        return $this->belongsToMany(Project::class)
+            ->withPivot([
+                'role',
+                'assigned_at',
+                'ended_at'
+            ])
+            ->withTimestamps();
+    }
 }
