@@ -1,0 +1,80 @@
+- Ajouter les pages d'erreurs :
+|          Code | Nom                   | Importance | Quand elle apparaît                               |
+| ------------: | --------------------- | :--------: | ------------------------------------------------- |
+|     ✅ **400** | Bad Request           |     ⭐⭐⭐    | Requête mal formée                                |
+|     ✅ **401** | Unauthorized          |    ⭐⭐⭐⭐    | Utilisateur non authentifié                       |
+|     ✅ **403** | Forbidden             |    ⭐⭐⭐⭐⭐   | Accès refusé                                      |
+|     ✅ **404** | Not Found             |    ⭐⭐⭐⭐⭐   | Page inexistante                                  |
+|     ⭐ **405** | Method Not Allowed    |     ⭐⭐⭐    | Mauvaise méthode HTTP (GET/POST...)               |
+|     ⭐ **408** | Request Timeout       |     ⭐⭐     | La requête du client a expiré                     |
+| ⭐⭐⭐⭐⭐ **419** | Page Expired          |    ⭐⭐⭐⭐⭐   | Session CSRF expirée (très fréquent avec Laravel) |
+|    ⭐⭐ **422** | Unprocessable Content |     ⭐⭐⭐    | Validation échouée (API principalement)           |
+|   ⭐⭐⭐ **429** | Too Many Requests     |    ⭐⭐⭐⭐    | Limitation de débit (Rate Limiting)               |
+|     ✅ **500** | Internal Server Error |    ⭐⭐⭐⭐⭐   | Erreur interne                                    |
+|     ✅ **502** | Bad Gateway           |     ⭐⭐⭐    | Reverse Proxy                                     |
+|     ✅ **503** | Service Unavailable   |    ⭐⭐⭐⭐    | Maintenance                                       |
+|     ✅ **504** | Gateway Timeout       |     ⭐⭐⭐    | Timeout serveur                                   |
+
+resources/
+└── views/
+    └── errors/
+        ├── 400.blade.php
+        ├── 401.blade.php
+        ├── 403.blade.php
+        ├── 404.blade.php
+        ├── 405.blade.php
+        ├── 419.blade.php
+        ├── 429.blade.php
+        ├── 500.blade.php
+        ├── 502.blade.php
+        ├── 503.blade.php
+        ├── 504.blade.php
+        └── minimal.blade.php
+
+- Création des composants :
+resources/
+└── views/
+    └── components/
+        ├── ui/
+        │   ├── button.blade.php
+        │   ├── modal.blade.php
+        │   ├── alert.blade.php
+        │   ├── badge.blade.php
+        │   ├── card.blade.php
+        │   ├── dropdown.blade.php
+        │   ├── tooltip.blade.php
+        │   ├── avatar.blade.php
+        │   ├── breadcrumb.blade.php
+        │   ├── tabs.blade.php
+        │   ├── pagination.blade.php
+        │   ├── empty-state.blade.php
+        │   ├── spinner.blade.php
+        │   └── progress-bar.blade.php
+        │
+        ├── forms/
+        │   ├── input.blade.php
+        │   ├── textarea.blade.php
+        │   ├── select.blade.php
+        │   ├── checkbox.blade.php
+        │   ├── radio.blade.php
+        │   ├── datepicker.blade.php
+        │   ├── timepicker.blade.php
+        │   └── error.blade.php
+        │
+        ├── layout/
+        │   ├── sidebar.blade.php
+        │   ├── navbar.blade.php
+        │   ├── footer.blade.php
+        │   ├── page-header.blade.php
+        │   └── notification.blade.php
+        │
+        └── tables/
+            ├── table.blade.php
+            ├── table-header.blade.php
+            ├── table-row.blade.php
+            └── action-menu.blade.php
+
+
+- Création des models et migrations
+- Dévéloppement
+- Test pour chaque étape

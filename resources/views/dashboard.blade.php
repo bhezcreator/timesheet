@@ -5,13 +5,8 @@
         </h2>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    {{ __("You're logged in!") }}
-                </div>
-            </div>
-        </div>
-    </div>
+    <p>
+        Lorem ipsum dolor sit amet consectetur adipisicing elit.
+        Amet adipisci fugit blanditiis optio ipsum quas consectetur sit, nisi quos quae tempore accusantium iste soluta dolores, ratione cumque qui expedita ipsam.
+    </p>
 </x-app-layout>
