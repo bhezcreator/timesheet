@@ -22,7 +22,7 @@ class Index extends Component
     public ?int $manager_id = null;
     public string $start_date = '';
     public string $end_date = '';
-    public string $status = 'draft';
+    public string $status = 'brouillon';
 
     public ?int $projectId = null;
     public bool $isOpen = false;
@@ -52,7 +52,7 @@ class Index extends Component
             'manager_id'  => ['required', 'integer', 'exists:users,id'],
             'start_date'  => ['required', 'date'],
             'end_date'    => ['required', 'date', 'after_or_equal:start_date'],
-            'status'      => ['required', 'string', 'in:draft,submitted,approved,rejected'],
+            'status'      => ['required', 'string', 'in:brouillon,active,complete,annuler'],
         ];
     }
 

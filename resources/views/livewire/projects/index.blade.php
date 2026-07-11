@@ -72,12 +72,12 @@
                                 {{ $project->end_date ? \Carbon\Carbon::parse($project->end_date)->format('d/m/Y') : '-' }}
                             </td>
                             <td class="px-6 py-4 text-sm">
-                                @if($project->status === 'approved')
-                                    <x-ui.badge variant="success">Approuvé</x-ui.badge>
-                                @elseif($project->status === 'submitted')
-                                    <x-ui.badge variant="info">Soumis</x-ui.badge>
-                                @elseif($project->status === 'rejected')
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Rejeté</span>
+                                @if($project->status === 'complete')
+                                    <x-ui.badge variant="success">Fini</x-ui.badge>
+                                @elseif($project->status === 'active')
+                                    <x-ui.badge variant="info">Actif</x-ui.badge>
+                                @elseif($project->status === 'annuler')
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Annuler</span>
                                 @else
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Brouillon</span>
                                 @endif
@@ -119,15 +119,23 @@
                 </div>
             </div>
 
-            <div class="space-y-2">
-                <label class="block text-sm font-medium text-gray-700">Description / Objectifs</label>
-                <textarea wire:model="description" rows="3" class="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition" placeholder="Saisir la description ou le résumé du projet..."></textarea>
+            <div class="w-full">
+                <x-ui.forms.textarea
+                wire:model="description"
+                    name="description"
+                    label="Description / Objectifs"
+                    wire:model="description"
+                    rows="3"
+                    placeholder="Saisir la description ou le résumé du projet..."
+                    helper="Décrivez les activités réalisées."
+                />
                 <x-ui.forms.error name="description" />
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- Intégration du composant Select personnalisé pour le Manager -->
                 <x-ui.forms.select
+                    wire:model="manager_id"
                     name="manager_id"
                     label="Manager du Projet"
                     placeholder="Choisir le gestionnaire responsable..."
@@ -143,22 +151,60 @@
 
                 <!-- Intégration du composant Select personnalisé pour le Statut -->
                 <x-ui.forms.select
+                    wire:model="status"
                     name="status"
                     label="Statut Initial"
                     :selected="$status"
                     required
                     :options="[
-                        ['value' => 'draft', 'label' => 'Brouillon', 'icon' => 'las la-file-alt', 'description' => 'En cours d\'écriture'],
-                        ['value' => 'submitted', 'label' => 'Soumise', 'icon' => 'las la-paper-plane', 'description' => 'En attente d\'approbation'],
-                        ['value' => 'approved', 'label' => 'Approuvée', 'icon' => 'las la-check-circle', 'description' => 'Projet actif et validé'],
-                        ['value' => 'rejected', 'label' => 'Rejetée', 'icon' => 'las la-times-circle', 'description' => 'Dossier refusé']
-                    ]"
+                            [
+                                'value'       => 'brouillon',
+                                'label'       => 'Brouillon',
+                                'icon'        => 'las la-edit', {{-- Icône de stylo/édition pour un brouillon --}}
+                                'description' => 'En cours d\'écriture'
+                            ],
+                            [
+                                'value'       => 'active',
+                                'label'       => 'Actif',
+                                'icon'        => 'las la-play-circle', {{-- Icône de lecture/lancement pour un projet actif --}}
+                                'description' => 'Projet actif et en cours d\'exécution'
+                            ],
+                            [
+                                'value'       => 'annuler',
+                                'label'       => 'Annulé',
+                                'icon'        => 'las la-ban', {{-- Icône de restriction/interdiction claire pour une annulation --}}
+                                'description' => 'Projet stoppé ou abandonné'
+                            ],
+                            [
+                                'value'       => 'complete',
+                                'label'       => 'Complété',
+                                'icon'        => 'las la-check-circle', {{-- Icône de succès verte de coche pour la complétion --}}
+                                'description' => 'Projet clôturé avec succès'
+                            ]
+                        ]"
                 />
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <x-ui.forms.input label="Date de Début" name="start_date" type="date" wire:model="start_date" required />
-                <x-ui.forms.input label="Date de Fin Prévisionnelle" name="end_date" type="date" wire:model="end_date" required />
+                <!-- Champ Date de Début -->
+                <x-ui.forms.datepicker
+                    wire:model="start_date"
+                    name="start_date"
+                    label="Date de Début"
+                    :selected="$start_date"
+                    placeholder="Sélectionner la date de début..."
+                    required
+                />
+
+                <!-- Champ Date de Fin Prévisionnelle -->
+                <x-ui.forms.datepicker
+                wire:model="end_date"
+                    name="end_date"
+                    label="Date de Fin Prévisionnelle"
+                    :selected="$end_date"
+                    placeholder="Sélectionner la date de fin..."
+                    required
+                />
             </div>
         </div>
 
@@ -188,7 +234,15 @@
                     Annuler
                 </x-ui.button>
                 <x-ui.button variant="danger" wire:click="delete({{ $deleteId ?? 0 }})" wire:loading.attr="disabled">
-                    Confirmer
+                    <span wire:loading.remove>
+                        <i class="las la-trash"></i>
+                        Confirmer la suppression
+                    </span>
+
+                    <span wire:loading class="flex items-center gap-2">
+                        <x-ui.spinner size="sm" color="white"/>
+                        Suppression...
+                    </span>
                 </x-ui.button>
             </div>
         </x-slot:footer>
