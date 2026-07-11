@@ -1,0 +1,712 @@
+## Btn :
+<x-ui.button type="submit">
+   <i class="las la-save"></i> Sauvegarder
+</x-ui.button>
+
+ou
+
+<x-ui.button variant="danger">
+    Supprimer
+</x-ui.button>
+
+ou
+
+<x-ui.button
+    wire:click="save"
+    wire:loading.attr="disabled"
+>
+
+    <span wire:loading.remove>
+        Enregistrer
+    </span>
+
+    <span wire:loading>
+        Chargement...
+    </span>
+
+</x-ui.button>
+
+
+## Modal :
+
+<x-ui.button
+    wire:click="$dispatch('open-modal','add-time')"
+>
+Ajouter heure
+</x-ui.button>
+
+ou
+
+<x-ui.modal
+    id="add-time"
+    title="Ajouter une entrée de temps"
+>
+
+    @livewire('timesheet.create')
+
+</x-ui.modal>
+
+Avec Footer et boutons :
+<x-ui.modal
+    id="delete-project"
+    title="Supprimer le projet"
+>
+<p>
+Êtes-vous sûr de vouloir supprimer ce projet ?
+</p>
+
+<x-slot:footer>
+    <div class="flex justify-end gap-3">
+
+        <x-ui.button
+            variant="outline"
+        >
+            Annuler
+        </x-ui.button>
+
+        <x-ui.button
+            variant="danger"
+        >
+            Supprimer
+        </x-ui.button>
+    </div>
+</x-slot:footer>
+</x-ui.modal>
+
+
+## Alert :
+<x-ui.alert type="success">
+    Feuille de temps enregistrée avec succès.
+</x-ui.alert>
+
+<x-ui.alert type="error">
+    Une erreur est survenue.
+</x-ui.alert>
+
+<x-ui.alert type="warning">
+    Votre feuille n'a pas encore été envoyée.
+</x-ui.alert>
+
+<x-ui.alert type="info">
+    La validation est en attente du responsable.
+</x-ui.alert>
+
+Avec les messages Laravel :
+@if(session('success'))
+    <x-ui.alert type="success">
+        {{ session('success') }}
+    </x-ui.alert>
+@endif
+
+@if($errors->any())
+    <x-ui.alert type="error">
+        Veuillez corriger les erreurs du formulaire.
+    </x-ui.alert>
+@endif
+
+<x-ui.alert
+    type="warning"
+    :dismissible="false"
+>
+    Maintenance prévue ce soir.
+</x-ui.alert>
+
+
+Badge classique :
+<x-ui.badge>
+    Draft
+</x-ui.badge>
+
+<x-ui.badge variant="success">
+    Approved
+</x-ui.badge>
+
+<x-ui.badge
+    variant="warning"
+    size="sm"
+>
+Pending
+</x-ui.badge>
+
+<x-ui.badge variant="success">
+    <i class="las la-check-circle"></i>
+    Approved
+</x-ui.badge>
+
+
+## Card :
+<x-ui.card>
+    Contenu de la carte
+</x-ui.card>
+
+<x-ui.card
+    title="Total heures"
+    icon="las la-clock"
+    color="blue"
+>
+    <h2 class="text-3xl font-bold text-gray-900">
+        156 h
+    </h2>
+    <p class="text-gray-500 mt-2">
+        Ce mois-ci
+    </p>
+</x-ui.card>
+
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+
+
+<x-ui.card
+    title="Heures"
+    icon="las la-clock"
+    color="blue"
+>
+
+<h2 class="text-3xl font-bold">
+120
+</h2>
+
+</x-ui.card>
+
+<x-ui.card
+    title="Projets"
+    icon="las la-project-diagram"
+    color="purple"
+>
+<h2 class="text-3xl font-bold">
+8
+</h2>
+
+</x-ui.card>
+<x-ui.card
+    title="Validées"
+    icon="las la-check"
+    color="green"
+>
+
+<h2 class="text-3xl font-bold">
+35
+</h2>
+
+</x-ui.card>
+
+<x-ui.card
+    title="En attente"
+    icon="las la-hourglass"
+    color="yellow"
+>
+
+<h2 class="text-3xl font-bold">
+12
+</h2>
+</x-ui.card>
+
+</div>
+
+Avec Footer :
+<x-ui.card
+    title="Feuilles récentes"
+>
+    Liste des feuilles...
+    <x-slot:footer>
+
+    <a href="#">
+    Voir toutes les feuilles
+    </a>
+
+    </x-slot:footer>
+</x-ui.card>
+
+
+## Dropdown :
+<x-ui.dropdown
+    :trigger="'
+    <button class=\"px-4 py-2 bg-gray-100 rounded-lg\">
+        Options
+    </button>
+    '"
+>
+    <a href="#"
+       class="
+       block
+       px-4
+       py-2
+       hover:bg-gray-100
+       ">
+        Profil
+    </a>
+
+    <a href="#"
+       class="
+       block
+       px-4
+       py-2
+       hover:bg-gray-100
+       ">
+        Paramètres
+    </a>
+</x-ui.dropdown>
+
+<x-ui.dropdown>
+    <x-slot:trigger>
+    <button>
+        <i class="las la-ellipsis-v"></i>
+    </button>
+    </x-slot:trigger>
+
+    <a href="#"
+    class="block px-4 py-2 hover:bg-gray-100">
+    <i class="las la-eye"></i>
+    Voir
+    </a>
+
+    <a href="#"
+    class="block px-4 py-2 hover:bg-gray-100">
+
+    <i class="las la-edit"></i>
+    Modifier
+    </a>
+
+    <button
+    class="
+    block
+    w-full
+    text-left
+    px-4
+    py-2
+    text-red-600
+    hover:bg-red-50
+    ">
+
+    <i class="las la-trash"></i>
+    Supprimer
+    </button>
+</x-ui.dropdown>
+
+
+## Avatar :
+<x-ui.avatar
+    name="Jean Dupont"
+/>
+
+Avec une image :
+<x-ui.avatar
+    src="{{ asset('storage/avatar.jpg') }}"
+    name="Jean Dupont"
+/>
+
+<x-ui.avatar
+    name="Marie"
+    size="sm"
+/>
+
+Avec statut connecté :
+<x-ui.avatar
+    name="Jean Dupont"
+    status="true"
+/>
+
+
+## Tooltip :
+<x-ui.tooltip text="Modifier">
+    <button>
+        <i class="las la-edit text-xl"></i>
+    </button>
+</x-ui.tooltip>
+
+Positions :
+<x-ui.tooltip
+    text="Télécharger"
+    position="bottom"
+>
+
+<x-ui.tooltip
+    text="Exporter PDF"
+    position="right"
+>
+
+Sidebar avec icônes :
+<x-ui.tooltip
+    text="Feuilles de temps"
+    position="right"
+>
+
+<a href="#">
+    <i class="las la-clock text-2xl"></i>
+</a>
+
+</x-ui.tooltip>
+
+
+## Spinner :
+<x-ui.spinner size="sm"/>
+
+Couleurs :
+<x-ui.spinner color="blue"/>
+<x-ui.spinner color="green"/>
+<x-ui.spinner color="red"/>
+
+dans livewire :
+<x-ui.button
+    wire:click="save"
+    wire:loading.attr="disabled"
+>
+    <span wire:loading.remove>
+        Enregistrer
+    </span>
+
+    <span wire:loading class="flex items-center gap-2">
+        <x-ui.spinner
+            size="sm"
+            color="white"
+        />
+        Enregistrement...
+    </span>
+</x-ui.button>
+
+Chargement d'une table :
+<div wire:loading>
+    <div class="flex justify-center py-10">
+        <x-ui.spinner size="lg"/>
+    </div>
+</div>
+
+Overlay de chargement complet:
+<div wire:loading class="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-xl shadow-lg">
+        <x-ui.spinner size="lg"/>
+
+        <p class="mt-3 text-gray-600">
+            Chargement...
+        </p>
+    </div>
+</div>
+
+
+## Progressbar :
+<x-ui.progress-bar
+    value="70"
+/>
+
+Avec un label :
+<div class="space-y-2">
+    <div class="flex justify-between">
+        <span class="text-sm font-medium">
+            Projet ERP
+        </span>
+        <span class="text-sm text-gray-500">
+            75%
+        </span>
+    </div>
+
+    <x-ui.progress-bar
+        value="75"
+    />
+</div>
+
+Couleurs :
+<x-ui.progress-bar
+    value="90"
+    color="green"
+/>
+
+<x-ui.progress-bar
+    value="95"
+    color="red"
+/>
+
+<x-ui.progress-bar
+    value="50"
+    color="yellow"
+/>
+
+Tailles :
+<x-ui.progress-bar
+    value="60"
+    size="sm"
+/>
+
+<x-ui.progress-bar
+    value="60"
+    size="lg"
+/>
+
+
+## Empty stat :
+<x-ui.empty-state />
+
+Autre :
+<x-ui.empty-state
+    title="Aucune feuille de temps"
+    description="Vous n'avez pas encore créé de feuille de temps pour cette période."
+    icon="las la-clock"
+/>
+
+Avec un bouton d'action :
+<x-ui.empty-state
+    title="Aucun projet"
+    description="Commencez par créer votre premier projet."
+    icon="las la-project-diagram"
+>
+    <x-slot:action>
+        <x-ui.button>
+            <i class="las la-plus"></i>
+            Nouveau projet
+        </x-ui.button>
+    </x-slot:action>
+</x-ui.empty-state>
+
+
+# Dans une table Laravel :
+@if($timesheets->count())
+    <x-table>
+        ...
+    </x-table>
+@else
+    <x-ui.empty-state
+        title="Aucune feuille de temps"
+        description="Créez une nouvelle feuille pour commencer."
+    >
+        <x-slot:action>
+            <x-ui.button>
+                Créer une feuille
+            </x-ui.button>
+        </x-slot:action>
+    </x-ui.empty-state>
+@endif
+
+
+## Pagination :
+<x-ui.pagination
+    :paginator="$timesheets"
+/>
+
+
+## Breadcrumb :
+<x-ui.breadcrumb
+:items="[[
+'label'=>'Dashboard',
+'url'=>route('dashboard')
+],
+
+[
+'label'=>'Timesheets',
+'url'=>route('timesheets.index')
+],
+
+[
+'label'=>'Nouvelle feuille'
+]]"
+/>
+
+
+## Tabs :
+<x-ui.tabs :tabs="[
+    [
+        'key'   => 'resume',
+        'label' => 'Résumé',
+        'icon'  => 'las la-home'
+    ],
+    [
+        'key'   => 'tasks',
+        'label' => 'Tâches',
+        'icon'  => 'las la-tasks'
+    ],
+    [
+        'key'   => 'time',
+        'label' => 'Temps',
+        'icon'  => 'las la-clock'
+    ]
+]" active="resume"> <!-- Ajoutez l'attribut active par défaut ici -->
+
+    <!-- CONTENU DES ONGLETS -->
+
+    <!-- Contenu de l'onglet Résumé -->
+    <div x-show="activeTab === 'resume'">
+        <p class="text-gray-600">Voici le contenu du résumé de votre projet ou activité.</p>
+    </div>
+
+    <!-- Contenu de l'onglet Tâches -->
+    <div x-show="activeTab === 'tasks'" x-cloak>
+        <p class="text-gray-600">Liste de vos tâches en cours et terminées.</p>
+    </div>
+
+    <!-- Contenu de l'onglet Temps -->
+    <div x-show="activeTab === 'time'" x-cloak>
+        <p class="text-gray-600">Suivi du temps passé sur ce projet.</p>
+    </div>
+
+</x-ui.tabs> <!-- C'est cette fermeture manquante qui bloquait Blade -->
+
+
+## Table :
+<x-ui.table :columns="['Utilisateur', 'Projet', 'Date', 'Heures', 'Statut', 'Actions']">
+    <x-slot:header>
+        <div class="flex justify-between items-center">
+            <h2 class="font-bold text-lg">
+                Utilisateurs
+            </h2>
+
+            <x-ui.button>
+                <i class="las la-plus"></i>
+                Ajouter
+            </x-ui.button>
+        </div>
+    </x-slot:header>
+
+    <tbody>
+        <tr class="hover:bg-gray-50 transition-colors">
+            <td class="px-6 py-4 text-sm font-medium text-gray-900">
+                Jean Dupont
+            </td>
+            <td class="px-6 py-4 text-sm text-gray-500">
+                Projet ERP
+            </td>
+            <td class="px-6 py-4 text-sm text-gray-500">
+                08/07/2026
+            </td>
+            <td class="px-6 py-4 text-sm text-gray-900 font-semibold">
+                8h
+            </td>
+            <td class="px-6 py-4 text-sm">
+                <x-ui.badge variant="success">
+                    Validé
+                </x-ui.badge>
+            </td>
+            <td class="px-6 py-4 text-sm text-right">
+                <!-- Actions de ligne -->
+                <button type="button" class="text-blue-600 hover:text-blue-900 font-medium">
+                    Modifier
+                </button>
+            </td>
+        </tr>
+    </tbody>
+</x-ui.table>
+
+
+
+## INPUT :
+<x-ui.forms.input
+    label="Nom du projet"
+    name="name"
+    placeholder="Ex: Application ERP"
+/>
+
+Avec Livewire :
+<x-ui.forms.input label="Description" name="title" wire:model="title" />
+<x-ui.forms.input type="password" label="Mot de passe" name="password" />
+
+Avec icône Line Awesome :
+<x-ui.forms.input label="Recherche" name="search" icon="las la-search" />
+
+## textarea :
+<x-ui.forms.textarea
+    name="description"
+    label="Description"
+    helper="Décrivez les activités réalisées."
+/>
+
+
+## Select :
+<x-ui.forms.select
+    name="status"
+    label="Statut"
+    :options="[
+        ['value' => 'draft', 'label' => 'Brouillon', 'icon' => 'las la-file-alt'],
+        ['value' => 'submitted', 'label' => 'Soumise', 'icon' => 'las la-paper-plane'],
+        ['value' => 'approved', 'label' => 'Approuvée', 'icon' => 'las la-check-circle'],
+        ['value' => 'rejected', 'label' => 'Rejetée', 'icon' => 'las la-times-circle']
+    ]"
+    selected="draft"
+/>
+
+et
+
+Avec une valeur :
+<x-ui.forms.select
+    name="status"
+    :selected="$timesheet->status"
+    :options="$statuses"
+/>
+
+Avec groupes :
+<x-ui.forms.select
+    name="country"
+    :options="[
+        'Afrique'=>[
+            'cd'=>'RDC',
+            'cg'=>'Congo',
+            'rw'=>'Rwanda'
+        ],
+
+        'Europe'=>[
+            'fr'=>'France',
+            'be'=>'Belgique'
+        ]
+    ]"
+/>
+
+Multiple :
+<x-ui.forms.select
+    wire:model.live="project_id"
+    name="project_id"
+    multiple
+    :options="$projects"
+/>
+
+
+## checkbox
+<x-ui.forms.checkbox
+    name="approved"
+    wire:model="approved"
+    label="Valider"
+/>
+
+
+## Radio
+<x-ui.forms.radio
+    name="day_type"
+    value="office"
+    label="Présentiel"
+/>
+
+Avec valeur sélectionnée :
+<x-ui.forms.radio
+    name="status"
+    wire:model.live="status"
+    value="approved"
+    checkedValue="{{ $timesheet->status }}"
+    label="Validé"
+/>
+
+
+## Datepicker :
+<x-ui.forms.datepicker
+    name="date"
+    label="Date"
+/>
+
+et
+
+<x-ui.forms.datepicker
+ min="2026-01-01"
+  wire:model.live="date"
+    name="date"
+    label="Date"
+    max="{{ now()->format('Y-m-d') }}"
+/>
+
+
+## Timepicker
+<x-ui.forms.timepicker
+    name="start_time"
+    label="Heure de début"
+        min="07:00"
+    max="22:00"
+/>
+
+
+## error :
+<input name="email" type="email" class="border rounded-lg"/>
+<x-ui.forms.error
+    name="email"
+/>

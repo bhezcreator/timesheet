@@ -23,7 +23,7 @@
         @livewireStyles
     </head>
 
-    <body class="font-sans antialiased bg-gray-50 text-gray-900">
+    <body class="font-sans antialiased bg-gray-50 text-gray-900 h-screen overflow-hidden">
 
         <div class="min-h-screen flex">
             <!-- Sidebar -->
@@ -58,7 +58,7 @@
                 <!-- Header -->
                 <header class="h-20 bg-white border-b border-gray-200 flex items-center justify-between px-6">
                     <livewire:layout.mobile-menu />
-                    <div>
+                    <div class="hidden md:block">
                         @if(isset($header))
 
                             {{ $header }}
@@ -115,12 +115,28 @@
 
                 <!-- Page Content -->
 
-                <main class="flex-1 p-6 overflow-y-auto">
-                    <div class="w-full h-full">
+                <main class="flex-1">
 
-                        {{ $slot }}
+                    <div class="w-full p-6 overflow-y-auto h-[calc(100vh-80px)] relative">
+                        <!-- Écran de chargement (Overlay) qui s'affiche uniquement lors des requêtes Livewire -->
+                        <div
+                            wire:loading
+                            class="absolute inset-0 bg-gray-900/10 backdrop-blur-[2px] z-50 flex items-center justify-center transition-all"
+                        >
+                            <div class="bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center border border-gray-100 min-w-[160px]">
+                                <x-ui.spinner size="lg" class="text-blue-600" />
+                                <p class="mt-3 text-sm font-medium text-gray-600 tracking-wide">
+                                    Chargement...
+                                </p>
+                            </div>
+                        </div>
 
+                        <!-- Le contenu de votre page s'affiche ici normalement -->
+                        <div class="w-full">
+                            {{ $slot }}
+                        </div>
                     </div>
+
                 </main>
             </div>
 

@@ -11,7 +11,7 @@
 
 
     <title>
-        {{ config('app.name', 'TimeFlow') }}
+        {{ config('app.name', 'TimeSheet') }}
     </title>
 
 
@@ -85,7 +85,7 @@
 
                 <h1 class="mt-4 text-3xl font-bold text-white">
 
-                    TimeFlow
+                    TimeSheet
 
                 </h1>
 
@@ -131,17 +131,12 @@
         <p class="text-center text-sm text-white/80 mt-8">
 
 
-            © {{ date('Y') }} TimeFlow.
+            © {{ date('Y') }} TimeSheet.
             Tous droits réservés.
 
 
         </p>
-
-
-
-
     </div>
-
 
 </div>
 

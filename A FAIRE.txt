@@ -1,4 +1,4 @@
-- Ajouter les pages d'erreurs :
+- Ajouter les pages d'erreurs : OK
 |          Code | Nom                   | Importance | Quand elle apparaît                               |
 | ------------: | --------------------- | :--------: | ------------------------------------------------- |
 |     ✅ **400** | Bad Request           |     ⭐⭐⭐    | Requête mal formée                                |
@@ -31,7 +31,7 @@ resources/
         ├── 504.blade.php
         └── minimal.blade.php
 
-- Création des composants :
+- Création des composants : OK
 resources/
 └── views/
     └── components/
@@ -62,19 +62,120 @@ resources/
         │   └── error.blade.php
         │
         ├── layout/
-        │   ├── sidebar.blade.php
-        │   ├── navbar.blade.php
-        │   ├── footer.blade.php
-        │   ├── page-header.blade.php
-        │   └── notification.blade.php
-        │
-        └── tables/
-            ├── table.blade.php
-            ├── table-header.blade.php
-            ├── table-row.blade.php
-            └── action-menu.blade.php
+            ├── sidebar.blade.php
+            ├── navbar.blade.php
+            ├── footer.blade.php
+            ├── page-header.blade.php
+            └── notification.blade.php
 
 
-- Création des models et migrations
-- Dévéloppement
+- Création des models et migrations: OK
+- Dévéloppement :
+    - User :
+        Création d'un utilisateur
+        Modification des informations
+        Désactivation d'un utilisateur
+        Affectation d'un superviseur
+        Création des roles
+        Attribution des rôles
+        Gestion de la photo
+        Gestion de la signature numérique
+        Gestion des permissions (Admin, Superviseur, Agent...)
+
+    - Projet :
+        Créer un projet
+        Modifier un projet
+        Clôturer un projet
+        Désigner un responsable
+        Définir une période d'exécution
+        Affecter plusieurs agents
+        Consulter les statistiques du projet
+
+    - Sous projet :
+        Créer un sous-projet
+        Modifier un sous-projet
+        Associer un sous-projet à un projet
+        Affecter des agents
+        Consulter les activités du sous-projet
+
+    - Agent(User) :
+        Affecter un utilisateur à un projet
+        Retirer un utilisateur
+        Définir son rôle dans le projet
+        Affecter un utilisateur à un sous-projet
+
+    - Type Activité :
+        Créer un type
+        Modifier un type
+        Désactiver un type
+        Définir une couleur
+
+    - Activité :
+        Ajouter une activité
+        Modifier une activité
+        Supprimer une activité (avant validation)
+        Choisir le projet
+        Choisir le sous-projet
+        Choisir le type
+        Indiquer la durée
+        Décrire le travail effectué
+        Soumettre ses activités
+
+    - Rapport :
+        Générer son rapport du mois
+        Modifier le rapport
+        Décrire :
+            les objectifs
+            les réalisations
+            les prochaines actions
+        Soumettre le rapport
+
+        Le rapport regroupe (Tous les projets ou individuel)
+        Toutes les activités du mois concerné.
+
+    - Validation des rapports :
+        Le superviseur peut :
+            Voir les rapports soumis
+            Lire toutes les activités
+            Ajouter un commentaire
+            Valider
+            Rejeter
+            Demander une correction
+
+    - Gestion des périodes :
+        Définir le jour limite
+        Définir l'heure limite
+        Bloquer une période
+        Réouvrir exceptionnellement une période
+        Empêcher la modification des activités après la clôture.
+
+    - Notifications :
+        Notification automatique lorsqu'un :
+            rapport est soumis
+            rapport est validé
+            rapport est rejeté
+            nouvelle affectation est réalisée
+            période est clôturée
+
+    - Tableau de bord(Pour l'agent) :
+        activités du jour
+        activités du mois
+        nombre d'heures
+        rapports soumis
+        rapports en attente
+
+    - Tableau de bord(Pour le superviseur) :
+        rapports à valider
+        statistiques de son équipe
+        activités récentes
+        taux de validation
+
+    - Tableau de bord(Pour l'administrateur) :
+        nombre d'utilisateurs
+        projets actifs
+        sous-projets
+        activités réalisées
+        heures prestées
+        statistiques globales
+
 - Test pour chaque étape

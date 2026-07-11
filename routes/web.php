@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Livewire\Permissions\Index as PermissionIndex;
 
 Route::view('/', 'welcome');
 
@@ -12,4 +13,12 @@ Route::view('profile', 'profile')
     ->middleware(['auth'])
     ->name('profile');
 
-require __DIR__.'/auth.php';
+Route::middleware(['auth'])
+    ->prefix('admin')
+    ->group(function () {
+
+        Route::get('/permissions', PermissionIndex::class)
+            ->name('permissions.index');
+    });
+
+require __DIR__ . '/auth.php';

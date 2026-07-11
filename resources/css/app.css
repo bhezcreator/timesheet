@@ -22,3 +22,7 @@ body {
     background-color: rgb(30, 30, 240);
     border-radius: 20px;
 }
+
+[x-cloak] {
+    display: none !important;
+}

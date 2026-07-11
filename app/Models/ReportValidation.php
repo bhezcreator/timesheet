@@ -12,7 +12,6 @@ class ReportValidation extends Model
         'decision',
         'comment',
         'validated_at'
-
     ];
 
     protected $casts = [

@@ -41,6 +41,11 @@ new class extends Component
             'icon'  => 'la-user',
             'route' => 'profile',
         ],
+        [
+            'title' => 'Permission',
+            'icon'  => 'la-user',
+            'route' => 'permissions.index',
+        ],
     ];
 
     /**
