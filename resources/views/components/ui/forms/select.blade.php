@@ -5,6 +5,7 @@
     'selected' => null,
     'placeholder' => 'Sélectionner...',
     'searchable' => true,
+    'required' => false
 ])
 
 <div
@@ -15,13 +16,33 @@
         selectedLabel: '',
         selectedIcon: '',
         options: @js($options),
+
         init() {
+            this.syncSelected();
+
+            this.$watch('$wire.{{ $name }}', (value) => {
+                this.selected = value;
+                this.syncSelected();
+            });
+        },
+
+        syncSelected() {
+            if (this.selected === null || this.selected === undefined || this.selected === '') {
+                this.selectedLabel = '';
+                this.selectedIcon = '';
+                return;
+            }
+
             let option = this.options.find(item => item.value == this.selected);
             if (option) {
                 this.selectedLabel = option.label;
                 this.selectedIcon = option.icon ?? '';
+            } else {
+                this.selectedLabel = '';
+                this.selectedIcon = '';
             }
         },
+
         toggle() {
             this.open = !this.open;
             if (this.open) {
@@ -31,12 +52,18 @@
                 });
             }
         },
+
         selectOption(option) {
             this.selected = option.value;
             this.selectedLabel = option.label;
             this.selectedIcon = option.icon ?? '';
             this.open = false;
+
+            // CORRECTION 1 : Ajout du paramètre false pour modifier la valeur en tâche de fond
+            // sans déclencher d'action ou de soumission sauvage sur le serveur
+            this.$wire.set('{{ $name }}', this.selected, false);
         },
+
         get filteredOptions() {
             if (!this.search) return this.options;
             return this.options.filter(option => {
@@ -51,6 +78,9 @@
     @if($label)
         <label class="block mb-2 text-sm font-semibold text-gray-700">
             {{ $label }}
+            @if($required)
+                <span class="text-red-500 font-bold" title="Ce champ est obligatoire">*</span>
+            @endif
         </label>
     @endif
 
@@ -84,14 +114,27 @@
         class="absolute {{ $label ? 'top-[calc(100%-8px)]' : 'top-full' }} z-50 mt-2 w-full rounded-xl border border-gray-200 bg-white shadow-xl overflow-hidden"
         style="display: none;"
     >
+        <!-- Option pour vider la sélection -->
+        <div class="p-1 bg-gray-50 border-b border-gray-100">
+            <button
+                type="button"
+                @click="selected = null; selectedLabel = ''; selectedIcon = ''; open = false; $wire.set('{{ $name }}', null, false)"
+                class="w-full text-left px-4 py-2 text-xs text-gray-500 hover:text-red-600 font-medium transition cursor-pointer"
+            >
+                <i class="las la-times-circle mr-1"></i> Réinitialiser / Sélectionner aucun
+            </button>
+        </div>
+
         <!-- Zone de Recherche -->
         @if($searchable)
-            <div class="p-3 border-b border-gray-100">
+            <div class="p-3 border-b border-gray-100 bg-white">
                 <div class="relative">
                     <i class="las la-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <!-- CORRECTION 2 : Ajout du modificateur .stop pour empêcher la recherche d'émettre des événements système parasites -->
                     <input
                         x-ref="search"
                         x-model="search"
+                        @keydown.enter.prevent.stop
                         type="text"
                         placeholder="Rechercher..."
                         class="w-full rounded-lg border border-gray-200 py-2 pl-10 pr-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none"
@@ -101,7 +144,7 @@
         @endif
 
         <!-- Options List -->
-        <div class="max-h-72 overflow-y-auto">
+        <div class="max-h-72 overflow-y-auto bg-white">
             <template x-for="option in filteredOptions" :key="option.value">
                 <button
                     type="button"
@@ -134,6 +177,6 @@
         </div>
     </div>
 
-    <!-- Champ caché pour la soumission classique de formulaire -->
+    <!-- Champ caché -->
     <input type="hidden" name="{{ $name }}" :value="selected">
 </div>

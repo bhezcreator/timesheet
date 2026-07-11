@@ -85,7 +85,7 @@ class Index extends Component
 
     public function edit($id)
     {
-        $this->checkPermissionOrFail("manager-permission");
+        // $this->checkPermissionOrFail("manager-permission");
 
         $permission = Permission::findOrFail($id);
         $this->permissionId = $permission->id;
@@ -97,7 +97,7 @@ class Index extends Component
 
     public function save()
     {
-        $this->checkPermissionOrFail("manager-permission");
+        //$this->checkPermissionOrFail("manager-permission");
 
         if ($this->permissionId) {
             $this->validate([
@@ -125,9 +125,10 @@ class Index extends Component
 
     public function confirmDelete(int $id)
     {
-        $this->checkPermissionOrFail("manager-permission");
+        // $this->checkPermissionOrFail("manager-permission");
 
         $permission = Permission::findOrFail($id);
+
         $this->deleteId = $permission->id;
         $this->deleteName = $permission->name;
 
@@ -137,8 +138,7 @@ class Index extends Component
     // Sécurisation : On passe l'ID de confirmation directement à la méthode de destruction
     public function delete(int $id)
     {
-        $this->checkPermissionOrFail("manager-permission");
-
+        // $this->checkPermissionOrFail("manager-permission");
         // Validation croisée : On vérifie que l'ID soumis correspond bien à la demande initiale
         if ($this->deleteId === $id) {
             Permission::findOrFail($id)->delete();

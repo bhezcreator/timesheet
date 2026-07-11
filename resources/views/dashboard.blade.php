@@ -26,38 +26,41 @@
 </x-ui.modal-one>
 
 
-<!-- === 2. BLOC SUPPRESSION === -->
-<!-- Bouton d'ouverture Suppression -->
-<button
-    type="button"
-    data-open-modal="delete-modal"
-    class="bg-gray-100 hover:bg-red-50 text-gray-700 hover:text-red-600 font-medium px-4 py-2 rounded border border-gray-200 transition"
->
-    Supprimer
-</button>
+<x-ui.tabs :tabs="[
+    [
+        'key'   => 'resume',
+        'label' => 'Résumé',
+        'icon'  => 'las la-home'
+    ],
+    [
+        'key'   => 'tasks',
+        'label' => 'Tâches',
+        'icon'  => 'las la-tasks'
+    ],
+    [
+        'key'   => 'time',
+        'label' => 'Temps',
+        'icon'  => 'las la-clock'
+    ]
+]" active="resume"> <!-- Ajoutez l'attribut active par défaut ici -->
 
-<!-- Modale Suppression -->
-<x-ui.modal-one id="delete-modal" title="Confirmation" size="sm">
-    <p class="text-gray-600 text-sm">
-        Voulez-vous vraiment supprimer cet élément ? Cette action est irréversible.
-    </p>
+    <!-- CONTENU DES ONGLETS -->
 
-    <x-slot name="footer">
-        <button
-            type="button"
-            data-close-modal
-            class="px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition"
-        >
-            Annuler
-        </button>
-        <button
-            type="button"
-            class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded transition"
-        >
-            Supprimer
-        </button>
-    </x-slot>
-</x-ui.modal-one>
+    <!-- Contenu de l'onglet Résumé -->
+    <div x-show="activeTab === 'resume'">
+        <p class="text-gray-600">Voici le contenu du résumé de votre projet ou activité.</p>
+    </div>
 
+    <!-- Contenu de l'onglet Tâches -->
+    <div x-show="activeTab === 'tasks'" x-cloak>
+        <p class="text-gray-600">Liste de vos tâches en cours et terminées.</p>
+    </div>
+
+    <!-- Contenu de l'onglet Temps -->
+    <div x-show="activeTab === 'time'" x-cloak>
+        <p class="text-gray-600">Suivi du temps passé sur ce projet.</p>
+    </div>
+
+</x-ui.tabs>
 
 </x-app-layout>

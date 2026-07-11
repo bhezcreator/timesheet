@@ -17,7 +17,7 @@
         @if($errors->any())
             <x-ui.alert type="error" class="mb-4 mt-8">
                 <div class="flex flex-col gap-1">
-                    <span class="font-bold text-sm mb-1">Veuillez corriger les erreurs suivantes :</span>
+                    <span class="font-bold text-sm mb-1">Message d'erreur :</span>
                     <ul class="list-disc list-inside text-xs space-y-0.5 opacity-90">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
@@ -63,7 +63,7 @@
                             <td class="px-6 py-4 text-sm text-gray-500">
                                 {{ $permission->created_at->format('d/m/Y') }}
                             </td>
-                            <td class="px-6 py-4 text-sm space-x-1">
+                            <td class="px-6 py-4 text-sm space-x-1 text-right">
                                 <x-ui.button variant="outline" wire:click="edit({{ $permission->id }})" title="Modifier">
                                     <i class="las la-edit"></i>
                                 </x-ui.button>
@@ -160,7 +160,7 @@
 
                 <x-ui.button
                     variant="danger"
-                    wire:click="delete"
+                    wire:click="delete({{ $deleteId ?? 0 }})"
                     wire:loading.attr="disabled"
                 >
 

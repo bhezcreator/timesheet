@@ -19,7 +19,7 @@ new class extends Component
         [
             'title' => 'Projets',
             'icon'  => 'la-project-diagram',
-            'route' => '#',
+            'route' => 'projects.index',
         ],
         [
             'title' => 'Activités',
@@ -32,19 +32,19 @@ new class extends Component
             'route' => '#',
         ],
         [
-            'title' => 'Utilisateurs',
+            'title' => 'Personnels',
             'icon'  => 'la-users',
-            'route' => '#',
-        ],
-        [
-            'title' => 'Profil',
-            'icon'  => 'la-user',
-            'route' => 'profile',
+            'route' => 'users.index',
         ],
         [
             'title' => 'Permission',
             'icon'  => 'la-user',
             'route' => 'permissions.index',
+        ],
+                [
+            'title' => 'Roles',
+            'icon'  => 'la-user',
+            'route' => 'roles.index',
         ],
     ];
 

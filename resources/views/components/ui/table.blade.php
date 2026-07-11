@@ -17,7 +17,15 @@
             <thead class="bg-gray-50 border-b border-gray-100">
                 <tr>
                     @foreach($columns as $column)
-                        <th scope="col" class="px-6 py-4 font-semibold text-gray-600 uppercase text-xs tracking-wider">
+                        <th
+                            scope="col"
+                            @class([
+                                'px-6 py-4 font-semibold uppercase text-xs tracking-wider',
+                                'text-gray-600',
+                                'text-left' => ! $loop->last,
+                                'text-right' => $loop->last,
+                            ])
+                        >
                             {{ $column }}
                         </th>
                     @endforeach
