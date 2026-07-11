@@ -83,6 +83,15 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 text-sm space-x-1 whitespace-nowrap text-right">
+                                <!-- NOUVEAU : Bouton d'accès direct vers les sous-projets -->
+                                <a
+                                    href="{{ route('projects.subprojects', ['projectId' => $project->id]) }}"
+                                    wire:navigate
+                                    class="inline-flex items-center justify-center w-9 h-9 rounded-xl border border-gray-200 bg-green text-white-600 hover:text-blue-600 hover:bg-blue-50/50 hover:border-blue-100 transition shadow-sm"
+                                    title="Gérer les sous-projets (Lots)"
+                                >
+                                    <i class="las la-folder-plus text-lg"></i>
+                                </a>
                                 <x-ui.button variant="outline" wire:click="edit({{ $project->id }})" title="Éditer le projet">
                                     <i class="las la-edit"></i>
                                 </x-ui.button>

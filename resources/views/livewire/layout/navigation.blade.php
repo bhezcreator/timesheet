@@ -5,7 +5,7 @@ use Livewire\Volt\Component;
 
 new class extends Component
 {
-        public array $menus = [
+    public array $menus = [
         [
             'title' => 'Tableau de bord',
             'icon'  => 'la-home',
@@ -37,13 +37,13 @@ new class extends Component
             'route' => 'users.index',
         ],
         [
-            'title' => 'Permission',
-            'icon'  => 'la-user',
+            'title' => 'Permissions',
+            'icon'  => 'la-key', // Modifié la-user -> la-key (sémantique claire)
             'route' => 'permissions.index',
         ],
-                [
-            'title' => 'Roles',
-            'icon'  => 'la-user',
+        [
+            'title' => 'Rôles',
+            'icon'  => 'la-user-shield', // Modifié la-user -> la-user-shield (sécurité)
             'route' => 'roles.index',
         ],
     ];
@@ -59,16 +59,12 @@ new class extends Component
     }
 }; ?>
 
-<nav x-data="{ open:false }" class="h-full">
-
+<nav x-data="{ open: false }" class="h-full bg-white border-gray-100 p-4">
     <!-- Desktop Navigation -->
-
-    <div class="hidden lg:flex flex-col h-full">
-
-        <div class="space-y-2">
-
+    <div class="hidden lg:flex flex-col h-full justify-between">
+        <!-- Liens du menu principal -->
+        <div class="space-y-1.5">
             @foreach($menus as $menu)
-
                 @php
                     $active = $menu['route'] !== '#' && request()->routeIs($menu['route']);
                 @endphp
@@ -76,35 +72,27 @@ new class extends Component
                 <a
                     href="{{ $menu['route'] === '#' ? '#' : route($menu['route']) }}"
                     @if($menu['route'] !== '#') wire:navigate @endif
-
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl transition duration-200
-
+                    class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group font-medium text-sm
                     {{ $active
                         ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20'
-                        : 'text-gray-600 hover:bg-gray-100 hover:text-indigo-600'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-indigo-600'
                     }}"
                 >
-
-                    <i class="las {{ $menu['icon'] }} text-xl"></i>
-
-                    <span class="font-medium">
-
-                        {{ $menu['title'] }}
-
-                    </span>
-
+                    <i class="las {{ $menu['icon'] }} text-xl transition-colors {{ $active ? 'text-white' : 'text-gray-400 group-hover:text-indigo-600' }}"></i>
+                    <span>{{ $menu['title'] }}</span>
                 </a>
-
             @endforeach
-
         </div>
-        <div class="mt-auto pt-3 border-t border-gray-200">
+
+        <!-- Pied du menu : Bouton Déconnexion -->
+        <div class="pt-3 border-t border-gray-100">
             <button
+                type="button"
                 wire:click="logout"
-                class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition cursor-pointer"
+                class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50/70 transition cursor-pointer focus:outline-none"
             >
                 <i class="las la-sign-out-alt text-xl"></i>
-                Déconnexion
+                <span>Déconnexion</span>
             </button>
         </div>
     </div>

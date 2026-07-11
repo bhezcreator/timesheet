@@ -5,6 +5,7 @@ use App\Livewire\Permissions\Index as PermissionIndex;
 use App\Livewire\Roles\Index as RolesIndex;
 use App\Livewire\Users\Index as UsersIndex;
 use App\Livewire\Projects\Index as ProjectsIndex;
+use App\Livewire\Projects\SubProjectManager;
 
 Route::view('/', 'welcome');
 
@@ -26,8 +27,13 @@ Route::middleware(['auth'])
             ->name('roles.index');
         Route::get('/users', UsersIndex::class)
             ->name('users.index');
+        // Route pour la liste principale des projets (votre exemple)
         Route::get('/projects', ProjectsIndex::class)
             ->name('projects.index');
+
+        // Route pour la gestion des sous-projets liés à un projet spécifique
+        Route::get('/projects/{projectId}/sub-projects', SubProjectManager::class)
+            ->name('projects.subprojects');
     });
 
 require __DIR__ . '/auth.php';
