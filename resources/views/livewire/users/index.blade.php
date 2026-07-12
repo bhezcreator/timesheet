@@ -19,6 +19,7 @@
                 {{ $message }}
             </x-ui.alert>
         @enderror
+
         @error('user')
             <x-ui.alert type="error" class="mb-4 mt-8">
                 {{ $message }}
@@ -104,6 +105,16 @@
 
                             <!-- Boutons de commande -->
                             <td class="px-6 py-4 text-sm space-x-1 whitespace-nowrap text-right">
+                                <a
+                                    href="{{ route('users.attributes_projects', ['userId' => $user->id]) }}"
+                                    wire:navigate
+                                    class="inline-flex items-center justify-center bg-blue-500 gap-1.5 px-3 py-2 text-sm font-medium rounded-xl border border-gray-200 bg-white text-gray-700 hover:text-blue-600 hover:bg-blue-50/50 hover:border-blue-100 transition shadow-xs"
+                                    title="Gérer les attributions de projets"
+                                >
+                                    <i class="las la-user-cog text-base text-gray-400 group-hover:text-blue-600"></i>
+                                    <span>Attribution Projet</span>
+                                </a>
+
                                 <x-ui.button variant="outline" wire:click="edit({{ $user->id }})" title="Éditer la fiche">
                                     <i class="las la-edit"></i>
                                 </x-ui.button>

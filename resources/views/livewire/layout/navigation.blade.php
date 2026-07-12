@@ -66,19 +66,24 @@ new class extends Component
         <div class="space-y-1.5">
             @foreach($menus as $menu)
                 @php
-                    $active = $menu['route'] !== '#' && request()->routeIs($menu['route']);
+                    // Extrait le premier mot de la route (ex: "users" depuis "users.index" ou "users.edit")
+                    $routeGroup = $menu['route'] !== '#' ? explode('.', $menu['route'])[0] . '.*' : null;
+
+                    // Le menu est actif si la route exacte correspond OU si on est dans le même groupe de sous-pages
+                    $isActive = $menu['route'] !== '#' && (request()->routeIs($menu['route']) || ($routeGroup && request()->routeIs($routeGroup)));
                 @endphp
 
                 <a
                     href="{{ $menu['route'] === '#' ? '#' : route($menu['route']) }}"
                     @if($menu['route'] !== '#') wire:navigate @endif
                     class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group font-medium text-sm
-                    {{ $active
-                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20'
+                    {{ $isActive
+                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20 font-semibold'
                         : 'text-gray-600 hover:bg-gray-50 hover:text-indigo-600'
                     }}"
                 >
-                    <i class="las {{ $menu['icon'] }} text-xl transition-colors {{ $active ? 'text-white' : 'text-gray-400 group-hover:text-indigo-600' }}"></i>
+                    {{-- CORRECTION : $active remplacé par $isActive ici --}}
+                    <i class="las {{ $menu['icon'] }} text-xl transition-colors {{ $isActive ? 'text-white' : 'text-gray-400 group-hover:text-indigo-600' }}"></i>
                     <span>{{ $menu['title'] }}</span>
                 </a>
             @endforeach

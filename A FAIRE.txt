@@ -179,3 +179,5 @@ resources/
         statistiques globales
 
 - Test pour chaque étape
+- Amélioration des codes(design + sécurité)
+-

@@ -39,7 +39,7 @@ $sizes = [
         'px-5 py-2.5 text-sm',
 
     'lg' =>
-        'px-6 py-3 text-base',
+        'px-6 py-3 text-base w-full',
 
 ];
 
