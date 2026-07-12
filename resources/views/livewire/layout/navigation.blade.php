@@ -46,6 +46,11 @@ new class extends Component
             'icon'  => 'la-user-shield', // Modifié la-user -> la-user-shield (sécurité)
             'route' => 'roles.index',
         ],
+        [
+            'title' => 'Paramètres',
+            'icon'  => 'la-cog',
+            'route' => 'settings',
+        ],
     ];
 
     /**

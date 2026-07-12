@@ -14,17 +14,17 @@
         @endif
 
         <!-- Traitement exclusif des erreurs d'autorisation -->
-        @error('permission')
+{{--         @error('permission')
             <x-ui.alert type="error" class="mb-4 mt-8">
                 {{ $message }}
             </x-ui.alert>
-        @enderror
+        @enderror --}}
 
         <!-- Liste récapitulative des alertes de saisie -->
         @if($errors->any())
             <x-ui.alert type="error" class="mb-4 mt-8">
                 <div class="flex flex-col gap-1">
-                    <span class="font-bold text-sm mb-1">Veuillez ajuster les données du formulaire :</span>
+                    <span class="font-bold text-sm mb-1">Message(s) :</span>
                     <ul class="list-disc list-inside text-xs space-y-0.5 opacity-90">
                         @foreach ($errors->all() as $error)
                             @if($error !== $errors->first('permission'))
