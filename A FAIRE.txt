@@ -72,29 +72,29 @@ resources/
 - Création des models et migrations: OK
 - Dévéloppement :
     - User :
-        Création d'un utilisateur
-        Modification des informations
-        Désactivation d'un utilisateur
-        Affectation d'un superviseur
-        Création des roles
-        Attribution des rôles
+        Création d'un utilisateur OK
+        Modification des informations OK
+        Désactivation d'un utilisateur OK
+        Affectation d'un superviseur OK
+        Création des roles OK
+        Attribution des rôles OK
         Gestion de la photo
         Gestion de la signature numérique
-        Gestion des permissions (Admin, Superviseur, Agent...)
+        Gestion des permissions (Admin, Superviseur, Agent...) OK
 
     - Projet :
-        Créer un projet
-        Modifier un projet
+        Créer un projet OK
+        Modifier un projet OK
         Clôturer un projet
-        Désigner un responsable
-        Définir une période d'exécution
+        Désigner un responsable OK
+        Définir une période d'exécution OK
         Affecter plusieurs agents
         Consulter les statistiques du projet
 
     - Sous projet :
-        Créer un sous-projet
-        Modifier un sous-projet
-        Associer un sous-projet à un projet
+        Créer un sous-projet OK
+        Modifier un sous-projet OK
+        Associer un sous-projet à un projet OK
         Affecter des agents
         Consulter les activités du sous-projet
 

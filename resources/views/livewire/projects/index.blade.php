@@ -38,76 +38,7 @@
         @endif
 
         <!-- Tableau principal ou État vide -->
-        @if($projects->count())
-            <x-ui.table :columns="['N°', 'Code', 'Intitulé du Projet', 'Manager', 'Date Début', 'Date Fin', 'Statut', 'Actions']">
-                <x-slot:header>
-                    <div class="flex justify-between items-center mb-4">
-                        <h1 class="text-2xl font-bold text-gray-900">Liste des projets</h1>
-                        <x-ui.button wire:click="openModal">
-                            <i class="las la-plus mr-1"></i> Nouveau projet
-                        </x-ui.button>
-                    </div>
-                    <x-ui.forms.input wire:model.live.debounce.300ms="search" placeholder="Recherche par code, nom ou statut..." />
-                </x-slot:header>
-
-                <tbody>
-                    @foreach($projects as $project)
-                        <tr class="hover:bg-gray-50 transition-colors" wire:key="project-row-{{ $project->id }}">
-                            <td class="px-6 py-4 text-sm font-semibold text-gray-400">
-                                {{ ($projects->currentPage() - 1) * $projects->perPage() + $loop->iteration }}
-                            </td>
-                            <td class="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">
-                                <span class="font-mono bg-gray-100 px-2 py-1 rounded text-xs text-gray-600">{{ $project->code }}</span>
-                            </td>
-                            <td class="px-6 py-4 text-sm font-bold text-gray-900">
-                                {{ $project->name }}
-                            </td>
-                            <td class="px-6 py-4 text-sm text-gray-700">
-                                {{ $project->manager ? $project->manager->first_name . ' ' . $project->manager->name : '-' }}
-                            </td>
-                            <td class="px-6 py-4 text-sm text-gray-500">
-                                {{ $project->start_date ? \Carbon\Carbon::parse($project->start_date)->format('d/m/Y') : '-' }}
-                            </td>
-                            <td class="px-6 py-4 text-sm text-gray-500">
-                                {{ $project->end_date ? \Carbon\Carbon::parse($project->end_date)->format('d/m/Y') : '-' }}
-                            </td>
-                            <td class="px-6 py-4 text-sm">
-                                @if($project->status === 'complete')
-                                    <x-ui.badge variant="success">Fini</x-ui.badge>
-                                @elseif($project->status === 'active')
-                                    <x-ui.badge variant="info">Actif</x-ui.badge>
-                                @elseif($project->status === 'annuler')
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Annuler</span>
-                                @else
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Brouillon</span>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 text-sm space-x-1 whitespace-nowrap text-right">
-                                <!-- NOUVEAU : Bouton d'accès direct vers les sous-projets -->
-                                <a
-                                    href="{{ route('projects.subprojects', ['projectId' => $project->id]) }}"
-                                    wire:navigate
-                                    class="inline-flex items-center justify-center w-9 h-9 rounded-xl border border-gray-200 bg-green text-white-600 hover:text-blue-600 hover:bg-blue-50/50 hover:border-blue-100 transition shadow-sm"
-                                    title="Gérer les sous-projets (Lots)"
-                                >
-                                    <i class="las la-folder-plus text-lg"></i>
-                                </a>
-                                <x-ui.button variant="outline" wire:click="edit({{ $project->id }})" title="Éditer le projet">
-                                    <i class="las la-edit"></i>
-                                </x-ui.button>
-                                <x-ui.button variant="danger" wire:click="confirmDelete({{ $project->id }})" title="Supprimer le projet">
-                                    <i class="las la-trash"></i>
-                                </x-ui.button>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </x-ui.table>
-
-            <div class="mt-5">
-                <x-ui.pagination :paginator="$projects" />
-            </div>
-        @else
+        @if(!$projects->count() And empty($search))
             <x-ui.empty-state title="Aucun projet trouvé" description="Créez et configurez vos projets d'entreprise." icon="las la-folder-open">
                 <x-slot:action>
                     <x-ui.button wire:click="openModal">
@@ -115,6 +46,156 @@
                     </x-ui.button>
                 </x-slot:action>
             </x-ui.empty-state>
+        @else
+            <div>
+                {{-- Section En-tête : Titre, Bouton d'ajout et Barre de Recherche globale --}}
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Liste des projets</h1>
+                        <p class="text-sm text-gray-500 mt-0.5">Gérez vos projets principaux et leurs lots de sous-projets.</p>
+                    </div>
+                    <x-ui.button wire:click="openModal" class="shrink-0 shadow-sm">
+                        <i class="las la-plus mr-1.5 text-base"></i> Nouveau projet
+                    </x-ui.button>
+                </div>
+
+                <div class="mb-6">
+                    <x-ui.forms.input wire:model.live.debounce.300ms="search" placeholder="Recherche par code, nom ou statut..." />
+                </div>
+
+                {{-- Grille principale des cartes de projets --}}
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                    @foreach($projects as $project)
+                        <div class="flex flex-col bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200" wire:key="project-card-{{ $project->id }}">
+
+                            {{-- 1. EN HAUT : Informations principales du Projet --}}
+                            <div class="p-6 border-b border-gray-50">
+                                <div class="flex items-start justify-between gap-4">
+                                    <div class="space-y-1">
+                                        <div class="flex items-center gap-2 flex-wrap">
+                                            <span class="font-mono font-semibold bg-gray-100 px-2 py-0.5 rounded text-xs text-gray-600 tracking-wider">
+                                                {{ $project->code }}
+                                            </span>
+                                            @if($project->status === 'complete')
+                                                <x-ui.badge variant="success">Fini</x-ui.badge>
+                                            @elseif($project->status === 'active')
+                                                <x-ui.badge variant="info">Actif</x-ui.badge>
+                                            @elseif($project->status === 'annuler')
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-100">Annuler</span>
+                                            @else
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-50 text-gray-600 border border-gray-100">Brouillon</span>
+                                            @endif
+                                        </div>
+                                        <h2 class="text-lg font-bold text-gray-900 pt-1 line-clamp-1">
+                                            {{ $project->name }}
+                                        </h2>
+                                    </div>
+
+                                    {{-- Numéro d'index discret --}}
+                                    <span class="text-xs font-bold text-gray-300 bg-gray-50 h-7 w-7 rounded-full flex items-center justify-center shrink-0">
+                                        {{ ($projects->currentPage() - 1) * $projects->perPage() + $loop->iteration }}
+                                    </span>
+                                </div>
+
+                                {{-- Métadonnées (Manager & Dates) --}}
+                                <div class="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-dashed border-gray-100 text-xs">
+                                    <div class="space-y-1">
+                                        <span class="text-gray-400 block font-medium uppercase tracking-wider">Manager</span>
+                                        <span class="font-semibold text-gray-800 flex items-center gap-1">
+                                            <i class="las la-user text-sm text-gray-400"></i>
+                                            {{ $project->manager ? $project->manager->first_name . ' ' . $project->manager->name : 'Non assigné' }}
+                                        </span>
+                                    </div>
+                                    <div class="space-y-1">
+                                        <span class="text-gray-400 block font-medium uppercase tracking-wider">Période</span>
+                                        <span class="font-medium text-gray-700 flex items-center gap-1">
+                                            <i class="las la-calendar text-sm text-gray-400"></i>
+                                            {{ $project->start_date ? \Carbon\Carbon::parse($project->start_date)->format('d/m/Y') : '??' }}
+                                            →
+                                            {{ $project->end_date ? \Carbon\Carbon::parse($project->end_date)->format('d/m/Y') : '??' }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Description du projet --}}
+                            <div class="px-6 bg-white border-b border-gray-50 text-sm text-gray-500 line-clamp-2 leading-relaxed min-h-[2.5rem]" title="{{ $project->description }}">
+                                {{ $project->description ?? 'Aucune description disponible pour ce sous-projet.' }}
+                            </div>
+
+                            {{-- 2. EN BAS : Liste des Sous-Projets (Lots) liés --}}
+                            <div class="flex-1 p-6 bg-gray-50/50">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                                        <i class="las la-cubes text-sm"></i> Sous-projets associés
+                                    </h3>
+                                    <span class="bg-gray-200 text-gray-700 text-xs font-bold px-2 py-0.5 rounded-full">
+                                        {{ $project->subProjects->count() }}
+                                    </span>
+                                </div>
+
+                                @if($project->subProjects->isNotEmpty())
+                                    <div class="space-y-2 max-h-40 overflow-y-auto pr-1">
+                                        @foreach($project->subProjects as $subProject)
+                                            <div class="flex items-center justify-between p-2.5 bg-white border border-gray-100 rounded-xl shadow-xs">
+                                                <div class="min-w-0 flex-1 pr-2">
+                                                    <h4 class="text-sm font-semibold text-gray-800 truncate">{{ $subProject->name }}</h4>
+                                                    <p class="text-xs text-gray-500 truncate mt-0.5">{{ $subProject->description }}</p>
+                                                </div>
+                                                <span class="shrink-0 text-xs font-medium px-2 py-0.5 rounded-md {{ $subProject->status === 'complete' ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700' }}">
+                                                    {{ $subProject->status }}
+                                                </span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <div class="flex flex-col items-center justify-center py-6 border border-dashed border-gray-200 rounded-xl bg-white/50">
+                                        <i class="las la-folder-open text-gray-300 text-2xl mb-1"></i>
+                                        <p class="text-xs text-gray-400 font-medium">Aucun sous-projet pour le moment</p>
+                                    </div>
+                                @endif
+                            </div>
+
+                            {{-- 3. PARTIE : Nombre des personnels Attribués --}}
+                            <div class="flex-1 p-4 bg-blue-50/50">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                                        <i class="las la-users text-sm"></i> Personnels attribués
+                                    </h3>
+                                    <span class="bg-gray-200 text-gray-700 text-xs font-bold px-2 py-0.5 rounded-full">
+                                        {{ $project->users->count() }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {{-- 4. PIED DE PAGE : Boutons d'actions du Projet --}}
+                            <div class="p-4 bg-white border-t border-gray-50 rounded-b-2xl flex items-center justify-end gap-2">
+                                <a
+                                    href="{{ route('projects.subprojects', ['projectId' => $project->id]) }}"
+                                    wire:navigate
+                                    class="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium rounded-xl border border-gray-200 bg-green text-gray-700 hover:text-blue-600 hover:bg-blue-50/50 hover:border-blue-100 transition shadow-xs mr-auto"
+                                    title="Gérer les sous-projets">
+                                    <i class="las la-folder-plus text-base"></i>
+                                    <span>Sous-projet</span>
+                                </a>
+
+                                <x-ui.button variant="outline" size="sm" wire:click="edit({{ $project->id }})" title="Éditer le projet" class="!rounded-xl">
+                                    <i class="las la-edit text-base"></i>
+                                </x-ui.button>
+
+                                <x-ui.button variant="danger" size="sm" wire:click="confirmDelete({{ $project->id }})" title="Supprimer le projet" class="!rounded-xl">
+                                    <i class="las la-trash text-base"></i>
+                                </x-ui.button>
+                            </div>
+
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+
+            <div class="mt-5">
+                <x-ui.pagination :paginator="$projects" />
+            </div>
         @endif
     </div>
 

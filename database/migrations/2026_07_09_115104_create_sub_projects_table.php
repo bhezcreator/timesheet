@@ -24,9 +24,10 @@ return new class extends Migration
             $table->text('description')->nullable();
 
             $table->enum('status', [
-                'active',
-                'fermer'
-            ])->default('active');
+                'actif',
+                'fermer',
+                'brouillon'
+            ])->default('actif');
 
             $table->timestamps();
         });

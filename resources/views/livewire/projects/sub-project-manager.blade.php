@@ -2,9 +2,9 @@
     <x-slot name="header">
         <div class="flex flex-col gap-1">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Héritage du Projet : <span class="text-blue-600 font-bold">{{ $project->name }}</span>
+                <span class="text-blue-600 font-bold">{{ $project->name }}</span>
             </h2>
-            <p class="text-xs text-gray-500 font-mono">Code du Projet parent : {{ $project->code }}</p>
+            <p class="text-xs text-gray-500 font-mono">Code : {{ $project->code }}</p>
         </div>
     </x-slot>
 
@@ -55,66 +55,7 @@
         @endif
 
         <!-- Tableau principal ou État vide -->
-        @if($subProjects->count())
-            <x-ui.table :columns="['N°', 'Intitulé du Sous-Projet', 'Équipe affectée', 'Statut', 'Actions']">
-                <x-slot:header>
-                    <div class="flex justify-between items-center mb-4">
-                        <h1 class="text-2xl font-bold text-gray-900">Sous-projets configurés</h1>
-                        <x-ui.button wire:click="openModal">
-                            <i class="las la-plus mr-1"></i> Nouveau sous-projet
-                        </x-ui.button>
-                    </div>
-                    <x-ui.forms.input wire:model.live.debounce.300ms="search" placeholder="Filtrer les sous-projets par nom..." />
-                </x-slot:header>
-
-                <tbody>
-                    @foreach($subProjects as $sub)
-                        <tr class="hover:bg-gray-50 transition-colors" wire:key="subproject-row-{{ $sub->id }}">
-                            <td class="px-6 py-4 text-sm font-semibold text-gray-400">
-                                {{ ($subProjects->currentPage() - 1) * $subProjects->perPage() + $loop->iteration }}
-                            </td>
-                            <td class="px-6 py-4 text-sm font-bold text-gray-900">
-                                {{ $sub->name }}
-                            </td>
-                            <td class="px-6 py-4 text-sm max-w-md">
-                                <div class="flex flex-wrap gap-1">
-                                    @forelse($sub->users as $u)
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded bg-gray-100 text-gray-800 text-xs font-medium border border-gray-200">
-                                            <i class="las la-user mr-1 text-gray-400"></i>{{ $u->first_name }} {{ $u->name }}
-                                        </span>
-                                    @empty
-                                        <span class="text-xs text-gray-400 italic">Aucun membre assigné</span>
-                                    @endforelse
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 text-sm">
-                                @if($sub->status === 'complete')
-                                    <x-ui.badge variant="success">Complété</x-ui.badge>
-                                @elseif($sub->status === 'active')
-                                    <x-ui.badge variant="info">Actif</x-ui.badge>
-                                @elseif($sub->status === 'annuler')
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Annulé</span>
-                                @else
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Brouillon</span>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 text-sm space-x-1 whitespace-nowrap text-right">
-                                <x-ui.button variant="outline" wire:click="edit({{ $sub->id }})" title="Modifier le sous-projet">
-                                    <i class="las la-edit"></i>
-                                </x-ui.button>
-                                <x-ui.button variant="danger" wire:click="confirmDelete({{ $sub->id }})" title="Supprimer le sous-projet">
-                                    <i class="las la-trash"></i>
-                                </x-ui.button>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </x-ui.table>
-
-            <div class="mt-5">
-                <x-ui.pagination :paginator="$subProjects" />
-            </div>
-        @else
+        @if(!$subProjects->count() And empty($search))
             <x-ui.empty-state title="Aucun sous-projet" description="Divisez ce projet principal en plusieurs lots technologiques ou opérationnels." icon="las la-folder">
                 <x-slot:action>
                     <x-ui.button wire:click="openModal">
@@ -122,6 +63,96 @@
                     </x-ui.button>
                 </x-slot:action>
             </x-ui.empty-state>
+        @else
+            <div>
+                {{-- Zone En-tête : Titre, Action d'ajout et Barre de recherche --}}
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Sous-projets configurés</h1>
+                        <p class="text-sm text-gray-500 mt-0.5">Suivi en direct des lots et des équipes assignées.</p>
+                    </div>
+                    <x-ui.button wire:click="openModal" class="shrink-0 shadow-sm">
+                        <i class="las la-plus mr-1.5 text-base"></i> Nouveau sous-projet
+                    </x-ui.button>
+                </div>
+
+                <div class="mb-6">
+                    <x-ui.forms.input wire:model.live.debounce.300ms="search" placeholder="Filtrer les sous-projets par nom..." />
+                </div>
+
+                {{-- Grille responsive de cartes --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    @foreach($subProjects as $sub)
+                        <div class="flex flex-col justify-between bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200/80 transition-all duration-200 p-5" wire:key="subproject-card-{{ $sub->id }}">
+
+                            {{-- Partie haute de la carte --}}
+                            <div class="space-y-4">
+                                {{-- Index discret et Statut --}}
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold text-gray-300 bg-gray-50 px-2 py-1 rounded-lg">
+                                        N° {{ ($subProjects->currentPage() - 1) * $subProjects->perPage() + $loop->iteration }}
+                                    </span>
+
+                                    <div>
+                                        @if($sub->status === 'actif')
+                                            <x-ui.badge variant="success">Actif</x-ui.badge>
+                                        @elseif($sub->status === 'annuler')
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-100">Annulé</span>
+                                        @else
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-50 text-gray-600 border border-gray-100">Brouillon</span>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                {{-- Titre du sous-projet --}}
+                                <div>
+                                    <h3 class="text-base font-bold text-gray-900 tracking-tight line-clamp-2 min-h-[3rem]" title="{{ $sub->name }}">
+                                        {{ $sub->name }}
+                                    </h3>
+                                </div>
+
+                                {{-- Description du sous-projet --}}
+                                <div class="mt-2 text-sm text-gray-500 line-clamp-2 leading-relaxed min-h-[2.5rem]" title="{{ $sub->description }}">
+                                    {{ $sub->description ?? 'Aucune description disponible pour ce sous-projet.' }}
+                                </div>
+
+                                {{-- Zone Équipe affectée --}}
+                                <div class="pt-3 border-t border-gray-50">
+                                    <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-2">Équipe affectée</span>
+                                    <div class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1">
+                                        @forelse($sub->users as $u)
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-xl bg-gray-50 border border-gray-200/60 text-gray-700 text-xs font-medium transition-colors hover:bg-gray-100">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1.5"></span>
+                                                {{ $u->first_name }} {{ $u->name }}
+                                            </span>
+                                        @empty
+                                            <span class="text-xs text-gray-400 italic flex items-center gap-1">
+                                                <i class="las la-user-slash text-sm"></i> Aucun membre assigné
+                                            </span>
+                                        @endforelse
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Partie basse : Boutons d'actions --}}
+                            <div class="mt-5 pt-4 border-t border-gray-50 flex items-center justify-end gap-2">
+                                <x-ui.button variant="outline" size="sm" wire:click="edit({{ $sub->id }})" title="Modifier le sous-projet" class="!rounded-xl flex-1 justify-center md:flex-none">
+                                    <i class="las la-edit text-base"></i> <span class="md:hidden ml-1">Modifier</span>
+                                </x-ui.button>
+
+                                <x-ui.button variant="danger" size="sm" wire:click="confirmDelete({{ $sub->id }})" title="Supprimer le sous-projet" class="!rounded-xl flex-1 justify-center md:flex-none">
+                                    <i class="las la-trash text-base"></i> <span class="md:hidden ml-1">Supprimer</span>
+                                </x-ui.button>
+                            </div>
+
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+
+            <div class="mt-5">
+                <x-ui.pagination :paginator="$subProjects" />
+            </div>
         @endif
     </div>
 
@@ -134,14 +165,14 @@
                 </div>
                 <x-ui.forms.select
                     name="status"
+                    wire:model="status"
                     label="Statut Opérationnel"
                     :selected="$status"
                     required
                     :options="[
                         ['value' => 'brouillon', 'label' => 'Brouillon', 'icon' => 'las la-edit', 'description' => 'En cours de réflexion'],
-                        ['value' => 'active', 'label' => 'Actif', 'icon' => 'las la-play-circle', 'description' => 'Lot en cours de production'],
+                        ['value' => 'actif', 'label' => 'Actif', 'icon' => 'las la-play-circle', 'description' => 'Lot en cours de production'],
                         ['value' => 'annuler', 'label' => 'Annulé', 'icon' => 'las la-ban', 'description' => 'Lot suspendu définitivement'],
-                        ['value' => 'complete', 'label' => 'Complété', 'icon' => 'las la-check-circle', 'description' => 'Livrables validés et clos']
                     ]"
                 />
             </div>
@@ -149,40 +180,13 @@
             <!-- Description Auto-ajustable -->
             <x-ui.forms.textarea
                 name="description"
-                label="Description &amp; Périmètre"
+                label="Description"
                 wire:model="description"
                 rows="3"
                 placeholder="Spécifiez les objectifs ou les jalons de ce sous-projet..."
                 helper="S'ouvre et s'ajuste dynamiquement en fonction du volume d'informations écrit."
                 maxlength="1000"
             />
-
-            <!-- GRILLE DE LIAISON : Affectation des collaborateurs au sous-projet (Table sub_project_user) -->
-            <div class="border-t border-gray-100 pt-4">
-                <h4 class="text-sm font-bold text-gray-800 mb-3 flex items-center gap-1 select-none">
-                    <i class="las la-users text-lg text-gray-500"></i> Équipe assignée à ce sous-projet (Table de liaison)
-                </h4>
-                @if($allUsers->count())
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 max-h-40 overflow-y-auto p-1 bg-gray-50 rounded-xl border border-gray-200/50">
-                        @foreach($allUsers as $user)
-                            <label class="relative flex items-start p-3 rounded-lg border border-gray-200 bg-white hover:bg-blue-50/30 transition cursor-pointer select-none" wire:key="user-choice-{{ $user->id }}">
-                                <div class="flex h-5 items-center">
-                                    <input type="checkbox" value="{{ $user->id }}" wire:model="assignedUsers" id="user-cb-{{ $user->id }}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
-                                </div>
-                                <div class="ml-3 text-xs">
-                                    <span class="font-semibold text-gray-700 block">{{ $user->first_name }} {{ $user->name }}</span>
-                                    <span class="text-gray-400 font-normal">{{ $user->job_title }}</span>
-                                </div>
-                            </label>
-                        @endforeach
-                    </div>
-                @else
-                    <p class="text-xs text-yellow-600 bg-yellow-50 p-3 rounded-lg border border-yellow-100">
-                        ⚠️ Aucun agent actif n'est configuré dans le système pour composer l'équipe.
-                    </p>
-                @endif
-                <x-ui.forms.error name="assignedUsers" />
-            </div>
         </div>
 
         <!-- Boutons de validation de la modale -->
@@ -205,7 +209,9 @@
             <i class="las la-exclamation-triangle text-red-500 text-5xl block mb-3 animate-pulse"></i>
             <h3 class="text-lg font-bold text-gray-800 mb-1">Supprimer le sous-projet ?</h3>
             <p class="text-sm text-gray-500 px-2">
-                Voulez-vous supprimer définitivement la fiche <span class="font-bold text-gray-900">"{{ $deleteName }}"</span> ? Les relations d'équipe de ce lot technique seront rompues.
+                Voulez-vous supprimer définitivement ce sous-projet <span class="font-bold text-gray-900">"{{ $deleteName }}"</span> ?
+                <br><br>
+                Les relations d'équipe de ce lot technique seront rompues.
             </p>
         </div>
         <x-slot:footer>
@@ -214,7 +220,15 @@
                     Annuler
                 </x-ui.button>
                 <x-ui.button variant="danger" wire:click="delete({{ $deleteId ?? 0 }})" wire:loading.attr="disabled">
-                    Confirmer
+                    <span wire:loading.remove>
+                        <i class="las la-trash"></i>
+                        Confirmer la suppression
+                    </span>
+
+                    <span wire:loading class="flex items-center gap-2">
+                        <x-ui.spinner size="sm" color="white"/>
+                        Suppression...
+                    </span>
                 </x-ui.button>
             </div>
         </x-slot:footer>

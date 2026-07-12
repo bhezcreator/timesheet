@@ -29,7 +29,15 @@
         @endif
 
         <!-- Liste des données ou État vide -->
-        @if($permissions->count())
+        @if(!$permissions->count() And empty($search))
+            <x-ui.empty-state title="Aucune permission" description="Créez votre première permission." icon="las la-key">
+                <x-slot:action>
+                    <x-ui.button wire:click="openModal">
+                        <i class="las la-plus mr-1"></i> Créer
+                    </x-ui.button>
+                </x-slot:action>
+            </x-ui.empty-state>
+        @else
             <x-ui.table :columns="['N°', 'Nom', 'Type d\'accès', 'Créée le', 'Actions']">
                 <x-slot:header>
                     <!-- En-tête de section -->
@@ -80,14 +88,6 @@
             <div class="mt-5">
                 <x-ui.pagination :paginator="$permissions" />
             </div>
-        @else
-            <x-ui.empty-state title="Aucune permission" description="Créez votre première permission." icon="las la-key">
-                <x-slot:action>
-                    <x-ui.button wire:click="openModal">
-                        <i class="las la-plus mr-1"></i> Créer
-                    </x-ui.button>
-                </x-slot:action>
-            </x-ui.empty-state>
         @endif
     </div>
 

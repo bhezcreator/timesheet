@@ -3,21 +3,21 @@
         <!-- Version Mobile -->
         <div class="flex justify-between items-center w-full sm:hidden gap-3">
             @if($paginator->onFirstPage())
-                <span class="px-4 py-2 text-sm text-gray-400 border border-gray-200 bg-gray-50 rounded-lg cursor-not-allowed select-none">
+                <span class="px-4 py-2 text-sm text-gray-400 border border-gray-200 cursor-pointer bg-gray-50 rounded-lg cursor-not-allowed select-none">
                     Précédent
                 </span>
             @else
-                <button type="button" wire:click="previousPage" wire:loading.attr="disabled" class="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition duration-150">
+                <button type="button" wire:click="previousPage" wire:loading.attr="disabled" class="px-4 py-2 text-sm text-gray-700 cursor-pointer border border-gray-300 rounded-lg hover:bg-gray-50 transition duration-150">
                     Précédent
                 </button>
             @endif
 
             @if($paginator->hasMorePages())
-                <button type="button" wire:click="nextPage" wire:loading.attr="disabled" class="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition duration-150">
+                <button type="button" wire:click="nextPage" wire:loading.attr="disabled" class="px-4 py-2 text-sm text-gray-700 cursor-pointer border border-gray-300 rounded-lg hover:bg-gray-50 transition duration-150">
                     Suivant
                 </button>
             @else
-                <span class="px-4 py-2 text-sm text-gray-400 border border-gray-200 bg-gray-50 rounded-lg cursor-not-allowed select-none">
+                <span class="px-4 py-2 text-sm text-gray-400 cursor-pointer border border-gray-200 bg-gray-50 rounded-lg cursor-not-allowed select-none">
                     Suivant
                 </span>
             @endif
@@ -52,11 +52,11 @@
                     @if (is_array($element))
                         @foreach ($element as $page => $url)
                             @if ($page == $paginator->currentPage())
-                                <span class="px-3 py-2 text-sm font-semibold rounded-lg bg-blue-600 text-white shadow-sm select-none">
+                                <span class="px-3 py-2 text-sm font-semibold cursor-pointer rounded-lg bg-blue-600 text-white shadow-sm select-none">
                                     {{ $page }}
                                 </span>
                             @else
-                                <button type="button" wire:click="gotoPage({{ $page }})" wire:loading.attr="disabled" class="px-3 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition duration-150">
+                                <button type="button" wire:click="gotoPage({{ $page }})" wire:loading.attr="disabled" class="px-3 py-2 text-sm text-gray-700 cursor-pointer border border-gray-300 rounded-lg hover:bg-gray-50 transition duration-150">
                                     {{ $page }}
                                 </button>
                             @endif

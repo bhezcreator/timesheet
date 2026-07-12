@@ -75,14 +75,14 @@ class Index extends Component
         $searchTerm = '%' . str_replace(['%', '_'], ['\%', '\_'], $this->search) . '%';
 
         $projects = Project::query()
-            ->with('manager') // Évite le problème des requêtes N+1
+            ->with(['manager', 'subProjects', 'users']) // Évite le problème des requêtes N+1
             ->where(function ($query) use ($searchTerm) {
                 $query->where('name', 'like', $searchTerm)
                     ->orWhere('code', 'like', $searchTerm)
                     ->orWhere('status', 'like', $searchTerm);
             })
             ->latest()
-            ->paginate(10);
+            ->paginate(2);
 
         // Liste des gestionnaires actifs pour alimenter le sélecteur personnalisé
         $managers = User::query()

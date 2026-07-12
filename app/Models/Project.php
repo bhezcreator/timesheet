@@ -21,11 +21,6 @@ class Project extends Model
         return $this->belongsTo(User::class, 'manager_id');
     }
 
-    /*     public function users()
-    {
-        return $this->belongsToMany(User::class);
-    } */
-
     public function users()
     {
         return $this->belongsToMany(User::class)

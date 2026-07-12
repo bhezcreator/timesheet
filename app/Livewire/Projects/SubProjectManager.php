@@ -24,7 +24,6 @@ class SubProjectManager extends Component
     public string $name = '';
     public string $description = '';
     public string $status = 'brouillon';
-    public array $assignedUsers = []; // Stocke les IDs des utilisateurs cochés (table de liaison)
 
     public ?int $subProjectId = null;
     public bool $isOpen = false;
@@ -56,9 +55,7 @@ class SubProjectManager extends Component
         return [
             'name'          => ['required', 'string', 'max:255'],
             'description'   => ['nullable', 'string', 'max:1000'],
-            'status'        => ['required', 'string', 'in:brouillon,active,annuler,complete'],
-            'assignedUsers' => ['nullable', 'array'],
-            'assignedUsers.*' => ['integer', 'exists:users,id'],
+            'status'        => ['required', 'string', 'in:brouillon,actif,annuler'],
         ];
     }
 
@@ -90,12 +87,8 @@ class SubProjectManager extends Component
             ->latest()
             ->paginate(10);
 
-        // Liste de tous les utilisateurs actifs pour la table de liaison sub_project_user
-        $allUsers = User::query()->where('is_active', true)->orderBy('name')->get();
-
         return view('livewire.projects.sub-project-manager', [
             'subProjects' => $subProjects,
-            'allUsers'    => $allUsers,
         ]);
     }
 
@@ -119,9 +112,6 @@ class SubProjectManager extends Component
         $this->description = $subProject->description ?? '';
         $this->status = $subProject->status;
 
-        // Extraction des IDs de la table de liaison sub_project_user
-        $this->assignedUsers = $subProject->users->pluck('id')->map(fn($uid) => (string)$uid)->toArray();
-
         $this->isOpen = true;
         $this->dispatch('open-modal', id: 'sub-project-modal');
     }
@@ -140,10 +130,7 @@ class SubProjectManager extends Component
                 'status'      => $this->status,
             ]);
 
-            // Synchronisation de la table de liaison (Many-to-Many) sub_project_user
-            $subProject->users()->sync($this->assignedUsers);
-
-            session()->flash('success', 'Sous-projet et équipe mis à jour avec succès.');
+            session()->flash('success', 'Sous-projet mis à jour avec succès.');
         } else {
             $this->checkPermissionOrFail("projets.creer");
             $this->validate();
@@ -155,10 +142,7 @@ class SubProjectManager extends Component
                 'status'      => $this->status,
             ]);
 
-            // Remplissage de la table de liaison pour le nouveau sous-projet
-            $subProject->users()->sync($this->assignedUsers);
-
-            session()->flash('success', 'Sous-projet créé et équipe affectée avec succès.');
+            session()->flash('success', 'Sous-projet créé avec succès.');
         }
 
         $this->closeModal();
@@ -203,7 +187,8 @@ class SubProjectManager extends Component
 
     private function resetForm()
     {
-        $this->reset(['name', 'description', 'status', 'assignedUsers', 'subProjectId']);
+        $this->reset(['name', 'description', 'status']);
         $this->resetValidation();
+        $this->resetPage();
     }
 }
