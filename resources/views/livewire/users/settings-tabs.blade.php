@@ -70,19 +70,20 @@
             </div>
         @endif
 
-                {{-- Contenu : Type activité --}}
+        {{-- Contenu : Type activité --}}
         @if($activeTab === 'type')
             <div class="space-y-4 animate-fade-in" wire:key="tab-content-security">
                 @livewire('activity-types.index')
             </div>
         @endif
 
-                {{-- Contenu : Paramètres généraux --}}
+        {{-- Contenu : Paramètres généraux --}}
         @if($activeTab === 'general')
             <div class="space-y-4 animate-fade-in" wire:key="tab-content-general">
                 <h2 class="text-lg font-bold text-gray-900">Paramètres généraux</h2>
-                <p class="text-sm text-gray-500">Configurez les options système et d'administration de votre espace de travail.</p>
+                <p class="text-sm text-gray-500">Configurez les options système et d'administration.</p>
                 {{-- Insérez vos formulaires généraux ici --}}
+                @livewire('users.settings')
             </div>
         @endif
     </div>

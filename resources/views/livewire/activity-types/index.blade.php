@@ -127,7 +127,7 @@
     </div>
 
     <!-- Modale A : Création et Modification -->
-    <x-ui.modal-one id="activity-type-modal" title="{{ $activityTypeId ? 'Modifier le type d\'activité' : 'Ajouter un nouveau type d\'activité' }}" size="xl">
+    <x-ui.modal-one id="activity-type-modal" title="{{ $activityTypeId ? 'Modifier le type activité' : 'Ajouter un nouveau type activité' }}" size="xl">
         <form wire:submit.prevent="save" class="space-y-6">
             <!-- Nom -->
             <x-ui.forms.input

@@ -44,7 +44,8 @@ class Index extends Component
                 'string',
                 'max:255',
                 'unique:activity_types,name,' . $this->activityTypeId,
-                'regex:/^[a-z0-9\-\._ ]+$/i'
+                // Ajout des caractères accentués français (éèàùçâêîôûëïüÉÈÀÇ...)
+                "regex:/^[a-z0-9\-\._ a-z0-9àâäéèêëîïôöùûüç'&(),;.ÂÆÇÈÉÊËÎÏÔŒÙÛÜ]+$/i"
             ],
             'description' => ['nullable', 'string', 'max:500'],
             'color' => ['required', 'string', 'regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/'], // Validation code HEX

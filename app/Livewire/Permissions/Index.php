@@ -77,7 +77,7 @@ class Index extends Component
 
     public function openModal()
     {
-        $this->checkPermissionOrFail("manager-permission");
+        // $this->checkPermissionOrFail("manager-permission");
         $this->resetForm();
         $this->isOpen = true;
         $this->dispatch('open-modal', id: 'permission-modal');

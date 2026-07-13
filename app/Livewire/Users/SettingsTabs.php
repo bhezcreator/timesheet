@@ -16,7 +16,7 @@ class SettingsTabs extends Component
     // Liste des onglets disponibles
     public array $tabs = [
         'profile'  => ['label' => 'Profil', 'icon' => 'la-user-tie'],
-        'capture' => ['label' => 'Capture', 'icon' => 'la-camera'],
+        'capture' => ['label' => 'Signature', 'icon' => 'la-camera'],
         'type'  => ['label' => 'Type activité', 'icon' => 'la-tags'],
         'general'  => ['label' => 'Paramètres généraux', 'icon' => 'la-sliders-h'],
     ];
