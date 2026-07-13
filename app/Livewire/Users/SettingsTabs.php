@@ -3,19 +3,21 @@
 namespace App\Livewire\Users;
 
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Url; // 1. IMPORTATION INDISPENSABLE
 use Livewire\Component;
 
 #[Layout('layouts.app')]
 class SettingsTabs extends Component
 {
-    // Onglet actif par défaut
-    public string $activeTab = 'general';
+    // 2. AJOUT DE L'ATTRIBUT POUR PERSISTER LA DONNÉE DANS L'URL
+    #[Url(as: 'tab', keep: true)]
+    public string $activeTab = 'profile';
 
     // Liste des onglets disponibles
     public array $tabs = [
-        'general'  => ['label' => 'Paramètres généraux', 'icon' => 'la-sliders-h'],
         'profile'  => ['label' => 'Profil', 'icon' => 'la-user-tie'],
-        'security' => ['label' => 'Sécurité', 'icon' => 'la-shield-alt'],
+        'capture' => ['label' => 'Capture', 'icon' => 'la-camera'],
+        'general'  => ['label' => 'Paramètres généraux', 'icon' => 'la-sliders-h'],
     ];
 
     public function changeTab(string $tabName)

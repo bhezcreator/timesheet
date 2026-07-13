@@ -13,13 +13,6 @@
             </x-ui.alert>
         @endif
 
-        <!-- Traitement exclusif des erreurs d'autorisation -->
-{{--         @error('permission')
-            <x-ui.alert type="error" class="mb-4 mt-8">
-                {{ $message }}
-            </x-ui.alert>
-        @enderror --}}
-
         <!-- Liste récapitulative des alertes de saisie -->
         @if($errors->any())
             <x-ui.alert type="error" class="mb-4 mt-8">

@@ -27,6 +27,7 @@ Route::middleware(['auth'])
 
         Route::get('/permissions', PermissionIndex::class)
             ->name('permissions.index');
+
         Route::get('/roles', RolesIndex::class)
             ->name('roles.index');
 

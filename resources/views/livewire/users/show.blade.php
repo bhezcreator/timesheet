@@ -7,7 +7,8 @@
 
     {{-- Bouton Retour --}}
     <div class="flex items-center justify-between mb-3 p-0">
-        <a href="{{ route('users.index') }}" wire:navigate class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-indigo-600 transition-colors font-medium">
+        <a href="{{ url()->previous() }}"
+            wire:navigate class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-indigo-600 transition-colors font-medium">
             <i class="las la-arrow-left text-base"></i> Retour à la liste
         </a>
         <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold {{ $user->is_active ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-red-50 text-red-700 border border-red-100' }}">
