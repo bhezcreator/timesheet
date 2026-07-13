@@ -70,6 +70,13 @@
             </div>
         @endif
 
+                {{-- Contenu : Type activité --}}
+        @if($activeTab === 'type')
+            <div class="space-y-4 animate-fade-in" wire:key="tab-content-security">
+                @livewire('activity-types.index')
+            </div>
+        @endif
+
                 {{-- Contenu : Paramètres généraux --}}
         @if($activeTab === 'general')
             <div class="space-y-4 animate-fade-in" wire:key="tab-content-general">
