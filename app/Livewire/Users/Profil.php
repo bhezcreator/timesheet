@@ -45,8 +45,8 @@ class Profil extends Component
         $this->job_title = $this->user->job_title ?? '';
         $this->email = $this->user->email ?? '';
 
-        $this->notification_database = $user->settings['notifications']['database'] ?? false;
-        $this->notification_email = $user->settings['notifications']['email'] ?? false;
+        $this->notification_database = $this->user->settings['notifications']['database'] ?? false;
+        $this->notification_email = $this->user->settings['notifications']['email'] ?? false;
     }
 
     protected function rules(): array
@@ -76,8 +76,8 @@ class Profil extends Component
             'email'      => trim($this->email),
             'settings' => [
                 'notifications' => [
-                    'database' => $this->notification_database,
-                    'email' => $this->notification_email,
+                    'database' => $this->notification_database ?: false,
+                    'email' => $this->notification_email ?: false,
                 ]
             ]
         ];
@@ -95,7 +95,6 @@ class Profil extends Component
 
         $this->user->update($data);
 
-        dd($this->notification_database, $this->notification_email);
         // Réinitialisation des champs sensibles de mot de passe
         $this->reset(['password', 'password_confirmation', 'photo']);
 

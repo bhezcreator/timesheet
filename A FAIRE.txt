@@ -81,12 +81,12 @@ resources/
         Gestion de la photo Ok
         Gestion de la signature numérique OK
         Gestion des permissions (Admin, Superviseur, Agent...) OK
-        Gestion de recevoir des notifications(BDD, email) : création d'une colonne setting en JSON
+        Gestion de recevoir des notifications(BDD, email) : création d'une colonne setting en JSON Ok
 
     - Projet :
         Créer un projet OK
         Modifier un projet OK
-        Clôturer un projet
+        Clôturer un projet OK
         Désigner un responsable OK
         Définir une période d'exécution OK
         Ajout de la page Show :
@@ -111,15 +111,15 @@ resources/
         Désactiver un type OK
         Définir une couleur OK
 
-    - Journée verouillée : OK
-        Ajouter
-        Modifier
-        Supprimer
-        Création un Service de gestion de ca(test si la journée est verouillée)
+    - Journée verouillée :
+        Ajouter OK
+        Modifier OK
+        Supprimer OK
+        Création un Service de gestion de ca(test si la journée est verouillée) OK
 
     - Paramètres généraux :
-        Ajouter
-        Modifier
+        Ajouter OK
+        Modifier OK
         Création Service de gestion de paramètres(met en place un système de test)
 
     - Activité :
