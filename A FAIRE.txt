@@ -78,9 +78,10 @@ resources/
         Affectation d'un superviseur OK
         Création des roles OK
         Attribution des rôles OK
-        Gestion de la photo
-        Gestion de la signature numérique
+        Gestion de la photo Ok
+        Gestion de la signature numérique OK
         Gestion des permissions (Admin, Superviseur, Agent...) OK
+        Gestion de recevoir des notifications(BDD, email) : création d'une colonne setting en JSON
 
     - Projet :
         Créer un projet OK
@@ -88,38 +89,59 @@ resources/
         Clôturer un projet
         Désigner un responsable OK
         Définir une période d'exécution OK
-        Affecter plusieurs agents
-        Consulter les statistiques du projet
+        Ajout de la page Show :
+            Consulter les statistiques du projet(Mini tableau de bord)
+            Télécharger les stats projet
 
     - Sous projet :
         Créer un sous-projet OK
         Modifier un sous-projet OK
         Associer un sous-projet à un projet OK
-        Affecter des agents
-        Consulter les activités du sous-projet
+        Page Show(mini tableau de bord) :
+            Consulter les activités du sous-projet
 
     - Agent(User) :
-        Affecter un utilisateur à un projet
-        Retirer un utilisateur
-        Définir son rôle dans le projet
-        Affecter un utilisateur à un sous-projet
+        Affecter un utilisateur à un ou plusieurs projet OK
+        Retirer un utilisateur OK
+        Définir son rôle dans le projet OK
+        Affecter un utilisateur à un sous-projet OK
 
     - Type Activité :
-        Créer un type
-        Modifier un type
-        Désactiver un type
-        Définir une couleur
+        Créer un type OK
+        Modifier un type OK
+        Désactiver un type OK
+        Définir une couleur OK
+
+    - Journée verouillée :
+        Ajouter
+        Modifier
+        Supprimer
+        Création un Service de gestion de ca(test si la journée est verouillée)
+
+    - Paramètres généraux :
+        Ajouter
+        Modifier
+        Création Service de gestion de paramètres(met en place un système de test)
 
     - Activité :
-        Ajouter une activité
+        Ajouter la colonne titre
+        Ajouter une activité :
+            titre
+            Choisir le projet
+            Choisir le sous-projet
+            Choisir le type
+            date
+            Indiquer la durée(heure début et fin)
+            Décrire le travail effectué
+            status
+            Show %(evolution en heure normal et heure supplémentaire)
+            Soumettre ses activités
+        Interfaces :
+            index(liste des activités: filtre(mois, année, titre, ...) et btns actions)
+            update(Ajouter ou modifier(ID_activite))
+
         Modifier une activité
         Supprimer une activité (avant validation)
-        Choisir le projet
-        Choisir le sous-projet
-        Choisir le type
-        Indiquer la durée
-        Décrire le travail effectué
-        Soumettre ses activités
 
     - Rapport :
         Générer son rapport du mois
@@ -150,12 +172,14 @@ resources/
         Empêcher la modification des activités après la clôture.
 
     - Notifications :
+        npm install laravel-echo
         Notification automatique lorsqu'un :
             rapport est soumis
             rapport est validé
             rapport est rejeté
             nouvelle affectation est réalisée
             période est clôturée
+        Création des Jobs(pour envoie auto des notifications)
 
     - Tableau de bord(Pour l'agent) :
         activités du jour
@@ -179,5 +203,9 @@ resources/
         statistiques globales
 
 - Test pour chaque étape
+- Création des Services(Amélioré les codes)
+- Création des Files d'attente
+- Ajout ActivityLogs
 - Amélioration des codes(design + sécurité)
--
+- Création API
+- Création App. Desktop et Mobile

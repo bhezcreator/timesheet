@@ -6,7 +6,7 @@
     </x-slot>
     {{-- En-tête de la page --}}
     <div>
-        <h1 class="text-2xl font-700 text-gray-900 tracking-tight">Paramètres</h1>
+        {{-- <h1 class="text-2xl font-700 text-gray-900 tracking-tight">Paramètres</h1> --}}
         <p class="text-sm text-gray-500 mt-0.5">Gérez vos informations personnelles, la sécurité de vos accès et vos préférences.</p>
     </div>
 
@@ -63,10 +63,17 @@
             </div>
         @endif
 
-        {{-- Contenu : Sécurité --}}
-        @if($activeTab === 'capture')
+        {{-- Contenu : signature --}}
+        @if($activeTab === 'signature')
             <div class="space-y-4 animate-fade-in" wire:key="tab-content-security">
                 @livewire('users.signature-capture')
+            </div>
+        @endif
+
+        {{-- Contenu : Jour bloqué --}}
+        @if($activeTab === 'blockedDay')
+            <div class="space-y-4 animate-fade-in" wire:key="tab-content-security">
+                @livewire('users.blocked-day-index')
             </div>
         @endif
 
