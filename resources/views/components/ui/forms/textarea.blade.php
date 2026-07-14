@@ -37,7 +37,7 @@
 >
     <!-- Label avec astérisque de sécurité -->
     @if($label)
-        <label for="{{ $name }}" class="block text-sm font-semibold text-gray-700 select-none">
+        <label for="{{ $name }}" class="block text-sm font-semibold text-gray-500 select-none">
             {{ $label }}
             @if($required)
                 <span class="text-red-500 font-bold" title="Ce champ est obligatoire">*</span>

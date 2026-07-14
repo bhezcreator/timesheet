@@ -76,7 +76,7 @@
 >
     <!-- Label -->
     @if($label)
-        <label class="block mb-2 text-sm font-semibold text-gray-700">
+        <label class="block mb-2 text-sm font-semibold text-gray-500">
             {{ $label }}
             @if($required)
                 <span class="text-red-500 font-bold" title="Ce champ est obligatoire">*</span>

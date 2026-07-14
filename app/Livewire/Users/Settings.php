@@ -108,6 +108,7 @@ class Settings extends Component
             );
         }
 
+        app(\App\Services\AppSettingsService::class)->clearCache();
         session()->flash('success', 'Configurations globales mises à jour avec succès.');
     }
 

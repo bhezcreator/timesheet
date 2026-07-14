@@ -1,5 +1,7 @@
 ## Comment utiliser ce Service dans votre application
+
 Exemple 1 : Dans un composant Livewire (Saisie d'heures)
+
 use App\Services\TimesheetLockService;
 use Illuminate\Validation\ValidationException;
 
@@ -39,4 +41,200 @@ et
 ###########################################################################################
 ###########################################################################################
 
+## App\Services\AppSettingsService
 
+<?php
+
+namespace App\Livewire\Activities;
+
+use App\Services\AppSettingsService;
+use App\Services\TimesheetLockService; // Le service créé à l'étape précédente
+use Carbon\Carbon;
+use Illuminate\Validation\ValidationException;
+use Livewire\Component;
+
+class CreateRow extends Component
+{
+    public string $date = '';
+    public float $hours = 0.0;
+    public string $description = '';
+
+    /**
+     * Méthode de validation et d'enregistrement d'une ligne d'activité de feuille de temps.
+     */
+    public function saveActivity(AppSettingsService $settingsService, TimesheetLockService $lockService)
+    {
+        $carbonDate = Carbon::parse($this->date);
+
+        // 1. RÈGLE 1 : Validation de la description obligatoire selon les réglages
+        if ($settingsService->get('timesheet_require_description') && empty(trim($this->description))) {
+            throw ValidationException::withMessages([
+                'description' => ["Configuration système : Une description détaillée est obligatoire pour valider cette activité."]
+            ]);
+        }
+
+        // 2. RÈGLE 2 : Validation du plafond d'heures quotidiennes autorisées
+        $maxHoursAllowed = $settingsService->get('timesheet_max_hours_per_day', 8);
+        if ($this->hours > $maxHoursAllowed) {
+            throw ValidationException::withMessages([
+                'hours' => ["Action refusée : Le volume horaire soumis ({$this->hours}h) dépasse la limite maximale autorisée par jour ({$maxHoursAllowed}h)."]
+            ]);
+        }
+
+        // 3. RÈGLE 3 : Refus de la saisie le week-end si non configuré
+        $isWeekend = $carbonDate->isWeekend();
+        $allowWeekend = $settingsService->get('time_allow_weekend_logging');
+        if ($isWeekend && !$allowWeekend) {
+            throw ValidationException::withMessages([
+                'date' => ["Opération impossible : La saisie d'activités durant le week-end est désactivée pour cette organisation."]
+            ]);
+        }
+
+        // 4. RÈGLE 4 : Interdiction de saisie future si bloquée par les paramètres
+        $isFuture = $carbonDate->isFuture();
+        $allowFuture = $settingsService->get('timesheet_allow_future_logging');
+        if ($isFuture && !$allowFuture) {
+            throw ValidationException::withMessages([
+                'date' => ["Action non autorisée : Le système interdit la planification ou la saisie anticipée d'activités sur des dates futures."]
+            ]);
+        }
+
+        // 5. RÈGLE 5 : Couplage avec le service de Jours Bloqués/Fermetures Mensuelles
+        if ($lockService->isDateLocked($carbonDate)) {
+            throw ValidationException::withMessages([
+                'date' => ["Impossible de modifier : Cette période est définitivement close ou correspond à une journée verrouillée."]
+            ]);
+        }
+
+        // --- ENREGISTREMENT EN BASE DE DONNÉES SI TOUTES LES RÈGLES SONT VALIDES ---
+        // Activity::create([...]);
+
+        session()->flash('success', 'Activité enregistrée avec succès.');
+    }
+
+    public function render()
+    {
+        return view('livewire.activities.create-row');
+    }
+}
+
+
+###############################################################################
+###############################################################################
+
+## App\Services\CalendarBusinessService.php
+
+<?php
+
+namespace App\Services;
+
+use Carbon\Carbon;
+use Carbon\CarbonPeriod;
+
+class CalendarBusinessService
+{
+    /**
+     * Renvoie le nom du jour en français (minuscule) pour une date donnée.
+     * Ex: 'lundi', 'mardi'
+     */
+    public function getDayNameInFrench(string|Carbon $date): string
+    {
+        $carbonDate = $date instanceof Carbon ? $date : Carbon::parse($date);
+        return strtolower($carbonDate->locale('fr')->dayName);
+    }
+
+    /**
+     * Convertit une date pour renvoyer le mois en texte (première lettre majuscule) et l'année.
+     * Ex: ['mois' => 'Juillet', 'annee' => 2026]
+     */
+    public function getMonthAndYearInFrench(string|Carbon $date): array
+    {
+        $carbonDate = $date instanceof Carbon ? $date : Carbon::parse($date);
+        return [
+            'mois'  => ucfirst($carbonDate->locale('fr')->monthName),
+            'annee' => $carbonDate->year
+        ];
+    }
+
+    /**
+     * Renvoie le numéro du mois (01 à 12) à partir de son nom complet en français.
+     */
+    public function convertFrenchMonthNameToNumber(string $monthName): string
+    {
+        $months = [
+            'Janvier' => '01', 'Février' => '02', 'Mars' => '03', 'Avril' => '04',
+            'Mai' => '05', 'Juin' => '06', 'Juillet' => '07', 'Août' => '08',
+            'Septembre' => '09', 'Octobre' => '10', 'Novembre' => '11', 'Décembre' => '12'
+        ];
+
+        return $months[ucfirst(trim($monthName))] ?? '01';
+    }
+
+    /**
+     * Calcule le nombre total de jours ouvrés (hors Samedis et Dimanches) pour un mois et une année donnés.
+     */
+    public function getWorkingDaysCount(string|int $month, int $year): int
+    {
+        // Si le mois passé est textuel (ex: 'Juillet'), on le convertit en chiffre
+        $monthNumber = is_numeric($month) ? sprintf('%02d', $month) : $this->convertFrenchMonthNameToNumber($month);
+
+        $startOfMonth = Carbon::createFromDate($year, $monthNumber, 1)->startOfMonth();
+        $endOfMonth = $startOfMonth->copy()->endOfMonth();
+
+        // On utilise l'assistant de filtrage de Carbon pour exclure le week-end d'un seul coup
+        return (int) $startOfMonth->diffInDaysFiltered(function (Carbon $date) {
+            return !$date->isWeekend();
+        }, $endOfMonth) + 1; // +1 pour inclure le jour de fin inclusif
+    }
+
+    /**
+     * Renvoie la liste brute de toutes les dates (Y-m-d) ouvrées d'un mois (hors week-ends).
+     * @return array<string>
+     */
+    public function getWorkingDatesArray(string|int $month, int $year): array
+    {
+        $monthNumber = is_numeric($month) ? sprintf('%02d', $month) : $this->convertFrenchMonthNameToNumber($month);
+
+        $start = Carbon::createFromDate($year, $monthNumber, 1)->startOfMonth();
+        $end = $start->copy()->endOfMonth();
+
+        // Création d'une période Carbon
+        $period = CarbonPeriod::create($start, $end);
+        $workingDates = [];
+
+        foreach ($period as $date) {
+            if (!$date->isWeekend()) {
+                $workingDates[] = $date->format('Y-m-d');
+            }
+        }
+
+        return $workingDates;
+    }
+}
+
+
+## Comment l'intégrer
+
+use App\Services\CalendarBusinessService; // <-- Importation du nouveau service
+
+public function save(AppSettingsService $settingsService, TimesheetLockService $lockService, CalendarBusinessService $calendarService)
+{
+    $this->validate();
+    $carbonDate = Carbon::parse($this->activity_date);
+
+    // [VOTRE LOGIQUE DE VALIDATION EXISTANTE...]
+
+    // EXEMPLE 1 : Utilisation du service pour rejeter la saisie si la date n'est pas un jour ouvré théorique
+    $validWorkingDates = $calendarService->getWorkingDatesArray($carbonDate->month, $carbonDate->year);
+
+    if (!in_array($this->activity_date, $validWorkingDates)) {
+        throw ValidationException::withMessages([
+            'activity_date' => ["Erreur de calendrier : La date sélectionnée correspond à un jour non ouvré (Week-end)."]
+        ]);
+    }
+
+    // EXEMPLE 2 : Récupérer le nom du jour en français si vous voulez l'historiser ou l'afficher
+    $nomDuJour = $calendarService->getDayNameInFrench($this->activity_date); // ex: "mardi"
+
+    // [LOGIQUE D'ENREGISTREMENT ET REDIRECTION DE VOTRE COMPOSANT...]
+}

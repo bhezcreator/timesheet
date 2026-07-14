@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Activity extends Model
 {
     protected $fillable = [
+        'titre',
         'user_id',
         'project_id',
         'sub_project_id',

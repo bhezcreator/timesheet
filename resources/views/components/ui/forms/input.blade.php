@@ -8,7 +8,7 @@
 
 <div class="space-y-2">
     @if($label)
-        <label for="{{ $name }}" class="block text-sm font-medium text-gray-700">
+        <label for="{{ $name }}" class="block text-sm font-semibold text-gray-500">
             {{ $label }}
             @if($required)
                 <span class="text-red-500 font-bold" title="Ce champ est obligatoire">*</span>

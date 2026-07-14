@@ -123,7 +123,7 @@ resources/
         Création Service de gestion de paramètres(met en place un système de test)
 
     - Activité :
-        Ajouter la colonne titre
+        Ajouter la colonne titre OK
         Ajouter une activité :
             titre
             Choisir le projet
@@ -141,6 +141,13 @@ resources/
 
         Modifier une activité
         Supprimer une activité (avant validation)
+
+        Structure :
+            - récupérez les projets et sous projets liés à user en ligne ;
+            - appliquez les conditions via les paramètres généraux ;
+            - testez qu'il y a pas déjà l'activité du meme jour pour le projet indiquer ;
+            - testez si c'est le week-end(samedi et dimanche);
+            - bloquez les dates non autorisées par(getWorkingDatesArray(string|int $month, int $year)).
 
     - Rapport :
         Générer son rapport du mois
