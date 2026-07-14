@@ -90,15 +90,14 @@ resources/
         Désigner un responsable OK
         Définir une période d'exécution OK
         Ajout de la page Show :
-            Consulter les statistiques du projet(Mini tableau de bord)
+            Consulter les statistiques du projet(Mini tableau de bord) Ok
             Télécharger les stats projet
 
     - Sous projet :
         Créer un sous-projet OK
         Modifier un sous-projet OK
         Associer un sous-projet à un projet OK
-        Page Show(mini tableau de bord) :
-            Consulter les activités du sous-projet
+        Page Show(mini tableau de bord) : Ok
 
     - Agent(User) :
         Affecter un utilisateur à un ou plusieurs projet OK
@@ -112,7 +111,7 @@ resources/
         Désactiver un type OK
         Définir une couleur OK
 
-    - Journée verouillée :
+    - Journée verouillée : OK
         Ajouter
         Modifier
         Supprimer

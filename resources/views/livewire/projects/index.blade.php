@@ -163,20 +163,22 @@
 
                             {{-- 4. PIED DE PAGE : Boutons d'actions du Projet --}}
                             <div class="p-4 bg-white border-t border-gray-50 rounded-b-2xl flex items-center justify-end gap-2">
-                                <a
-                                    href="{{ route('projects.subprojects', ['projectId' => $project->id]) }}"
-                                    wire:navigate
-                                    class="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium rounded-xl border border-gray-200 bg-green text-gray-700 hover:text-blue-600 hover:bg-blue-50/50 hover:border-blue-100 transition shadow-xs mr-auto"
-                                    title="Gérer les sous-projets">
-                                    <i class="las la-folder-plus text-base"></i>
-                                    <span>Sous-projet</span>
+                                <a href="{{ route('projects.subprojects', ['projectId' => $project->id]) }}" wire:navigate class="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium rounded-xl border border-gray-200 bg-green text-gray-700 hover:text-blue-600 hover:bg-blue-50/50 hover:border-blue-100 transition shadow-xs mr-auto"
+                                    title="Gérer les sous-projets"><i class="las la-folder-plus text-base"></i><span>Sous-projet</span>
                                 </a>
 
-                                <x-ui.button variant="outline" size="sm" wire:click="edit({{ $project->id }})" title="Éditer le projet" class="!rounded-xl">
+                                <a href="{{ route('projects.show', ['projectId' => $project->id]) }}"
+                                    wire:navigate class="inline-flex items-center justify-center bg-blue-50 gap-1.5 px-3 py-2 text-sm font-medium rounded-xl border border-blue-200 text-blue-600 hover:text-blue-600 hover:bg-blue-50/50 hover:border-blue-100 transition shadow-xs"
+                                    title="Gérer les attributions de projets">
+                                    <i class="las la-chart-bar text-base text-blue-600"></i>
+                                    <span>Tableau de bord</span>
+                                </a>
+
+                                <x-ui.button variant="info" size="md" wire:click="edit({{ $project->id }})" title="Éditer le projet" class="!rounded-xl">
                                     <i class="las la-edit text-base"></i>
                                 </x-ui.button>
 
-                                <x-ui.button variant="danger" size="sm" wire:click="confirmDelete({{ $project->id }})" title="Supprimer le projet" class="!rounded-xl">
+                                <x-ui.button variant="danger" size="md" wire:click="confirmDelete({{ $project->id }})" title="Supprimer le projet" class="!rounded-xl">
                                     <i class="las la-trash text-base"></i>
                                 </x-ui.button>
                             </div>

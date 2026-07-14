@@ -3,6 +3,7 @@
 use App\Livewire\Permissions\Index as PermissionIndex;
 use App\Livewire\Projects\AttributesProject;
 use App\Livewire\Projects\Index as ProjectsIndex;
+use App\Livewire\Projects\Show as ProjectsShow;
 use App\Livewire\Projects\SubProjectManager;
 use App\Livewire\Roles\Index as RolesIndex;
 use App\Livewire\Users\Index as UsersIndex;
@@ -34,6 +35,9 @@ Route::middleware(['auth'])
         // Route pour la liste principale des projets (votre exemple)
         Route::get('/projects', ProjectsIndex::class)
             ->name('projects.index');
+
+        Route::get('/projects/{projectId}/show', ProjectsShow::class)
+            ->name('projects.show');
 
         // Route pour la gestion des sous-projets liés à un projet spécifique
         Route::get('/projects/{projectId}/sub-projects', SubProjectManager::class)

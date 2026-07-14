@@ -26,6 +26,9 @@ class Profil extends Component
     public string $password = '';
     public string $password_confirmation = '';
 
+    public bool $notification_database = true;
+    public bool $notification_email = false;
+
     // Fichier temporaire pour la photo
     public $photo;
 
@@ -41,6 +44,9 @@ class Profil extends Component
         $this->last_name = $this->user->last_name ?? '';
         $this->job_title = $this->user->job_title ?? '';
         $this->email = $this->user->email ?? '';
+
+        $this->notification_database = $user->settings['notifications']['database'] ?? false;
+        $this->notification_email = $user->settings['notifications']['email'] ?? false;
     }
 
     protected function rules(): array
@@ -68,6 +74,12 @@ class Profil extends Component
             'last_name'  => trim($this->last_name) ?: null,
             'job_title'  => trim($this->job_title) ?: null,
             'email'      => trim($this->email),
+            'settings' => [
+                'notifications' => [
+                    'database' => $this->notification_database,
+                    'email' => $this->notification_email,
+                ]
+            ]
         ];
 
         // Traitement de la photo si un nouveau fichier est chargé
@@ -83,6 +95,7 @@ class Profil extends Component
 
         $this->user->update($data);
 
+        dd($this->notification_database, $this->notification_email);
         // Réinitialisation des champs sensibles de mot de passe
         $this->reset(['password', 'password_confirmation', 'photo']);
 

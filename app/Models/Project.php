@@ -16,6 +16,16 @@ class Project extends Model
         'status'
     ];
 
+    // À ajouter dans votre classe class Project extends Model
+
+    protected function casts(): array
+    {
+        return [
+            'start_date' => 'date',
+            'end_date' => 'date',
+        ];
+    }
+
     public function manager()
     {
         return $this->belongsTo(User::class, 'manager_id');

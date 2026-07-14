@@ -185,6 +185,12 @@ class Index extends Component
                 'email'       => trim($this->email),
                 'password'    => Hash::make($this->password),
                 'is_active'   => $this->is_active,
+                'settings' => [
+                    'notifications' => [
+                        'database' => true,
+                        'email' => false,
+                    ]
+                ]
             ]);
 
             $roleNames = Role::whereIn('id', $this->selectedRoles)->pluck('name')->toArray();

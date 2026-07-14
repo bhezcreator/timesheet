@@ -96,14 +96,43 @@
                 </div>
             </div>
 
+            {{-- Parametre notification --}}
+            <!-- SECTION 3 : Options Avancées -->
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                <h3 class="text-base font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <i class="las la-envelope text-xl text-blue-600"></i> Paramètres des notifications
+                </h3>
+
+                <div class="flex flex-col justify-center mb-6">
+                    <label class="relative inline-flex items-center cursor-pointer select-none">
+                        <input type="checkbox" wire:model="notification_database" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        <span class="ml-3 text-sm font-semibold text-gray-900">Notifications sur la plateforme (In-App)</span>
+                    </label>
+                    <p class="text-xs text-gray-500 mt-1 ml-14">Si activé, vous recevrez vos alertes directement dans votre centre de notifications sur l'application (cloche).</p>
+                </div>
+
+                <div class="flex flex-col justify-center">
+                    <label class="relative inline-flex items-center cursor-pointer select-none">
+                        <input type="checkbox" wire:model="notification_email" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        <span class="ml-3 text-sm font-semibold text-gray-900">Alertes et rapports par courrier électronique</span>
+                    </label>
+                    <p class="text-xs text-gray-500 mt-1 ml-14">Si activé, vous recevrez une copie de vos validations, rappels de feuilles de temps et résumés directement dans votre boîte de messagerie.</p>
+                </div>
+            </div>
+
             {{-- Section Changement de mot de passe --}}
-            <div class="pt-6 border-t border-gray-100 space-y-4">
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                 <div>
-                    <h3 class="text-sm font-bold text-gray-900">Sécurité des accès</h3>
+                    <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2">
+                        <i class="las la-shield-alt text-lg text-blue-600"></i> Sécurité des accès
+                    </h3>
+
                     <p class="text-xs text-gray-500">Laissez ces champs vides si vous ne souhaitez pas modifier votre mot de passe actuel.</p>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-4">
                     <div class="space-y-1.5">
                         <label for="password" class="text-xs font-bold text-gray-700 uppercase tracking-wider">Nouveau mot de passe</label>
                         <x-ui.forms.input type="password" id="password" wire:model="password" placeholder="••••••••" />
