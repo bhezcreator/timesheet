@@ -1,0 +1,42 @@
+## Comment utiliser ce Service dans votre application
+Exemple 1 : Dans un composant Livewire (Saisie d'heures)
+use App\Services\TimesheetLockService;
+use Illuminate\Validation\ValidationException;
+
+public function storeTimesheetRow(TimesheetLockService $lockService)
+{
+    // On teste si la date choisie par l'utilisateur est verrouillée
+    if ($lockService->isDateLocked($this->selectedDate)) {
+        throw ValidationException::withMessages([
+            'date' => ["Impossible d'enregistrer : Cette journée est verrouillée par le système."]
+        ]);
+    }
+
+    // Continuer l'enregistrement...
+}
+
+
+Exemple 2 : Dans votre vue Blade pour désactiver un bouton
+// Dans la méthode render() de votre composant de saisie :
+public function render(\App\Services\TimesheetLockService $lockService)
+{
+    return view('livewire.timesheet.input', [
+        'isTodayLocked' => $lockService->isCurrentDayLocked()
+    ]);
+}
+
+et
+
+<x-ui.button
+    wire:click="addHours"
+    :disabled="$isTodayLocked"
+    variant="{{ $isTodayLocked ? 'outline' : 'primary' }}"
+>
+    {{ $isTodayLocked ? 'Saisie verrouillée pour aujourd\'hui' : 'Ajouter mes heures' }}
+</x-ui.button>
+
+
+###########################################################################################
+###########################################################################################
+
+
