@@ -45,7 +45,7 @@
                     label="Titre explicite de l'activité"
                     name="titre"
                     required
-                    wire:model="titre"
+                    wire:model.live="titre"
                     placeholder="Ex: Rédaction du rapport de projet, Distribution de kits de secours..."
                 />
                 <x-ui.forms.error name="titre" />
@@ -55,41 +55,56 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-gray-100 pt-5">
                 <!-- Projet -->
                 <div>
-                    <x-ui.forms.select
-                        wire:model.live="project_id"
-                        required
+                    <x-ui.forms.searchable-select
+                        wire:model="project_id"
                         name="project_id"
                         label="Projet parent"
-                        placeholder="-- Sélectionner un projet --"
+                        placeholder="-- Sélectionner un projet parent --"
                         :selected="$project_id"
-                        :options="$projects->map(fn($project) => [
-                            'value'       => (string)$project->id,
-                            'label'       => $project->code . ' - ' . $project->name,
-                            'description' => $project->description ? Str::limit($project->description, 60) : 'Aucune description',
-                            'icon'        => 'las la-folder shadow-xs'
-                        ])->toArray()" />
-
-                    <x-ui.forms.error name="project_id" />
-                </div>
-
-                <!-- Sous-Projet (Dynamique) -->
-                <div class="{{ empty($project_id) ? 'opacity-60 cursor-not-allowed pointer-events-none' : '' }}">
-                    <x-ui.forms.select
-                        wire:model="sub_project_id"
+                        :live="true"
                         required
-                        name="sub_project_id"
-                        label="Sous-projet associé"
-                        placeholder="{{ empty($project_id) ? '-- Sélectionnez avant tout un projet --' : '-- Optionnel --' }}"
-                        :selected="$sub_project_id"
-                        :options="collect($subProjects)->map(fn($sub) => [
-                            'value'       => (string)$sub->id,
-                            'label'       => $sub->name,
-                            'description' => 'Composant du projet parent',
-                            'icon'        => 'las la-sitemap shadow-xs'
+                        :options="$projects->map(fn($project) => [
+                            'value' => $project->id,
+                            'label' => $project->name,
+                            'code'  => $project->code
                         ])->toArray()"
                     />
-                    <x-ui.forms.error name="sub_project_id" />
                 </div>
+
+                @php
+                    $count = count($subProjects);
+                @endphp
+                    <!-- On enveloppe dans une condition pour ne l'afficher que si un projet est choisi -->
+                @if($project_id And $count !== 0)
+                    <x-ui.forms.searchable-select
+                        wire:key="sub-projects-list-for-project-{{ $project_id }}-count-{{ count($subProjects) }}"
+                        wire:model="sub_project_id"
+                        name="sub_project_id"
+                        label="Sous-projet associé"
+                        placeholder="-- Sélectionner un sous-projet --"
+                        icon="las la-sitemap"
+                        required
+                        :selected="$sub_project_id"
+                        :options="$subProjects->map(fn($sub) => [
+                            'value'       => (string)$sub->id,
+                            'label'       => $sub->name,
+                            'description' => 'Composant du projet parent'
+                        ])->toArray()"
+                    />
+                @else
+                    <!-- État d'attente grisé si aucun projet n'est sélectionné -->
+                    <div class="opacity-50 pointer-events-none pt-1">
+                        <label class="block text-xs font-bold tracking-wider text-gray-400 mb-2">Sous-projet associé</label>
+                        <div class="w-full flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm text-gray-400 select-none">
+                            @if ($count !== 0)
+                                <span>-- Sélectionnez d'abord un projet --</span>
+                            @else
+                                <span>-- Aucun sous projet --</span>
+                            @endif
+                            <i class="las la-angle-down text-xs"></i>
+                        </div>
+                    </div>
+                @endif
 
                 <!-- Type d'activité -->
                 <div>

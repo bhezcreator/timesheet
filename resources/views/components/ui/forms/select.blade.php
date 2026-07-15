@@ -5,7 +5,7 @@
     'selected' => null,
     'placeholder' => 'Sélectionner...',
     'searchable' => true,
-    'required' => false
+    'required' => false,
 ])
 
 <div
@@ -72,8 +72,8 @@
         }
     }"
     @click.outside="open = false"
-    class="relative w-full"
->
+    class="relative w-full">
+
     <!-- Label -->
     @if($label)
         <label class="block mb-2 text-sm font-semibold text-gray-500">
@@ -85,11 +85,8 @@
     @endif
 
     <!-- Déclencheur (Trigger Button) -->
-    <button
-        type="button"
-        @click="toggle()"
-        class="w-full flex items-center justify-between rounded-xl border border-gray-300 bg-white px-4 py-3 shadow-sm hover:border-blue-400 focus:ring-4 focus:ring-blue-100 transition focus:outline-none"
-    >
+    <button type="button" @click="toggle()" class="w-full flex items-center justify-between rounded-xl border border-gray-300 bg-white px-4 py-3
+        shadow-sm hover:border-blue-400 focus:ring-4 focus:ring-blue-100 transition focus:outline-none">
         <div class="flex items-center gap-2">
             <template x-if="selectedIcon">
                 <i :class="selectedIcon" class="text-gray-400"></i>
@@ -111,9 +108,8 @@
         x-transition:leave="transition ease-in duration-75"
         x-transition:leave-start="opacity-100 transform scale-100"
         x-transition:leave-end="opacity-0 transform scale-95"
-        class="absolute {{ $label ? 'top-[calc(100%-8px)]' : 'top-full' }} z-50 mt-2 w-full rounded-xl border border-gray-200 bg-white shadow-xl overflow-hidden"
-        style="display: none;"
-    >
+        class="absolute {{ $label ? 'top-[calc(100%-8px)]' : 'top-full' }} z-50 mt-2 w-full rounded-xl border border-gray-200 bg-red shadow-xl overflow-hidden"
+        style="display: none;">
         <!-- Option pour vider la sélection -->
         <div class="p-1 bg-gray-50 border-b border-gray-100">
             <button
@@ -150,8 +146,7 @@
                     type="button"
                     @click="selectOption(option)"
                     class="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-blue-50 transition cursor-pointer"
-                    :class="{ 'bg-blue-50/50': selected == option.value }"
-                >
+                    :class="{ 'bg-blue-50/50': selected == option.value }">
                     <template x-if="option.icon">
                         <i :class="option.icon" class="text-gray-400"></i>
                     </template>
@@ -176,7 +171,6 @@
             </div>
         </div>
     </div>
-
     <!-- Champ caché -->
     <input type="hidden" name="{{ $name }}" :value="selected">
 </div>

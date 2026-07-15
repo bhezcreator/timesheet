@@ -6,6 +6,7 @@ use App\Models\Activity;
 use App\Models\ActivityType;
 use App\Models\Project;
 use App\Models\SubProject;
+use App\Models\User;
 use App\Services\AppSettingsService;
 use App\Services\TimesheetLockService;
 use App\Services\CalendarBusinessService;
@@ -38,21 +39,26 @@ class CreateUpdate extends Component
     public $subProjects = [];
     public $activityTypes = [];
 
+    // User
+    public User $user;
+
     /**
      * Initialisation du composant.
      */
     public function mount(TimesheetLockService $lockService, ?int $activityId = null)
     {
+        $this->user = User::find(Auth::id());
+
         $this->activityId = $activityId;
         $this->isEditMode = !is_null($activityId);
 
         // 1. Contrôle de sécurité et de droits d'accès
         if ($this->isEditMode) {
             $this->checkPermissionOrFail('activites.modifier');
-            $activity = Activity::where('user_id', Auth::id())->findOrFail($this->activityId);
+            $activity = Activity::where('user_id', $this->user->id)->findOrFail($this->activityId);
 
             // Sécurité : Impossible de modifier une activité soumise pour approbation ou déjà verrouillée
-            if ($activity->status !== 'Brouillon' && $activity->status !== 'Rejeté') {
+            if ($activity->status !== 'brouillon' && $activity->status !== 'rejeté') {
                 throw ValidationException::withMessages([
                     'activity' => ["Modification interdite : Cette activité a déjà été transmise pour validation."]
                 ]);
@@ -75,14 +81,27 @@ class CreateUpdate extends Component
             $this->description = $activity->description;
 
             // Charger les sous-projets dépendants du projet sélectionné
-            $this->subProjects = SubProject::where('project_id', $this->project_id)->get();
+            $this->subProjects = SubProject::query()
+                ->where('project_id', $this->project_id)
+                ->whereHas('users', function ($query) {
+                    $query->where('user_id', $this->user->id);
+                })
+                ->orderBy('name')
+                ->get();
         } else {
             $this->checkPermissionOrFail('activites.creer');
             $this->activity_date = Carbon::today()->format('Y-m-d');
         }
 
         // Chargement des données d'alimentation pour les listes déroulantes
-        $this->projects = Project::where('status', 'active')->orderBy('name')->get();
+        // Récupère les projets actifs liés à l'utilisateur connecté
+        $this->projects = Project::query()
+            ->where('status', 'active') // Ajusté selon votre énumération précédente ('Actif' avec majuscule)
+            ->whereHas('users', function ($query) {
+                $query->where('user_id', $this->user->id); // Sécurité : exclut les anciens projets terminés pour cet utilisateur
+            })
+            ->orderBy('name')
+            ->get();
         $this->activityTypes = ActivityType::where('is_active', true)->orderBy('name')->get();
     }
 
@@ -91,9 +110,21 @@ class CreateUpdate extends Component
      */
     public function updatedProjectId($value)
     {
+        // 1. On réinitialise le sous-projet sélectionné pour éviter les conflits
         $this->sub_project_id = null;
-        $this->subProjects = $value ? SubProject::where('project_id', $value)->orderBy('name')->get() : [];
+
+        // 2. Si une valeur est présente, on charge les sous-projets liés à l'utilisateur connecté
+        $this->subProjects = $value
+            ? SubProject::query()
+            ->where('project_id', $value)
+            ->whereHas('users', function ($query) {
+                $query->where('user_id', $this->user->id);
+            })
+            ->orderBy('name')
+            ->get()
+            : [];
     }
+
 
     /**
      * Règles de validation standardisées.
@@ -121,7 +152,6 @@ class CreateUpdate extends Component
         $carbonDate = Carbon::parse($this->activity_date);
 
         // --- SECTION VALIDATIONS VIA LE SERVICE DE PARAMÈTRES (AppSettingsService) ---
-
         // 1. Description obligatoire
         if ($settingsService->get('timesheet_require_description') && empty(trim($this->description))) {
             throw ValidationException::withMessages(['description' => ["Une description détaillée est requise par la configuration système."]]);
@@ -176,7 +206,7 @@ class CreateUpdate extends Component
             'end_time' => $this->end_time,
             'duration' => $calculatedDuration,
             'description' => trim($this->description),
-            'status' => 'Brouillon', // Reste en brouillon jusqu'à soumission globale
+            'status' => 'brouillon', // Reste en brouillon jusqu'à soumission globale
         ];
 
         if ($this->isEditMode) {

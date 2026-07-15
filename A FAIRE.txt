@@ -143,7 +143,7 @@ resources/
         Supprimer une activité (avant validation)
 
         Structure :
-            - récupérez les projets et sous projets liés à user en ligne ;
+            - récupérez les projets et sous projets liés à user en ligne ; OK
             - appliquez les conditions via les paramètres généraux ;
             - testez qu'il y a pas déjà l'activité du meme jour pour le projet indiquer ;
             - testez si c'est le week-end(samedi et dimanche);
