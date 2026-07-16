@@ -140,10 +140,9 @@
                     </div>
 
                     <!-- Format de saisie du temps -->
-                    <div class="col-span-1 md:col-span-2 pt-2">
+                    {{--   <div class="col-span-1 md:col-span-2 pt-2">
                         <label class="block text-sm font-semibold text-gray-900 mb-2">Format de saisie du temps</label>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <!-- Option Décimal -->
                             <label class="relative flex items-center p-4 rounded-xl border {{ $format_time_input === 'decimal' ? 'border-blue-600 bg-blue-50/40 ring-1 ring-blue-600' : 'border-gray-200 bg-white hover:border-gray-300' }} cursor-pointer transition shadow-sm select-none">
                                 <input type="radio" name="format_time_input" value="decimal" wire:model.live="format_time_input" class="sr-only">
                                 <div class="flex-1">
@@ -152,7 +151,6 @@
                                 </div>
                             </label>
 
-                            <!-- Option Heures/Minutes -->
                             <label class="relative flex items-center p-4 rounded-xl border {{ $format_time_input === 'duration' ? 'border-blue-600 bg-blue-50/40 ring-1 ring-blue-600' : 'border-gray-200 bg-white hover:border-gray-300' }} cursor-pointer transition shadow-sm select-none">
                                 <input type="radio" name="format_time_input" value="duration" wire:model.live="format_time_input" class="sr-only">
                                 <div class="flex-1">
@@ -161,7 +159,7 @@
                                 </div>
                             </label>
                         </div>
-                    </div>
+                    </div> --}}
 
                     <div class="flex flex-col justify-center pt-2">
                         <label class="relative inline-flex items-center cursor-pointer select-none">

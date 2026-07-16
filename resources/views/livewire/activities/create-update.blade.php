@@ -17,8 +17,13 @@
             {{ $isEditMode ? 'Modifier cette activité' : 'Ajouter une nouvelle activité' }}
         </h2>
 
-        <p class="text-xs text-gray-500 mt-1">
-            <i class="las la-info-circle text-blue-500"></i> Total de jours ouvrés théoriques pour le mois de <strong class="text-gray-700">{{ $monthLabel }}</strong> : <span class="font-bold text-blue-600">{{ $workingDaysCount }} jours</span>.
+        <p class="text-xs text-gray-500 mt-1 flex items-center gap-1.5">
+            <i class="las la-info-circle text-blue-500 text-sm"></i>
+            Total de jours ouvrés théoriques pour le mois de
+            <strong class="text-gray-700">{{ $monthLabel }}</strong> :
+            <span class="font-semibold text-blue-600">
+                <span class="font-black">{{ $userLoggedDaysCount }}</span>/{{ $workingDaysCount }} jours complétés
+            </span>.
         </p>
     </div>
 
@@ -27,13 +32,14 @@
         @error('permission')
             <x-ui.alert type="error" class="mb-6">{{ $message }}</x-ui.alert> <br>
         @enderror
+
         @error('activity')
             <x-ui.alert type="error" class="mb-6">{{ $message }}</x-ui.alert>
             <br>
         @enderror
 
         <!-- Corps du formulaire moderne -->
-        <form wire:submit.prevent="save" class="space-y-6 bg-white p-6 md:p-8 rounded-xl border border-gray-200 shadow-sm pb-10">
+        <form wire:submit.prevent="save" class="space-y-4 bg-white p-4 md:p-6 rounded-xl border border-gray-200 shadow-sm">
 
             <!-- Section 1 : Informations Générales -->
             <div class="space-y-4">
@@ -153,16 +159,39 @@
                 <x-ui.forms.error name="description" />
             </div>
 
+            <!-- Section 5 : COMPOSANT EN TEMPS RÉEL : Affiché uniquement si un projet est sélectionné -->
+            @if($project_id && $projectProgressPercentage > 0)
+                <div class="space-y-2 bg-gray-50 border border-gray-200/60 rounded-xl p-4 mt-2 transition-all duration-300">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                            Votre taux d'imputation mensuel : <strong class="text-gray-800 font-medium">{{ $currentProjectName }}</strong>
+                        </span>
+                        <span class="text-sm font-mono font-black text-blue-600">
+                            {{ $projectProgressPercentage }}%
+                        </span>
+                    </div>
+
+                    <!-- Votre composant d'UI réutilisable -->
+                    <x-ui.progress-bar
+                        value="{{ $projectProgressPercentage }}"
+                    />
+                    <p class="text-[10px] text-gray-400">Ce pourcentage représente la part de vos heures déclarées sur ce projet par rapport au volume mensuel attendu.</p>
+                </div>
+            @endif
             <!-- Pied de page / Actions de validation -->
             <div class="flex justify-end gap-3 border-t border-gray-100 pt-6 mt-6">
                 <a href="{{ route('dashboard') }}" wire:navigate class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition">
                     Annuler
                 </a>
-                <x-ui.button type="submit" wire:loading.attr="disabled">
-                    <span wire:loading.remove class="flex items-center gap-1.5">
+
+                <x-ui.button type="submit" wire:loading.attr="disabled" wire:target="save">
+                    <!-- Visible uniquement si la méthode save n'est pas en cours d'exécution -->
+                    <span wire:loading.remove wire:target="save" class="flex items-center gap-1.5">
                         <i class="las la-check-circle text-lg"></i> {{ $isEditMode ? 'Enregistrer les modifications' : 'Ajouter au brouillon' }}
                     </span>
-                    <span wire:loading class="flex items-center gap-1.5">
+
+                    <!-- Visible UNIQUEMENT pendant l'exécution de la méthode save -->
+                    <span wire:loading wire:target="save" class="flex items-center gap-1.5">
                         <i class="las la-spinner animate-spin text-lg"></i> Traitement de la ligne...
                     </span>
                 </x-ui.button>

@@ -42,6 +42,15 @@ class CreateUpdate extends Component
     // User
     public User $user;
 
+    // Calcul de pourcentage d'avancement du projet par rapport à user actuel
+    public string $currentProjectName = '';
+    public float $projectProgressPercentage = 0;
+
+    // Calcul les jours de travail
+    public string $monthLabel = '';
+    public int $workingDaysCount = 0;
+    public int $userLoggedDaysCount = 0; // Contient le nombre de jours déjà saisis par l'agent
+
     /**
      * Initialisation du composant.
      */
@@ -103,28 +112,65 @@ class CreateUpdate extends Component
             ->orderBy('name')
             ->get();
         $this->activityTypes = ActivityType::where('is_active', true)->orderBy('name')->get();
+
+        // RCamcum les jours de travail
+        $this->calculateMonthlyWorkingDays(app(\App\Services\CalendarBusinessService::class));
     }
 
     /**
      * Écouteur réactif sur le changement de projet pour mettre à jour les sous-projets liés.
+     * et calcul d'avancement du projet rar rapport à user en ligne
      */
     public function updatedProjectId($value)
     {
-        // 1. On réinitialise le sous-projet sélectionné pour éviter les conflits
+        // 1. Réinitialisation du sous-projet sélectionné
         $this->sub_project_id = null;
+        $this->projectProgressPercentage = 0;
+        $this->currentProjectName = '';
 
-        // 2. Si une valeur est présente, on charge les sous-projets liés à l'utilisateur connecté
-        $this->subProjects = $value
-            ? SubProject::query()
-            ->where('project_id', $value)
-            ->whereHas('users', function ($query) {
-                $query->where('user_id', $this->user->id);
-            })
-            ->orderBy('name')
-            ->get()
-            : [];
+        if ($value) {
+            $project = \App\Models\Project::find($value);
+            $this->currentProjectName = $project ? $project->name : '';
+
+            // 2. Chargement des sous-projets filtrés pour l'utilisateur en ligne
+            $this->subProjects = \App\Models\SubProject::query()
+                ->where('project_id', $value)
+                ->whereHas('users', function ($query) {
+                    $query->where('user_id', $this->user->id);
+                })
+                ->orderBy('name')
+                ->get();
+
+            // 3. --- CALCUL DU POURCENTAGE DE PROGRESSION DE L'AGENT ---
+            // Récupération des services nécessaires à la volée
+            $calendarService = app(\App\Services\CalendarBusinessService::class);
+            $settingsService = app(\App\Services\AppSettingsService::class);
+
+            // Récupération des heures cibles quotidiennes (ex: 8h par jour)
+            $workdayHours = (float) $settingsService->get('time_workday_hours', 8.0);
+
+            // Nombre de jours ouvrés pour le mois actuel
+            $totalWorkingDays = $calendarService->getWorkingDaysCount(now()->month, now()->year);
+
+            // Volume d'heures total que l'agent doit effectuer dans le mois (ex: 22 jours * 8h = 176h)
+            $totalMonthlyRequiredHours = $totalWorkingDays * $workdayHours;
+
+            if ($totalMonthlyRequiredHours > 0) {
+                // Somme des heures déjà déclarées par cet agent sur ce projet précis pour le mois actuel
+                $hoursLoggedOnProject = Activity::query()
+                    ->where('user_id', $this->user->id)
+                    ->where('project_id', $value)
+                    ->whereMonth('activity_date', now()->month)
+                    ->whereYear('activity_date', now()->year)
+                    ->sum('duration');
+
+                // Calcul du pourcentage d'imputation de l'agent sur ce projet
+                $this->projectProgressPercentage = round((100 * $hoursLoggedOnProject) / $totalMonthlyRequiredHours, 1);
+            }
+        } else {
+            $this->subProjects = [];
+        }
     }
-
 
     /**
      * Règles de validation standardisées.
@@ -148,51 +194,128 @@ class CreateUpdate extends Component
      */
     public function save(AppSettingsService $settingsService, TimesheetLockService $lockService, CalendarBusinessService $calendarService)
     {
-        $this->validate();
-        $carbonDate = Carbon::parse($this->activity_date);
+        // --- CONFIGURATION DYNAMIQUE DU PREMIER JOUR DE LA SEMAINE ---
+        $firstDaySetting = (int) $settingsService->get('time_first_day_of_week', 1); // 1 (Lundi) par défaut
 
-        // --- SECTION VALIDATIONS VIA LE SERVICE DE PARAMÈTRES (AppSettingsService) ---
-        // 1. Description obligatoire
-        if ($settingsService->get('timesheet_require_description') && empty(trim($this->description))) {
-            throw ValidationException::withMessages(['description' => ["Une description détaillée est requise par la configuration système."]]);
+        // Configuration globale pour l'instance Carbon de cette requête
+        if ($firstDaySetting === 0) {
+            Carbon::setWeekStartsAt(\Carbon\Carbon::SUNDAY);
+            Carbon::setWeekEndsAt(\Carbon\Carbon::SATURDAY);
+        } else {
+            Carbon::setWeekStartsAt(\Carbon\Carbon::MONDAY);
+            Carbon::setWeekEndsAt(\Carbon\Carbon::SUNDAY);
         }
 
-        // 2. Calcul et validation de la durée
+        // AJOUT 1 : Gestion dynamique de la validation de la description avant le validate()
+        if (!$settingsService->get('timesheet_require_description')) {
+            // Si la description n'est pas requise, on retire sa règle regex pour qu'elle puisse être vide sans planter
+            $currentRules = $this->rules();
+            $currentRules['description'] = ['nullable', 'string', 'max:1000'];
+            $this->validate($currentRules);
+        } else {
+            $this->validate();
+            // Validation manuelle de sécurité si le champ ne contient que des espaces
+            if (empty(trim($this->description))) {
+                throw ValidationException::withMessages(['description' => ["Une description détaillée est requise par la configuration système."]]);
+            }
+        }
+
+        $carbonDate = Carbon::parse($this->activity_date);
+
+        // 1. Calcul immédiat de la durée pour les validations suivantes
         $start = Carbon::parse($this->start_time);
         $end = Carbon::parse($this->end_time);
         $calculatedDuration = round($start->diffInMinutes($end) / 60, 2);
 
+        // --- 1.2. BLOCAGE DE LA SAISIE DU MOIS EN COURS À PARTIR DU 25 ---
+        $lockDay = (int) $settingsService->get('timesheet_lock_day_of_month', 25);
+        $today = Carbon::today();
+
+        // Si l'activité appartient au mois civil actuel
+        if ($carbonDate->isCurrentMonth()) {
+            // Si nous avons atteint ou dépassé le jour limite (ex: le 25), on bloque tout
+            if ($today->day >= $lockDay) {
+                throw ValidationException::withMessages([
+                    'activity_date' => ["Période clôturée : La saisie pour le mois en cours est verrouillée du {$lockDay} jusqu'à la fin du mois."]
+                ]);
+            }
+        }
+
+        // --- 1.3. VÉRIFICATION DU VERROUILLAGE DES MOIS PASSÉS ---
+        // Si l'activité appartient à un mois antérieur au mois en cours
+        if ($carbonDate->format('Y-m') < $today->format('Y-m')) {
+
+            // Cas A : L'activité appartient exactement au mois précédent (M-1) et on a dépassé le jour limite
+            if ($carbonDate->format('Y-m') === $today->copy()->subMonth()->format('Y-m') && $today->day > $lockDay) {
+                throw ValidationException::withMessages([
+                    'activity_date' => ["Action impossible : La période du mois précédent est définitivement verrouillée depuis le {$lockDay} de ce mois."]
+                ]);
+            }
+
+            // Cas B : L'activité appartient à un mois encore plus ancien (M-2, M-3...) -> Toujours bloqué
+            if ($carbonDate->format('Y-m') < $today->copy()->subMonth()->format('Y-m')) {
+                throw ValidationException::withMessages([
+                    'activity_date' => ["Opération refusée : Impossible de modifier des données d'un mois clos historiquement."]
+                ]);
+            }
+        }
+
+
+        // 2. Restriction sur Jour verrouillé / Clôture mensuelle (Prioritaire pour économiser le serveur)
+        if ($lockService->isDateLocked($carbonDate)) {
+            throw ValidationException::withMessages(['activity_date' => ["Cette journée correspond à une période verrouillée ou close."]]);
+        }
+
+        // 3. Saisie sur date future
+        if ($carbonDate->isFuture() && !$settingsService->get('timesheet_allow_future_logging')) {
+            throw ValidationException::withMessages(['activity_date' => ["Le système interdit la planification anticipée sur des dates futures."]]);
+        }
+
+        // 4. Saisie le week-end
+        $allowWeekend = $settingsService->get('time_allow_weekend_logging');
+        if ($carbonDate->isWeekend() && !$allowWeekend) {
+            throw ValidationException::withMessages(['activity_date' => ["La saisie d'activités durant le week-end est désactivée."]]);
+        }
+
+        // AJOUT 2 : Exécuter la validation des jours ouvrés UNIQUEMENT si ce n'est pas un week-end autorisé
+        if (!$carbonDate->isWeekend()) {
+            $validWorkingDates = $calendarService->getWorkingDatesArray($carbonDate->month, $carbonDate->year);
+            if (!in_array($this->activity_date, $validWorkingDates)) {
+                throw ValidationException::withMessages([
+                    'activity_date' => ["Erreur de calendrier : La date sélectionnée est invalide pour cette période."]
+                ]);
+            }
+        }
+
+        // 5. Validation de la durée maximale autorisée pour UNE SEULE activité
         $maxHoursAllowed = $settingsService->get('timesheet_max_hours_per_day', 8);
         if ($calculatedDuration > $maxHoursAllowed) {
             throw ValidationException::withMessages(['end_time' => ["La durée calculée ({$calculatedDuration}h) dépasse la limite maximale quotidienne autorisée ({$maxHoursAllowed}h)."]]);
         }
 
-        // 3. Saisie le week-end
-        if ($carbonDate->isWeekend() && !$settingsService->get('time_allow_weekend_logging')) {
-            throw ValidationException::withMessages(['activity_date' => ["La saisie d'activités durant le week-end est désactivée."]]);
-        }
-
-        // 4. Saisie sur date future
-        if ($carbonDate->isFuture() && !$settingsService->get('timesheet_allow_future_logging')) {
-            throw ValidationException::withMessages(['activity_date' => ["Le système interdit la planification anticipée sur des dates futures."]]);
-        }
-
-        // 5. Restriction sur Jour verrouillé / Clôture mensuelle
-        if ($lockService->isDateLocked($carbonDate)) {
-            throw ValidationException::withMessages(['activity_date' => ["Cette journée correspond à une période verrouillée ou close."]]);
-        }
-
-        // 6. Utilisation du service pour rejeter la saisie si la date n'est pas un jour ouvré théorique
-        $validWorkingDates = $calendarService->getWorkingDatesArray($carbonDate->month, $carbonDate->year);
-
-        if (!in_array($this->activity_date, $validWorkingDates)) {
+        // 6. VÉRIFICATION DU PLAFOND QUOTIDIEN GLOBAL (Cumul de toutes les activités de la journée)
+        if ($this->exceedsDailyHoursCeiling($this->activity_date, $calculatedDuration, $maxHoursAllowed)) {
             throw ValidationException::withMessages([
-                'activity_date' => ["Erreur de calendrier : La date sélectionnée correspond à un jour non ouvré (Week-end)."]
+                'end_time' => ["Limite atteinte : Le cumul des heures pour cette journée dépasse le plafond maximal global autorisé de {$maxHoursAllowed}h par jour."]
             ]);
         }
 
-        // EXEMPLE 2 : Récupérer le nom du jour en français si vous voulez l'historiser ou l'afficher
-        // $nomDuJour = $calendarService->getDayNameInFrench($this->activity_date);
+        // 7. VÉRIFICATION DU CHEVAUCHEMENT HORAIRE (Requête SQL en dernier pour optimiser les performances)
+        if ($this->hasTimeOverlap($this->activity_date, $this->start_time, $this->end_time)) {
+            throw ValidationException::withMessages([
+                'start_time' => ["Conflit d'horaire : Vous avez déjà une activité enregistrée qui chevauche la tranche " . $this->start_time . " - " . $this->end_time . " pour cette journée."]
+            ]);
+        }
+
+        // --- NOUVEAU : 9. VÉRIFICATION DU PLAFOND HEBDOMADAIRE GLOBAL ---
+        // On récupère le plafond d'heures par semaine (Ex: 40h) depuis la table settings
+        $maxWeeklyHours = (float) $settingsService->get('time_workweek_hours', 40.0);
+
+        if ($this->exceedsWeeklyHoursCeiling($this->activity_date, $calculatedDuration, $maxWeeklyHours)) {
+            throw ValidationException::withMessages([
+                'end_time' => ["Limite hebdomadaire atteinte : L'ajout de cette activité ferait dépasser le plafond global autorisé de {$maxWeeklyHours}h pour cette semaine."]
+            ]);
+        }
 
         // --- ENREGISTREMENT ---
         $data = [
@@ -205,8 +328,8 @@ class CreateUpdate extends Component
             'start_time' => $this->start_time,
             'end_time' => $this->end_time,
             'duration' => $calculatedDuration,
-            'description' => trim($this->description),
-            'status' => 'brouillon', // Reste en brouillon jusqu'à soumission globale
+            'description' => $this->description ? trim($this->description) : null,
+            'status' => 'brouillon',
         ];
 
         if ($this->isEditMode) {
@@ -218,7 +341,6 @@ class CreateUpdate extends Component
             session()->flash('success', 'Activité enregistrée avec succès.');
         }
 
-        // Redirection instantanée vers le tableau de bord
         return $this->redirectRoute('dashboard', navigate: true);
     }
 
@@ -233,13 +355,91 @@ class CreateUpdate extends Component
         ]);
     }
 
-    public function render(CalendarBusinessService $calendarService)
+    public function render()
     {
-        $currentDate = Carbon::parse($this->activity_date);
+        return view('livewire.activities.create-update');
+    }
 
-        return view('livewire.activities.create-update', [
-            'workingDaysCount' => $calendarService->getWorkingDaysCount($currentDate->month, $currentDate->year),
-            'monthLabel' => $calendarService->getMonthAndYearInFrench($currentDate)['mois']
-        ]);
+    /**
+     * RÈGLE A : Vérifie si la plage horaire soumise chevauche une activité existante.
+     * Formule mathématique : (DébutA < FinB) ET (FinA > DébutB)
+     */
+    protected function hasTimeOverlap(string $date, string $startTime, string $endTime): bool
+    {
+        return Activity::query()
+            ->where('user_id', $this->user->id)
+            ->whereDate('activity_date', $date)
+            // On ignore la ligne en cours si on modifie
+            ->when($this->isEditMode, function ($query) {
+                $query->where('id', '!=', $this->activityId);
+            })
+            ->where(function ($query) use ($startTime, $endTime) {
+                $query->where('start_time', '<', $endTime)
+                    ->where('end_time', '>', $startTime);
+            })
+            ->exists();
+    }
+
+    /**
+     * RÈGLE B : Vérifie si le cumul d'heures de la journée dépasse le plafond autorisé.
+     */
+    protected function exceedsDailyHoursCeiling(string $date, float $newDuration, float $maxHoursAllowed): bool
+    {
+        // Calcul de la somme des heures déjà enregistrées pour ce jour-là
+        $alreadyLoggedHours = Activity::query()
+            ->where('user_id', $this->user->id)
+            ->whereDate('activity_date', $date)
+            ->when($this->isEditMode, function ($query) {
+                $query->where('id', '!=', $this->activityId);
+            })
+            ->sum('duration');
+
+        return ($alreadyLoggedHours + $newDuration) > $maxHoursAllowed;
+    }
+
+    /**
+     * Exemple de fonction de validation à ajouter dans votre composant
+     */
+    protected function exceedsWeeklyHoursCeiling(string $date, float $newDuration, float $maxWeeklyHours): bool
+    {
+        $carbonDate = Carbon::parse($date);
+
+        // Grâce à setWeekStartsAt(), startOfWeek récupère soit le Lundi soit le Dimanche selon la BDD
+        $startOfWeek = $carbonDate->copy()->startOfWeek();
+        $endOfWeek = $carbonDate->copy()->endOfWeek();
+
+        $weeklyLoggedHours = Activity::query()
+            ->where('user_id', $this->user->id)
+            ->whereBetween('activity_date', [$startOfWeek->format('Y-m-d'), $endOfWeek->format('Y-m-d')])
+            ->when($this->isEditMode, function ($query) {
+                $query->where('id', '!=', $this->activityId);
+            })
+            ->sum('duration');
+
+        return ($weeklyLoggedHours + $newDuration) > $maxWeeklyHours;
+    }
+
+    /**
+     * Calcule les indicateurs de jours ouvrés pour le mois de l'activité en cours.
+     */
+    public function calculateMonthlyWorkingDays(CalendarBusinessService $calendarService)
+    {
+        // 1. Récupération de la date cible (date de l'activité ou date du jour par défaut)
+        $targetDate = \Carbon\Carbon::parse($this->activity_date ?: now());
+
+        // 2. Récupération du libellé du mois en français (ex: "Juillet") et de l'année
+        $dateDetails = $calendarService->getMonthAndYearInFrench($targetDate);
+        $this->monthLabel = $dateDetails['mois'] . ' ' . $dateDetails['annee'];
+
+        // 3. Calcul du nombre de jours ouvrés théoriques du mois (hors week-ends)
+        $this->workingDaysCount = $calendarService->getWorkingDaysCount($targetDate->month, $targetDate->year);
+
+        // 4. Calcul du nombre de jours uniques où l'utilisateur connecté a déjà enregistré des activités ce mois-ci
+        $this->userLoggedDaysCount = \App\Models\Activity::query()
+            ->where('user_id', $this->user->id)
+            ->whereMonth('activity_date', $targetDate->month)
+            ->whereYear('activity_date', $targetDate->year)
+            ->distinct()
+            ->count('activity_date'); // Compte uniquement les jours uniques
     }
 }

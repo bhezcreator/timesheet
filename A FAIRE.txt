@@ -133,7 +133,7 @@ resources/
             Indiquer la durée(heure début et fin)
             Décrire le travail effectué
             status
-            Show %(evolution en heure normal et heure supplémentaire)
+            Show %(evolution en heure) : OK
             Soumettre ses activités
         Interfaces :
             index(liste des activités: filtre(mois, année, titre, ...) et btns actions)
@@ -144,10 +144,16 @@ resources/
 
         Structure :
             - récupérez les projets et sous projets liés à user en ligne ; OK
-            - appliquez les conditions via les paramètres généraux ;
-            - testez qu'il y a pas déjà l'activité du meme jour pour le projet indiquer ;
-            - testez si c'est le week-end(samedi et dimanche);
-            - bloquez les dates non autorisées par(getWorkingDatesArray(string|int $month, int $year)).
+            - appliquez les conditions via les paramètres généraux ; OK
+            - testez qu'il y a pas déjà l'activité du meme jour pour le projet indiquer ; OK
+            - testez si c'est le week-end(samedi et dimanche); OK
+            - bloquez les dates non autorisées par(getWorkingDatesArray(string|int $month, int $year)) ; OK
+            - Premier jour de la semaine : OK
+            - Seuil de déclenchement hebdomadaire (Heures) OK
+            - Heures de travail par semaine standard(Calculer auto) : component setting
+            - Jour limite de verrouillage du mois OK
+            - Fréquence de soumission (test : soumission rapport)
+            - Calculerles heur supplémentaires (dans : soumission rapport)
 
     - Rapport :
         Générer son rapport du mois
@@ -169,6 +175,19 @@ resources/
             Valider
             Rejeter
             Demander une correction
+
+        Voici concrètement comment elle s'intègre et s'utilise dans l'application :
+            1. Le flux de validation (Cycle de vie)
+            - Brouillon / Soumission : L'agent déclare son activité.
+                La colonne status vaut 'Brouillon' puis passe à 'En attente' lors de la soumission globale.
+                Le champ rejection_reason reste à null.
+
+            - Le Rejet par le Superviseur : Si le manager constate une erreur (ex: mauvaise imputation de projet, nombre d'heures excessif, description trop vague),
+                il clique sur un bouton "Rejeter".
+                Le système lui impose alors de saisir une explication (ex: "Veuillez préciser les livrables produits pour ce forage").
+
+            - Mise à jour en BDD : Le statut de l'activité repasse à 'Rejeté' et la colonne rejection_reason enregistre le texte du manager.
+
 
     - Gestion des périodes :
         Définir le jour limite
