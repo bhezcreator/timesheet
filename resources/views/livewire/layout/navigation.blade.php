@@ -14,7 +14,7 @@ new class extends Component
         [
             'title' => 'Feuilles de temps',
             'icon'  => 'la-business-time',
-            'route' => '#',
+            'route' => 'timesheet.calendar',
         ],
         [
             'title' => 'Projets',

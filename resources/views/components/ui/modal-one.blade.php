@@ -11,14 +11,13 @@
     p-4
     sm:p-6
     pt-16">
-
         <!-- Modal Card -->
         <div class="modal-content relative w-full {{ $sizeClass() }} bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100 transform transition-all">
 
             <!-- Header -->
             <div class="flex items-center justify-between px-6 py-5 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100">
                 <div>
-                    <h3 class="text-xl font-semibold text-gray-800 tracking-tight">
+                    <h3 class="text-xl text-blue-800 tracking-tight">
                         {{ $title }}
                     </h3>
                     @isset($subtitle)
