@@ -154,6 +154,7 @@ resources/
             - Jour limite de verrouillage du mois OK
             - Fréquence de soumission (test : soumission rapport)
             - Calculerles heur supplémentaires (dans : soumission rapport)
+            - Calculer heures supplémentaires
 
     - Rapport :
         Générer son rapport du mois

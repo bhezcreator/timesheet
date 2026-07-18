@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Activities\CreateUpdate as ActivitiesCreateUpdate;
+use App\Livewire\Activities\Index as ActivitiesIndew;
 use App\Livewire\Permissions\Index as PermissionIndex;
 use App\Livewire\Projects\AttributesProject;
 use App\Livewire\Projects\Index as ProjectsIndex;
@@ -44,8 +45,10 @@ Route::middleware(['auth'])
         Route::get('/projects/{projectId}/sub-projects', SubProjectManager::class)
             ->name('projects.subprojects');
 
+        Route::get('/activities/index', ActivitiesIndew::class)->name('activities.index');
+
         // Le point d'interrogation "?" rend l'ID de l'activité optionnel (Création si vide, Modification si présent)
-        Route::get('/activities/form/{activityId?}', ActivitiesCreateUpdate::class)
+        Route::get('/activities/{activityId?}/form', ActivitiesCreateUpdate::class)
             ->name('activities.create-update');
 
         Route::get('/users', UsersIndex::class)

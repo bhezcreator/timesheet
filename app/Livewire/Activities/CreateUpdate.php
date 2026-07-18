@@ -39,8 +39,8 @@ class CreateUpdate extends Component
     public $subProjects = [];
     public $activityTypes = [];
 
-    // User
-    public User $user;
+    // ID User
+    public int $user_id;
 
     // Calcul de pourcentage d'avancement du projet par rapport à user actuel
     public string $currentProjectName = '';
@@ -56,7 +56,7 @@ class CreateUpdate extends Component
      */
     public function mount(TimesheetLockService $lockService, ?int $activityId = null)
     {
-        $this->user = User::find(Auth::id());
+        $this->user_id = Auth::id();
 
         $this->activityId = $activityId;
         $this->isEditMode = !is_null($activityId);
@@ -64,7 +64,7 @@ class CreateUpdate extends Component
         // 1. Contrôle de sécurité et de droits d'accès
         if ($this->isEditMode) {
             $this->checkPermissionOrFail('activites.modifier');
-            $activity = Activity::where('user_id', $this->user->id)->findOrFail($this->activityId);
+            $activity = Activity::where('user_id', $this->user_id)->findOrFail($this->activityId);
 
             // Sécurité : Impossible de modifier une activité soumise pour approbation ou déjà verrouillée
             if ($activity->status !== 'brouillon' && $activity->status !== 'rejeté') {
@@ -93,7 +93,7 @@ class CreateUpdate extends Component
             $this->subProjects = SubProject::query()
                 ->where('project_id', $this->project_id)
                 ->whereHas('users', function ($query) {
-                    $query->where('user_id', $this->user->id);
+                    $query->where('user_id', $this->user_id);
                 })
                 ->orderBy('name')
                 ->get();
@@ -107,7 +107,7 @@ class CreateUpdate extends Component
         $this->projects = Project::query()
             ->where('status', 'active') // Ajusté selon votre énumération précédente ('Actif' avec majuscule)
             ->whereHas('users', function ($query) {
-                $query->where('user_id', $this->user->id); // Sécurité : exclut les anciens projets terminés pour cet utilisateur
+                $query->where('user_id', $this->user_id); // Sécurité : exclut les anciens projets terminés pour cet utilisateur
             })
             ->orderBy('name')
             ->get();
@@ -136,7 +136,7 @@ class CreateUpdate extends Component
             $this->subProjects = \App\Models\SubProject::query()
                 ->where('project_id', $value)
                 ->whereHas('users', function ($query) {
-                    $query->where('user_id', $this->user->id);
+                    $query->where('user_id', $this->user_id);
                 })
                 ->orderBy('name')
                 ->get();
@@ -158,7 +158,7 @@ class CreateUpdate extends Component
             if ($totalMonthlyRequiredHours > 0) {
                 // Somme des heures déjà déclarées par cet agent sur ce projet précis pour le mois actuel
                 $hoursLoggedOnProject = Activity::query()
-                    ->where('user_id', $this->user->id)
+                    ->where('user_id', $this->user_id)
                     ->where('project_id', $value)
                     ->whereMonth('activity_date', now()->month)
                     ->whereYear('activity_date', now()->year)
@@ -185,7 +185,7 @@ class CreateUpdate extends Component
             'activity_date' => ['required', 'date'],
             'start_time' => ['required', 'date_format:H:i'],
             'end_time' => ['required', 'date_format:H:i', 'after:start_time'],
-            'description' => ['nullable', 'string', 'max:1000', 'regex:/^[a-z0-9\-\._ a-z0-9àâäéèêëîïôöùûüçÂÆÇÈÉÊËÎÏÔŒÙÛÜ]+$/i'],
+            'description' => ['nullable', 'string', 'max:1000', 'regex:/^[a-z0-9\-\._ a-z0-9àâäéèêëîïôöùûü;:!,?çÂÆÇÈÉÊËÎÏÔŒÙÛÜ]+$/i'],
         ];
     }
 
@@ -194,16 +194,20 @@ class CreateUpdate extends Component
      */
     public function save(AppSettingsService $settingsService, TimesheetLockService $lockService, CalendarBusinessService $calendarService)
     {
-        // --- CONFIGURATION DYNAMIQUE DU PREMIER JOUR DE LA SEMAINE ---
-        $firstDaySetting = (int) $settingsService->get('time_first_day_of_week', 1); // 1 (Lundi) par défaut
+        $carbonDate = Carbon::parse($this->activity_date);
 
-        // Configuration globale pour l'instance Carbon de cette requête
-        if ($firstDaySetting === 0) {
-            Carbon::setWeekStartsAt(\Carbon\Carbon::SUNDAY);
-            Carbon::setWeekEndsAt(\Carbon\Carbon::SATURDAY);
-        } else {
-            Carbon::setWeekStartsAt(\Carbon\Carbon::MONDAY);
-            Carbon::setWeekEndsAt(\Carbon\Carbon::SUNDAY);
+        // 1. Calcul immédiat de la durée pour les validations suivantes
+        $start = Carbon::parse($this->start_time);
+        $end = Carbon::parse($this->end_time);
+        $calculatedDuration = round($start->diffInMinutes($end) / 60, 2);
+
+        // Remplacez l'ancien appel par celui-ci :
+        $maxWeeklyHours = (float) $settingsService->get('time_workweek_hours', 40.0);
+
+        if ($this->exceedsWeeklyHoursCeiling($this->activity_date, $calculatedDuration, $maxWeeklyHours, $settingsService)) {
+            throw ValidationException::withMessages([
+                'end_time' => ["Limite hebdomadaire atteinte : L'ajout de cette activité ferait dépasser le plafond global autorisé de {$maxWeeklyHours}h pour cette semaine."]
+            ]);
         }
 
         // AJOUT 1 : Gestion dynamique de la validation de la description avant le validate()
@@ -219,13 +223,6 @@ class CreateUpdate extends Component
                 throw ValidationException::withMessages(['description' => ["Une description détaillée est requise par la configuration système."]]);
             }
         }
-
-        $carbonDate = Carbon::parse($this->activity_date);
-
-        // 1. Calcul immédiat de la durée pour les validations suivantes
-        $start = Carbon::parse($this->start_time);
-        $end = Carbon::parse($this->end_time);
-        $calculatedDuration = round($start->diffInMinutes($end) / 60, 2);
 
         // --- 1.2. BLOCAGE DE LA SAISIE DU MOIS EN COURS À PARTIR DU 25 ---
         $lockDay = (int) $settingsService->get('timesheet_lock_day_of_month', 25);
@@ -307,20 +304,10 @@ class CreateUpdate extends Component
             ]);
         }
 
-        // --- NOUVEAU : 9. VÉRIFICATION DU PLAFOND HEBDOMADAIRE GLOBAL ---
-        // On récupère le plafond d'heures par semaine (Ex: 40h) depuis la table settings
-        $maxWeeklyHours = (float) $settingsService->get('time_workweek_hours', 40.0);
-
-        if ($this->exceedsWeeklyHoursCeiling($this->activity_date, $calculatedDuration, $maxWeeklyHours)) {
-            throw ValidationException::withMessages([
-                'end_time' => ["Limite hebdomadaire atteinte : L'ajout de cette activité ferait dépasser le plafond global autorisé de {$maxWeeklyHours}h pour cette semaine."]
-            ]);
-        }
-
         // --- ENREGISTREMENT ---
         $data = [
             'titre' => trim($this->titre),
-            'user_id' => Auth::id(),
+            'user_id' => $this->user_id,
             'project_id' => $this->project_id,
             'sub_project_id' => $this->sub_project_id,
             'activity_type_id' => $this->activity_type_id,
@@ -333,7 +320,7 @@ class CreateUpdate extends Component
         ];
 
         if ($this->isEditMode) {
-            $activity = Activity::where('user_id', Auth::id())->findOrFail($this->activityId);
+            $activity = Activity::where('user_id', $this->user_id)->findOrFail($this->activityId);
             $activity->update($data);
             session()->flash('success', 'Activité mise à jour avec succès.');
         } else {
@@ -341,7 +328,7 @@ class CreateUpdate extends Component
             session()->flash('success', 'Activité enregistrée avec succès.');
         }
 
-        return $this->redirectRoute('dashboard', navigate: true);
+        return $this->redirectRoute('activities.index', navigate: true);
     }
 
     protected function checkPermissionOrFail(string $permission): bool
@@ -367,7 +354,7 @@ class CreateUpdate extends Component
     protected function hasTimeOverlap(string $date, string $startTime, string $endTime): bool
     {
         return Activity::query()
-            ->where('user_id', $this->user->id)
+            ->where('user_id', $this->user_id)
             ->whereDate('activity_date', $date)
             // On ignore la ligne en cours si on modifie
             ->when($this->isEditMode, function ($query) {
@@ -387,7 +374,7 @@ class CreateUpdate extends Component
     {
         // Calcul de la somme des heures déjà enregistrées pour ce jour-là
         $alreadyLoggedHours = Activity::query()
-            ->where('user_id', $this->user->id)
+            ->where('user_id', $this->user_id)
             ->whereDate('activity_date', $date)
             ->when($this->isEditMode, function ($query) {
                 $query->where('id', '!=', $this->activityId);
@@ -400,16 +387,52 @@ class CreateUpdate extends Component
     /**
      * Exemple de fonction de validation à ajouter dans votre composant
      */
-    protected function exceedsWeeklyHoursCeiling(string $date, float $newDuration, float $maxWeeklyHours): bool
+    // protected function exceedsWeeklyHoursCeiling(string $date, float $newDuration, float $maxWeeklyHours): bool
+    // {
+    //     $carbonDate = Carbon::parse($date);
+
+    //     // Grâce à setWeekStartsAt(), startOfWeek récupère soit le Lundi soit le Dimanche selon la BDD
+    //     $startOfWeek = $carbonDate->copy()->startOfWeek();
+    //     $endOfWeek = $carbonDate->copy()->endOfWeek();
+
+    //     $weeklyLoggedHours = Activity::query()
+    //         ->where('user_id', $this->user_id)
+    //         ->whereBetween('activity_date', [$startOfWeek->format('Y-m-d'), $endOfWeek->format('Y-m-d')])
+    //         ->when($this->isEditMode, function ($query) {
+    //             $query->where('id', '!=', $this->activityId);
+    //         })
+    //         ->sum('duration');
+
+    //     return ($weeklyLoggedHours + $newDuration) > $maxWeeklyHours;
+    // }
+
+    /**
+     * RÈGLE C : Vérifie si le cumul d'heures de la semaine dépasse le plafond autorisé.
+     */
+    protected function exceedsWeeklyHoursCeiling(string $date, float $newDuration, float $maxWeeklyHours, AppSettingsService $settingsService): bool
     {
-        $carbonDate = Carbon::parse($date);
+        $carbonDate = \Carbon\Carbon::parse($date)->startOfDay();
 
-        // Grâce à setWeekStartsAt(), startOfWeek récupère soit le Lundi soit le Dimanche selon la BDD
-        $startOfWeek = $carbonDate->copy()->startOfWeek();
-        $endOfWeek = $carbonDate->copy()->endOfWeek();
+        // Récupération du réglage : 0 = Dimanche, 1 = Lundi
+        $firstDaySetting = (int) $settingsService->get('time_first_day_of_week', 1);
 
+        if ($firstDaySetting === 0) {
+            // Si la semaine commence le DIMANCHE :
+            // Si aujourd'hui est un dimanche, le début est aujourd'hui, sinon on recule au dimanche précédent
+            $startOfWeek = $carbonDate->dayOfWeek === \Carbon\Carbon::SUNDAY
+                ? $carbonDate->copy()
+                : $carbonDate->copy()->modify('last sunday');
+
+            $endOfWeek = $startOfWeek->copy()->modify('next saturday')->endOfDay();
+        } else {
+            // Si la semaine commence le LUNDI (Comportement natif standard)
+            $startOfWeek = $carbonDate->copy()->startOfWeek();
+            $endOfWeek = $carbonDate->copy()->endOfWeek();
+        }
+
+        // Calcul de la somme des heures sur cette plage de dates stricte
         $weeklyLoggedHours = Activity::query()
-            ->where('user_id', $this->user->id)
+            ->where('user_id', $this->user_id)
             ->whereBetween('activity_date', [$startOfWeek->format('Y-m-d'), $endOfWeek->format('Y-m-d')])
             ->when($this->isEditMode, function ($query) {
                 $query->where('id', '!=', $this->activityId);
@@ -436,10 +459,10 @@ class CreateUpdate extends Component
 
         // 4. Calcul du nombre de jours uniques où l'utilisateur connecté a déjà enregistré des activités ce mois-ci
         $this->userLoggedDaysCount = \App\Models\Activity::query()
-            ->where('user_id', $this->user->id)
+            ->where('user_id', $this->user_id)
             ->whereMonth('activity_date', $targetDate->month)
             ->whereYear('activity_date', $targetDate->year)
             ->distinct()
-            ->count('activity_date'); // Compte uniquement les jours uniques
+            ->count('activity_date');
     }
 }

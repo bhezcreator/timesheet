@@ -24,7 +24,7 @@ new class extends Component
         [
             'title' => 'Activités',
             'icon'  => 'la-tasks',
-            'route' => 'activities.create-update',
+            'route' => 'activities.index',
         ],
         [
             'title' => 'Rapports',

@@ -13,19 +13,6 @@
             </x-ui.alert>
         @endif
 
-        <!-- Erreur exclusive sur l'action de permission ou contrainte critique -->
-   {{--      @error('permission')
-            <x-ui.alert type="error" class="mb-4 mt-8">
-                {{ $message }}
-            </x-ui.alert>
-        @enderror
-
-        @error('activity_type')
-            <x-ui.alert type="error" class="mb-4 mt-8">
-                {{ $message }}
-            </x-ui.alert>
-        @enderror --}}
-
         <!-- Affichage global des erreurs de validation ($errors) -->
         @if($errors->any())
             <x-ui.alert type="error" class="mb-4 mt-8">

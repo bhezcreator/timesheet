@@ -1,12 +1,12 @@
 <div class="py-0">
-     <x-slot name="header">
+    <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Attribution des projets
+            {{ $isEditMode ? 'Modifier cette activité' : 'Déclarer une activité' }}
         </h2>
     </x-slot>
 
     <div class="flex items-center mb-4">
-        <a href="{{ url()->previous() }}"
+        <a href="{{ route('activities.index') }}"
             wire:navigate class="font-semibold text-gray-500 inline-flex items-center gap-2 text-sm hover:text-indigo-600 transition-colors">
             <i class="las la-arrow-left text-base"></i> Retour
         </a>
@@ -28,6 +28,12 @@
     </div>
 
     <div class="w-full mt-4">
+        <!-- Alertes de session -->
+        @if(session('success'))
+            <x-ui.alert type="success" class="mb-4">
+                {{ session('success') }}
+            </x-ui.alert>
+        @endif
         <!-- Message d'erreur exclusif sur droit ou blocage structurel -->
         @error('permission')
             <x-ui.alert type="error" class="mb-6">{{ $message }}</x-ui.alert> <br>
@@ -151,12 +157,12 @@
             <div class="border-t border-gray-100 pt-5">
                 <x-ui.forms.textarea
                     name="description"
+                    wire:model="description"
                     required
                     label="Description / Livrables produits"
-                    helper="Décrivez les activités réalisées."
+                    helper="Décrivez les tâches réalisées."
                     placeholder="Décrivez brièvement les tâches accomplies (Obligatoire selon les paramètres de l'organisation)..."
                 />
-                <x-ui.forms.error name="description" />
             </div>
 
             <!-- Section 5 : COMPOSANT EN TEMPS RÉEL : Affiché uniquement si un projet est sélectionné -->

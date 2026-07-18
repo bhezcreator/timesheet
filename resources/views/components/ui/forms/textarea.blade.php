@@ -14,10 +14,10 @@
     x-data="{
         value: '',
         init() {
-            // Capte la valeur initiale (Blade / Livewire) au chargement
-            this.value = this.$refs.textarea.value;
+            // CORRECTION 1 : Récupération immédiate et sécurisée de la valeur stockée dans Livewire
+            this.value = $wire.get('{{ $name }}') ?? '';
 
-            // Ajuste la hauteur dès l'affichage initial
+            // Ajuste la hauteur dès l'affichage initial après injection de la valeur
             this.$nextTick(() => this.resize());
 
             // Espionne les mises à jour asynchrones de Livewire (ex: clic sur Modifier)
@@ -27,15 +27,12 @@
             });
         },
         resize() {
-            // Réinitialise la hauteur pour recalculer le scrollHeight exact
             this.$refs.textarea.style.height = 'auto';
-            // Applique la nouvelle hauteur basée sur le contenu réel
             this.$refs.textarea.style.height = this.$refs.textarea.scrollHeight + 'px';
         }
     }"
     class="space-y-2 w-full"
 >
-    <!-- Label avec astérisque de sécurité -->
     @if($label)
         <label for="{{ $name }}" class="block text-sm font-semibold text-gray-500 select-none">
             {{ $label }}
@@ -45,7 +42,7 @@
         </label>
     @endif
 
-    <!-- Zone de texte dynamique -->
+    <!-- Zone de texte dynamique (CORRECTION 2 : Liaison Livewire gérée proprement par Alpine) -->
     <textarea
         {{ $attributes->merge([
             'class' => 'w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-700 shadow-sm transition-all duration-150 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:bg-gray-50 disabled:cursor-not-allowed resize-none overflow-hidden focus:outline-none'
@@ -59,10 +56,9 @@
         @disabled($disabled)
         @readonly($readonly)
         x-model="value"
-        @input="resize()"
-    >{{ old($name, $slot) }}</textarea>
+        @input="resize(); $wire.set('{{ $name }}', value, false)" {{-- CORRECTION 3 : Met à jour Livewire en arrière-plan lors de la saisie sans appeler le serveur --}}
+    ></textarea>
 
-    <!-- Pied de zone : Messages d'aide, d'erreurs et compteur -->
     <div class="flex justify-between items-start gap-4 min-h-[20px] px-1 select-none">
         <div class="flex-1">
             @if($helper)
@@ -74,7 +70,6 @@
             @enderror
         </div>
 
-        <!-- Compteur de caractères dynamique (Affiché uniquement si maxlength est défini) -->
         @if($maxlength)
             <span
                 class="text-xs font-mono font-medium transition-colors"
