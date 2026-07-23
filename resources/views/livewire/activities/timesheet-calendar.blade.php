@@ -1,4 +1,9 @@
 <div class="p-0 space-y-6">
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            Feuille de temps
+        </h2>
+    </x-slot>
     <!-- Barre de Navigation Moderne -->
     <div class="flex flex-col sm:flex-row justify-between items-center bg-white p-4 shadow-sm gap-4 border-t border-t-blue-700">
         <!-- Vues (Année, Mois, Semaine) -->

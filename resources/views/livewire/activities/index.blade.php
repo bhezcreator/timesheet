@@ -43,7 +43,7 @@
                         <h1 class="text-1xl font-bold text-gray-900">
                             Mon journal d'activités
                         </h1>
-                        <a href="{{ route('activities.create-update') }}" wire:navigate>
+                        <a href="{{ route('activities.create') }}" wire:navigate>
                             <x-ui.button>
                                 <i class="las la-plus mr-1"></i> Déclarer une activité
                             </x-ui.button>
@@ -179,7 +179,7 @@
 
                             <!-- Durée formatée -->
                             <td class="px-6 py-4 text-xs font-mono font-black text-gray-900 align-middle whitespace-nowrap">
-                                {{ number_format($activite->duration, 2) }} h
+                                {{ round($activite->duration) }} h
                             </td>
 
                             <!-- Statut Badge Coloré -->
@@ -198,7 +198,7 @@
                             <td class="px-6 py-4 text-xs space-x-1 whitespace-nowrap align-middle text-right">
                                 <!-- Lien Modifier conditionnel (Seulement si modifiable) -->
                                 @if($activite->status === 'brouillon' || $activite->status === 'rejeté')
-                                    <a href="{{ route('activities.create-update', ['activityId' => $activite->id]) }}" wire:navigate class="inline-block">
+                                    <a href="{{ route('activities.update', ['activityId' => $activite->id]) }}" wire:navigate class="inline-block">
                                         <x-ui.button variant="outline" size="sm" title="Modifier l'activité">
                                             <i class="las la-edit text-sm"></i>
                                         </x-ui.button>

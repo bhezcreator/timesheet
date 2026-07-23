@@ -150,23 +150,21 @@ resources/
             - bloquez les dates non autorisées par(getWorkingDatesArray(string|int $month, int $year)) ; OK
             - Premier jour de la semaine : OK
             - Seuil de déclenchement hebdomadaire (Heures) OK
-            - Heures de travail par semaine standard(Calculer auto) : component setting
+            - Heures de travail par semaine standard(Calculer auto) OK
             - Jour limite de verrouillage du mois OK
-            - Fréquence de soumission (test : soumission rapport)
-            - Calculerles heur supplémentaires (dans : soumission rapport)
-            - Calculer heures supplémentaires
 
-    - Rapport :
+    - Rapport :  A FINIR
         Générer son rapport du mois
-        Modifier le rapport
+        ajouter ou Modifier le rapport
         Décrire :
             les objectifs
             les réalisations
             les prochaines actions
-        Soumettre le rapport
-
-        Le rapport regroupe (Tous les projets ou individuel)
-        Toutes les activités du mois concerné.
+        Soumettre le rapport :
+            - Fréquence de soumission (table setting)
+            - Calculer heures supplémentaires(table setting)
+        Le rapport regroupe (Tous les projets ou un seul)
+        Toutes les activités du mois concerné(projet indiquer).
 
     - Validation des rapports :
         Le superviseur peut :

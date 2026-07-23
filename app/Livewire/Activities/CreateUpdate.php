@@ -129,11 +129,11 @@ class CreateUpdate extends Component
         $this->currentProjectName = '';
 
         if ($value) {
-            $project = \App\Models\Project::find($value);
+            $project = Project::find($value);
             $this->currentProjectName = $project ? $project->name : '';
 
             // 2. Chargement des sous-projets filtrés pour l'utilisateur en ligne
-            $this->subProjects = \App\Models\SubProject::query()
+            $this->subProjects = SubProject::query()
                 ->where('project_id', $value)
                 ->whereHas('users', function ($query) {
                     $query->where('user_id', $this->user_id);
@@ -383,28 +383,6 @@ class CreateUpdate extends Component
 
         return ($alreadyLoggedHours + $newDuration) > $maxHoursAllowed;
     }
-
-    /**
-     * Exemple de fonction de validation à ajouter dans votre composant
-     */
-    // protected function exceedsWeeklyHoursCeiling(string $date, float $newDuration, float $maxWeeklyHours): bool
-    // {
-    //     $carbonDate = Carbon::parse($date);
-
-    //     // Grâce à setWeekStartsAt(), startOfWeek récupère soit le Lundi soit le Dimanche selon la BDD
-    //     $startOfWeek = $carbonDate->copy()->startOfWeek();
-    //     $endOfWeek = $carbonDate->copy()->endOfWeek();
-
-    //     $weeklyLoggedHours = Activity::query()
-    //         ->where('user_id', $this->user_id)
-    //         ->whereBetween('activity_date', [$startOfWeek->format('Y-m-d'), $endOfWeek->format('Y-m-d')])
-    //         ->when($this->isEditMode, function ($query) {
-    //             $query->where('id', '!=', $this->activityId);
-    //         })
-    //         ->sum('duration');
-
-    //     return ($weeklyLoggedHours + $newDuration) > $maxWeeklyHours;
-    // }
 
     /**
      * RÈGLE C : Vérifie si le cumul d'heures de la semaine dépasse le plafond autorisé.

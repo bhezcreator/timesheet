@@ -3,6 +3,9 @@
 use App\Livewire\Activities\CreateUpdate as ActivitiesCreateUpdate;
 use App\Livewire\Activities\Index as ActivitiesIndex;
 use App\Livewire\Activities\TimesheetCalendar as ActivitiesTimesheetCalendar;
+
+use App\Livewire\Rapports\CreateUpdate as RapportsCreateUpdate;
+
 use App\Livewire\Permissions\Index as PermissionIndex;
 use App\Livewire\Projects\AttributesProject;
 use App\Livewire\Projects\Index as ProjectsIndex;
@@ -49,10 +52,20 @@ Route::middleware(['auth'])
         Route::get('/activities/index', ActivitiesIndex::class)->name('activities.index');
 
         // Le point d'interrogation "?" rend l'ID de l'activité optionnel (Création si vide, Modification si présent)
+        Route::get('/activities/form', ActivitiesCreateUpdate::class)
+            ->name('activities.create');
+
         Route::get('/activities/{activityId?}/form', ActivitiesCreateUpdate::class)
-            ->name('activities.create-update');
+            ->name('activities.update');
 
         Route::get('/activities/Timesheet/Calendar', ActivitiesTimesheetCalendar::class)->name('timesheet.calendar');
+
+        // Route pour la création (sans paramètre)
+        Route::get('/rapports/form', RapportsCreateUpdate::class)
+            ->name('rapports.create');
+
+        Route::get('/rapports/{reportId?}/form', RapportsCreateUpdate::class)
+            ->name('rapports.update');
 
         Route::get('/users', UsersIndex::class)
             ->name('users.index');
