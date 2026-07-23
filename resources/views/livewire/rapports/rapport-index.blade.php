@@ -162,6 +162,12 @@
                             <i class="las la-edit text-sm"></i> Editer
                         </a>
 
+                        <a href="{{ route('rapports.print', ['reportId' => $rapport->id]) }}"
+                        class="inline-flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-700 hover:text-blue-600 hover:border-blue-300 transition shadow-2xs">
+                            <i class="las la-print text-sm"></i>
+                            Imprimer le rapport
+                        </a>
+
                         <!-- Supprimer -->
                         <x-ui.button variant="danger" size="sm" wire:click="confirmDelete({{ $rapport->id }})" title="Retirer ce rapport">
                             <i class="las la-trash text-sm"></i>

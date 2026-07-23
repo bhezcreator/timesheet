@@ -165,7 +165,10 @@ resources/
             - Calculer heures supplémentaires(table setting)
         Le rapport regroupe (Tous les projets ou un seul)
         Toutes les activités du mois concerné(projet indiquer)
+        Impression :
+            - mettre les regles avant l'Impression : validation du rapport avant;
         Lier les fichiers : docs pdf ou images au rapport
+        Mise a jour : rapport
 
     - Validation des rapports :
         Le superviseur peut :

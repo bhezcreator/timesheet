@@ -6,6 +6,7 @@ use App\Livewire\Activities\TimesheetCalendar as ActivitiesTimesheetCalendar;
 
 use App\Livewire\Rapports\CreateUpdate as RapportsCreateUpdate;
 use App\Livewire\Rapports\RapportIndex as RapportsIndex;
+use App\Livewire\Rapports\PrintReport;
 
 use App\Livewire\Permissions\Index as PermissionIndex;
 use App\Livewire\Projects\AttributesProject;
@@ -69,6 +70,10 @@ Route::middleware(['auth'])
 
         Route::get('/rapports/{reportId?}/form', RapportsCreateUpdate::class)
             ->name('rapports.update');
+
+        // Route sécurisée qui demande l'identifiant du rapport à imprimer
+        Route::get('/rapports/{reportId}/print', PrintReport::class)
+            ->name('rapports.print');
 
         Route::get('/users', UsersIndex::class)
             ->name('users.index');
