@@ -164,7 +164,8 @@ resources/
             - Fréquence de soumission (table setting)
             - Calculer heures supplémentaires(table setting)
         Le rapport regroupe (Tous les projets ou un seul)
-        Toutes les activités du mois concerné(projet indiquer).
+        Toutes les activités du mois concerné(projet indiquer)
+        Lier les fichiers : docs pdf ou images au rapport
 
     - Validation des rapports :
         Le superviseur peut :

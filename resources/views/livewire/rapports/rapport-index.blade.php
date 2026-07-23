@@ -130,7 +130,7 @@
 
                     <div>
                         <h3 class="text-base font-black text-gray-800 capitalize">
-                            {{ now()->month($rapport->month)->translatedFormat('F') }} {{ $rapport->year }}
+                            {{ $rapport->full_title }}
                         </h3>
                         <p class="text-xs text-gray-400 font-medium mt-0.5">
                             <i class="las la-clock"></i> {{ count($rapport->activities) }} activité(s) indexée(s) ({{ $rapport->activities->sum('duration') }}h)

@@ -149,10 +149,14 @@ class CreateUpdate extends Component
 
     public function save($submit = false)
     {
-        if ($submit) {
+        if ($this->ID_report) {
             $this->checkPermissionOrFail("rapports.modifier");
         } else {
             $this->checkPermissionOrFail("rapports.creer");
+        }
+
+        if ($this->selected_project_id === 'all') {
+            $this->selected_project_id = '';
         }
 
         $this->validate();
@@ -161,6 +165,7 @@ class CreateUpdate extends Component
             'user_id' => $this->user_id,
             'month' => $this->month,
             'year' => $this->year,
+            'project_ids' => $this->selected_project_id,
             'report_date' => $this->report_date,
             'objectives' => $this->objectives,
             'achievements' => $this->achievements,
