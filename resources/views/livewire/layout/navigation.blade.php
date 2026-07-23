@@ -29,7 +29,7 @@ new class extends Component
         [
             'title' => 'Rapports',
             'icon'  => 'la-chart-bar',
-            'route' => 'rapports.create',
+            'route' => 'rapports.index',
         ],
         [
             'title' => 'Personnels',

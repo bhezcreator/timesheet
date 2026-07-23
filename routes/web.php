@@ -5,6 +5,7 @@ use App\Livewire\Activities\Index as ActivitiesIndex;
 use App\Livewire\Activities\TimesheetCalendar as ActivitiesTimesheetCalendar;
 
 use App\Livewire\Rapports\CreateUpdate as RapportsCreateUpdate;
+use App\Livewire\Rapports\RapportIndex as RapportsIndex;
 
 use App\Livewire\Permissions\Index as PermissionIndex;
 use App\Livewire\Projects\AttributesProject;
@@ -60,6 +61,8 @@ Route::middleware(['auth'])
 
         Route::get('/activities/Timesheet/Calendar', ActivitiesTimesheetCalendar::class)->name('timesheet.calendar');
 
+        Route::get('/rapports/index', RapportsIndex::class)
+            ->name('rapports.index');
         // Route pour la création (sans paramètre)
         Route::get('/rapports/form', RapportsCreateUpdate::class)
             ->name('rapports.create');

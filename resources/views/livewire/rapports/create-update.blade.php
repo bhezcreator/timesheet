@@ -5,6 +5,13 @@
         </h2>
     </x-slot>
 
+    <div class="flex items-center mb-4">
+        <a href="{{ route('rapports.index') }}"
+            wire:navigate class="font-semibold text-gray-500 inline-flex items-center gap-2 text-sm hover:text-indigo-600 transition-colors">
+            <i class="las la-arrow-left text-base"></i> Retour
+        </a>
+    </div>
+
     <!-- En-tête de la page -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white border-t border-t-blue-700 p-4 rounded-2xl shadow-xs gap-4">
         <div>
@@ -36,8 +43,8 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <!-- Filtre Mois -->
-                    <div class="relative w-full group" x-data="{ val: @entangle('month') }">
-                        <select wire:model.live="month"
+                    <div class="relative w-full group" x-data="{ val: @entangle('month').live }">
+                        <select x-model="val"
                                 class="w-full appearance-none bg-white rounded-xl border border-gray-200 px-4 py-4 pr-10 text-xs font-medium text-gray-700 shadow-xs cursor-pointer hover:border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 focus:outline-none transition duration-150">
                             <option value="">Tous les mois</option>
                             @foreach(range(1, 12) as $m)
@@ -59,8 +66,8 @@
                     </div>
 
                     <!-- Filtre Année -->
-                    <div class="relative w-full group" x-data="{ val: @entangle('year') }">
-                        <select wire:model.live="year"
+                    <div class="relative w-full group" x-data="{ val: @entangle('year').live }">
+                        <select x-model="val"
                                 class="w-full appearance-none bg-white rounded-xl border border-gray-200 px-4 py-4 pr-10 text-xs font-medium text-gray-700 shadow-xs cursor-pointer hover:border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 focus:outline-none transition duration-150">
                             <option value="">Toutes les années</option>
                             @foreach(range(now()->year - 2, now()->year + 1) as $y)

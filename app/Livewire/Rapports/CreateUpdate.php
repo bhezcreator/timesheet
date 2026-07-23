@@ -2,6 +2,9 @@
 
 namespace App\Livewire\Rapports;
 
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
+
 use App\Models\MonthlyReport;
 use App\Models\Activity;
 use App\Models\Setting;
@@ -66,6 +69,8 @@ class CreateUpdate extends Component
 
     public function mount($reportId = null)
     {
+        $this->checkPermissionOrFail("rapports.voir");
+
         $this->ID_report = $reportId ? (int) $reportId : null;
         $this->user_id = Auth::id();
 
@@ -144,6 +149,12 @@ class CreateUpdate extends Component
 
     public function save($submit = false)
     {
+        if ($submit) {
+            $this->checkPermissionOrFail("rapports.modifier");
+        } else {
+            $this->checkPermissionOrFail("rapports.creer");
+        }
+
         $this->validate();
 
         $data = [
@@ -181,6 +192,20 @@ class CreateUpdate extends Component
         return view('livewire.rapports.create-update', [
             'projects' => $user->projects()->get(),
             'activitiesList' => $this->activities,
+        ]);
+    }
+
+    /**
+     * Valide une permission et lève une erreur propre interceptée par le Front-End.
+     */
+    protected function checkPermissionOrFail(string $permission): bool
+    {
+        if (Gate::allows($permission)) {
+            return true;
+        }
+
+        throw ValidationException::withMessages([
+            'permission' => ["Action non autorisée : Privilèges insuffisants pour exécuter cette opération."]
         ]);
     }
 }
