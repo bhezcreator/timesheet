@@ -10,6 +10,7 @@ class MonthlyReport extends Model
         'user_id',
         'month',
         'year',
+        'project_ids',
         'report_date',
         'objectives',
         'achievements',
@@ -21,6 +22,7 @@ class MonthlyReport extends Model
     protected $casts = [
         'report_date' => 'date',
         'submitted_at' => 'datetime',
+        'project_ids' => 'array',
     ];
 
     public function user()
