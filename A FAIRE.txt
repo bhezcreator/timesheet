@@ -154,21 +154,20 @@ resources/
             - Jour limite de verrouillage du mois OK
 
     - Rapport :  A FINIR
-        Générer son rapport du mois
-        ajouter ou Modifier le rapport
-        Décrire :
+        Générer son rapport du mois Ok
+        ajouter ou Modifier le rapport Ok
+        Décrire : Ok
             les objectifs
             les réalisations
             les prochaines actions
-        Soumettre le rapport :
+        Soumettre le rapport : Ok
             - Fréquence de soumission (table setting)
             - Calculer heures supplémentaires(table setting)
-        Le rapport regroupe (Tous les projets ou un seul)
-        Toutes les activités du mois concerné(projet indiquer)
+        Le rapport regroupe (Tous les projets ou un seul) Ok
+        Toutes les activités du mois concerné(projet indiquer) Ok
         Impression :
-            - mettre les regles avant l'Impression : validation du rapport avant;
+            - mettre les regles avant l'Impression : validation du rapport avant; Ok
         Lier les fichiers : docs pdf ou images au rapport
-        Mise a jour : rapport
 
     - Validation des rapports :
         Le superviseur peut :

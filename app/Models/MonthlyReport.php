@@ -2,12 +2,17 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class MonthlyReport extends Model
+class MonthlyReport extends Model implements HasMedia
 {
+    use InteractsWithMedia;
+
     protected $fillable = [
         'user_id',
         'month',
@@ -26,6 +31,15 @@ class MonthlyReport extends Model
         'submitted_at' => 'datetime',
         'project_ids' => 'array',
     ];
+
+    /**
+     * Enregistrement de la collection de médias (Fichiers joints)
+     */
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('attachments')
+            ->acceptsMimeTypes(['application/pdf', 'image/jpeg', 'image/png', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']);
+    }
 
     public function user()
     {
@@ -74,11 +88,11 @@ class MonthlyReport extends Model
         return Attribute::make(
             get: function () {
                 // Traduction du mois en français (ex: Janvier)
-                $monthName = \Carbon\Carbon::create()->month($this->month)->translatedFormat('F');
+                $monthName = Carbon::create()->month($this->month)->translatedFormat('F');
 
                 // Si la colonne est vide ou null, le rapport concerne tous les projets
                 if (empty($this->project_ids)) {
-                    return "Rapport du mois de " . ucfirst($monthName) . " {$this->year} (Tous les projets)";
+                    return "Rapport du mois de " . ucfirst($monthName) . " {$this->year} (pour tous les projets)";
                 }
 
                 // Si un projet est lié, on affiche son nom grâce au chargement de la relation

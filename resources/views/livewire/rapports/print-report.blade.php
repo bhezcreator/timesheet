@@ -13,7 +13,6 @@
             <span>Retour</span>
         </button>
 
-
         <button type="button"
                 onclick="window.print()"
                 class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl transition shadow-xs flex items-center gap-2 cursor-pointer">
@@ -28,7 +27,7 @@
         <div class="flex justify-between items-start border-b border-gray-200 pb-6">
             <div class="space-y-1">
                 <span class="text-[10px] font-bold text-blue-600 uppercase tracking-widest block">Document Officiel</span>
-                <h1 class="text-xl font-black text-gray-900 uppercase">Feuille de Temps & Activités</h1>
+                <h1 class="text-xl font-black text-gray-900 uppercase">Feuille de Temps</h1>
                 <p class="text-xs text-gray-500 font-medium">{{ $report->full_title }}</p>
             </div>
             <!-- Emplacement du Logo de l'entreprise -->
@@ -85,7 +84,7 @@
                                     <td class="p-3 max-w-xs truncate" title="{{ $activity->description }}">{{ $activity->titre }}</td>
                                     <td class="p-3 text-center whitespace-nowrap">{{ \Carbon\Carbon::parse($activity->start_time)->format('H:i') }}</td>
                                     <td class="p-3 text-center whitespace-nowrap">{{ \Carbon\Carbon::parse($activity->end_time)->format('H:i') }}</td>
-                                    <td class="p-3 text-right font-bold text-gray-800">{{ number_format($activity->duration, 2) }}h</td>
+                                    <td class="p-3 text-right font-bold text-gray-800">{{ number_format($activity->duration, 0) }}h</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -116,11 +115,11 @@
                                     <td class="p-3 font-semibold text-gray-800 whitespace-nowrap">{{ $data['date_formatted'] }}</td>
                                     @foreach($projectsList as $pId => $pName)
                                         <td class="p-3 text-center border-l border-gray-200 font-medium">
-                                            {{ isset($data['projects'][$pId]) ? number_format($data['projects'][$pId], 2) . 'h' : '-' }}
+                                            {{ isset($data['projects'][$pId]) ? number_format($data['projects'][$pId], 0) . 'h' : '-' }}
                                         </td>
                                     @endforeach
                                     <td class="p-3 text-right font-bold text-gray-900 border-l border-gray-200 bg-gray-50/40">
-                                        {{ number_format($data['total_day'], 2) }}h
+                                        {{ number_format($data['total_day'], 0) }}h
                                     </td>
                                 </tr>
                             @endforeach

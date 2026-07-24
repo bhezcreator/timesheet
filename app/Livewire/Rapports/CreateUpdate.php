@@ -2,20 +2,23 @@
 
 namespace App\Livewire\Rapports;
 
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Validation\ValidationException;
-
-use App\Models\MonthlyReport;
 use App\Models\Activity;
+use App\Models\MonthlyReport;
+
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 #[Layout('layouts.app')]
 class CreateUpdate extends Component
 {
+    use WithFileUploads;
     // ID du rapport (null si création)
     public $ID_report = null;
 
@@ -26,7 +29,7 @@ class CreateUpdate extends Component
     public $objectives;
     public $achievements;
     public $next_actions;
-    public $status = 'draft';
+    public $status = 'brouillon';
 
     // Filtrage des activités
     public $selected_project_id = 'all';
@@ -42,10 +45,14 @@ class CreateUpdate extends Component
 
     public int $user_id;
 
+    // Propriétés pour la gestion des fichiers
+    public $files = []; // Stocke les nouveaux fichiers téléversés
+    public $existingFiles = []; // Liste des fichiers déjà en BDD (Mode Édition)
+
     protected function rules()
     {
         // 1. Récupérer les identifiants des projets assignés à l'utilisateur
-        $assignedProjectIds = \App\Models\User::find($this->user_id)
+        $assignedProjectIds = User::find($this->user_id)
             ?->projects()
             ->pluck('projects.id')
             ->toArray() ?? [];
@@ -62,7 +69,13 @@ class CreateUpdate extends Component
             'next_actions' => 'required|string|min:10',
             'selected_project_id' => [
                 'required',
-                \Illuminate\Validation\Rule::in($allowedProjectValues)
+                Rule::in($allowedProjectValues),
+                'files.*' => [
+                    'nullable',
+                    'file',
+                    'mimes:pdf,doc,docx,xls,xlsx,csv,jpg,jpeg,png,webp',
+                    'max:5120' // 5 Mo maximum par fichier
+                ],
             ],
         ];
     }
@@ -87,11 +100,39 @@ class CreateUpdate extends Component
             $this->achievements = $report->achievements;
             $this->next_actions = $report->next_actions;
             $this->status = $report->status;
+
+            // Charger les pièces jointes existantes
+            $this->loadAttachments($report);
         } else {
             // Mode Création (Valeurs par défaut)
             $this->month = now()->month;
             $this->year = now()->year;
             $this->report_date = now()->format('Y-m-d');
+        }
+    }
+
+    private function loadAttachments(MonthlyReport $report)
+    {
+        $this->existingFiles = $report->getMedia('attachments')->map(function ($media) {
+            return [
+                'id' => $media->id,
+                'name' => $media->file_name,
+                'size' => $media->human_readable_size,
+                'url' => $media->getUrl()
+            ];
+        })->toArray();
+    }
+
+    // Supprimer une pièce jointe existante
+    public function deleteAttachment($mediaId)
+    {
+        if ($this->ID_report) {
+            $report = MonthlyReport::where('user_id', $this->user_id)->findOrFail($this->ID_report);
+            $media = $report->media()->find($mediaId);
+            if ($media) {
+                $media->delete();
+                $this->loadAttachments($report);
+            }
         }
     }
 
@@ -146,7 +187,6 @@ class CreateUpdate extends Component
         return $activities;
     }
 
-
     public function save($submit = false)
     {
         if ($this->ID_report) {
@@ -155,9 +195,14 @@ class CreateUpdate extends Component
             $this->checkPermissionOrFail("rapports.creer");
         }
 
-        if ($this->selected_project_id === 'all') {
-            $this->selected_project_id = '';
-        }
+        $selected_project_id = ($this->selected_project_id === 'all') ? '' : $this->selected_project_id;
+        /*
+            if ($this->selected_project_id === 'all') {
+                $selected_project_id = '';
+            } else {
+                $selected_project_id = $this->selected_project_id;
+            }
+        */
 
         $this->validate();
 
@@ -165,7 +210,7 @@ class CreateUpdate extends Component
             'user_id' => $this->user_id,
             'month' => $this->month,
             'year' => $this->year,
-            'project_ids' => $this->selected_project_id,
+            'project_ids' => $selected_project_id,
             'report_date' => $this->report_date,
             'objectives' => $this->objectives,
             'achievements' => $this->achievements,
@@ -180,6 +225,16 @@ class CreateUpdate extends Component
             $data
         );
 
+        // Traitement des pièces jointes Spatie Media Library
+        if (!empty($this->files)) {
+            foreach ($this->files as $file) {
+                $report->addMedia($file->getRealPath())
+                    ->usingFileName($file->getClientOriginalName())
+                    ->toMediaCollection('attachments');
+            }
+            $this->reset('files');
+        }
+
         // Lier toutes les activités affichées à ce rapport
         Activity::whereIn('id', $this->activities->pluck('id'))->update([
             'monthly_report_id' => $report->id,
@@ -188,7 +243,7 @@ class CreateUpdate extends Component
 
         session()->flash('message', $submit ? 'Rapport soumis avec succès !' : 'Brouillon enregistré avec succès !');
 
-        return redirect()->route('rapports.index'); // Modifiez selon votre route réelle
+        return redirect()->route('rapports.index');
     }
 
     public function render()

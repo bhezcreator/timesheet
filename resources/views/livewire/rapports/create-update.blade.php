@@ -16,7 +16,7 @@
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white border-t border-t-blue-700 p-4 rounded-2xl shadow-xs gap-4">
         <div>
             <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Espace Rapports d'Activité</span>
-            <h1 class="text-2xl md:text-2xl font-black text-gray-900 mt-1">
+            <h1 class="text-xl font-bold text-gray-900 mt-1">
                 {{ $ID_report ? 'Modifier le Rapport' : 'Générer un Nouveau Rapport' }}
             </h1>
             <p class="text-xs text-gray-500 mt-0.5">Périodicité configurée : <span class="font-bold text-gray-700 capitalize">{{ $reportFrequency === 'month' ? 'Mensuelle' : 'Hebdomadaire' }}</span></p>
@@ -26,6 +26,7 @@
             <button wire:click="save(false)" wire:loading.attr="disabled" class="flex-1 sm:flex-none cursor-pointer px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition shadow-2xs">
                 <i class="las la-save mr-1.5 text-base"></i> Enregistrer le brouillon
             </button>
+
             <button wire:click="save(true)" wire:loading.attr="disabled" class="flex-1 sm:flex-none cursor-pointer px-4 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition shadow-xs flex items-center justify-center">
                 <i class="las la-paper-plane mr-1.5 text-base"></i> Soumettre le rapport
             </button>
@@ -36,7 +37,7 @@
         <!-- COLONNE GAUCHE : Configuration & Contenu du Rapport (Prend 2 colonnes sur grand écran) -->
         <div class="lg:col-span-2 space-y-6">
             <!-- Section 1 : Période & Périmètre -->
-            <div class="bg-white p-6 rounded-2xl shadow-xs space-y-4 border-t border-t-blue-700">
+            <div class="bg-white p-4 rounded-2xl shadow-xs space-y-4 border-t border-t-blue-700">
                 <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wide flex items-center gap-2">
                     <i class="las la-sliders-h text-blue-500 text-lg"></i> 1. Période & Périmètre du Rapport
                 </h3>
@@ -161,6 +162,120 @@
                     />
                     @error('next_actions') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
                 </div>
+            </div>
+
+            <!-- Section 3 : Pièces Jointes / Documents de preuve -->
+            <div class="bg-white p-4 rounded-2xl shadow-xs space-y-4 border-t border-t-blue-700">
+                <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wide flex items-center gap-2">
+                    <i class="las la-paperclip text-blue-500 text-lg"></i> 3. Documents joints & Livrables (.pdf, .doc, .xls, .xlsx, .jpg, .jpeg, .png, .webp)
+                </h3>
+
+                <!-- Zone d'Upload Responsive (Drag and Drop natif) -->
+                <div class="relative group border-2 border-dashed border-gray-200 hover:border-blue-400 rounded-xl p-6 transition text-center bg-gray-50/50">
+                    <input type="file" wire:model="files" multiple class="absolute inset-0 opacity-0 cursor-pointer z-10">
+
+                    <div class="space-y-1.5" wire:loading.remove wire:target="files">
+                        <i class="las la-cloud-upload-alt text-3xl text-gray-400 group-hover:text-blue-500 transition-colors"></i>
+                        <p class="text-xs font-semibold text-gray-700">Cliquez pour ajouter ou glissez vos documents ici</p>
+                        <p class="text-[10px] text-gray-400">PDF, Word ou Images jusqu'à 5 Mo par fichier</p>
+                    </div>
+
+                    <!-- Indicateur de téléchargement asynchrone Livewire -->
+                    <div class="hidden space-y-2 text-blue-600 text-xs font-medium" wire:loading.block wire:target="files">
+                        <i class="las la-spinner animate-spin text-2xl"></i>
+                        <p>Analyse et téléversement des fichiers en cours...</p>
+                    </div>
+                </div>
+                @error('files.*') <span class="text-xs text-red-500 block mt-1">{{ $message }}</span> @enderror
+
+                <!-- Affichage des nouveaux fichiers en attente d'enregistrement -->
+                @if(!empty($files))
+                    <div class="space-y-1.5 pt-2">
+                        <span class="text-[10px] font-bold text-blue-600 uppercase tracking-wider block">Fichiers prêts à être liés :</span>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            @foreach($files as $key => $file)
+                                @php
+                                    // Récupération de l'extension en minuscules
+                                    $extension = strtolower($file->getClientOriginalExtension());
+
+                                    // Configuration de l'icône et de la couleur selon l'extension
+                                    $fileConfig = match(true) {
+                                        $extension === 'pdf'
+                                            => ['icon' => 'las la-file-pdf text-red-500', 'bg' => 'bg-red-50/30', 'border' => 'border-red-100'],
+                                        in_array($extension, ['doc', 'docx'])
+                                            => ['icon' => 'las la-file-word text-blue-500', 'bg' => 'bg-blue-50/30', 'border' => 'border-blue-100'],
+                                        in_array($extension, ['xls', 'xlsx', 'csv'])
+                                            => ['icon' => 'las la-file-excel text-emerald-600', 'bg' => 'bg-emerald-50/30', 'border' => 'border-emerald-100'],
+                                        in_array($extension, ['jpg', 'jpeg', 'png', 'webp', 'gif'])
+                                            => ['icon' => 'las la-file-image text-green-500', 'bg' => 'bg-green-50/30', 'border' => 'border-green-100'],
+                                        default
+                                            => ['icon' => 'las la-file-alt text-gray-500', 'bg' => 'bg-gray-50/40', 'border' => 'border-gray-100'],
+                                    };
+                                @endphp
+
+                                <div class="flex items-center justify-between p-2.5 rounded-xl text-xs border {{ $fileConfig['bg'] }} {{ $fileConfig['border'] }}">
+                                    <span class="font-medium text-gray-700 truncate pr-4">
+                                        <!-- Icône conditionnelle dynamique -->
+                                        <i class="{{ $fileConfig['icon'] }} text-base mr-1"></i>
+                                        {{ $file->getClientOriginalName() }}
+                                    </span>
+                                    <span class="text-[10px] text-gray-500 whitespace-nowrap font-bold">
+                                        {{ round($file->getSize() / 1024 / 1024, 2) }} Mo
+                                    </span>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
+                <!-- Affichage des fichiers existants (Mode Modification) -->
+                @if(!empty($existingFiles))
+                    <div class="space-y-1.5 pt-2 border-t border-gray-100">
+                        <span class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block">Documents actuellement rattachés :</span>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            @foreach($existingFiles as $f)
+                                @php
+                                    // Extraction de l'extension du fichier existant
+                                    $extension = strtolower(pathinfo($f['name'], PATHINFO_EXTENSION));
+
+                                    // Configuration de l'icône et des couleurs selon l'extension
+                                    $fileConfig = match(true) {
+                                        $extension === 'pdf'
+                                            => ['icon' => 'las la-file-pdf text-red-500', 'bg' => 'bg-red-50/10 hover:bg-red-50/30', 'border' => 'border-red-100'],
+                                        in_array($extension, ['doc', 'docx'])
+                                            => ['icon' => 'las la-file-word text-blue-500', 'bg' => 'bg-blue-50/10 hover:bg-blue-50/30', 'border' => 'border-blue-100'],
+                                        in_array($extension, ['xls', 'xlsx', 'csv'])
+                                            => ['icon' => 'las la-file-excel text-emerald-600', 'bg' => 'bg-emerald-50/30', 'border' => 'border-emerald-100'],
+                                        in_array($extension, ['jpg', 'jpeg', 'png', 'webp'])
+                                            => ['icon' => 'las la-file-image text-green-500', 'bg' => 'bg-green-50/10 hover:bg-green-50/30', 'border' => 'border-green-100'],
+                                        default
+                                            => ['icon' => 'las la-file-alt text-gray-500', 'bg' => 'bg-gray-50 hover:bg-gray-100/70', 'border' => 'border-gray-200'],
+                                    };
+                                @endphp
+
+                                <div class="flex items-center justify-between p-2.5 rounded-xl text-xs border transition duration-150 group/item {{ $fileConfig['bg'] }} {{ $fileConfig['border'] }}">
+                                    <a href="{{ $f['url'] }}" target="_blank" class="font-medium text-gray-700 hover:text-blue-600 truncate pr-4 flex items-center gap-1.5">
+                                        <!-- Icône dynamique conditionnée par l'extension -->
+                                        <i class="{{ $fileConfig['icon'] }} text-base shrink-0"></i>
+                                        <span class="truncate">{{ $f['name'] }}</span>
+                                    </a>
+                                    <div class="flex items-center gap-2 shrink-0">
+                                        <span class="text-[10px] text-gray-400 font-bold bg-white/60 px-1.5 py-0.5 rounded-md border border-gray-100">
+                                            {{ $f['size'] }}
+                                        </span>
+                                        <button type="button"
+                                                wire:click="deleteAttachment({{ $f['id'] }})"
+                                                wire:confirm="Voulez-vous vraiment supprimer définitivement ce document ?"
+                                                class="text-gray-400 hover:text-red-500 p-1 transition cursor-pointer"
+                                                title="Supprimer définitivement">
+                                            <i class="las la-trash-alt text-sm"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
 

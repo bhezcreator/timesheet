@@ -78,7 +78,6 @@
             </div>
         </div>
 
-
         <!-- Filtre Regrouper les projets -->
         <div class="relative w-full group" x-data="{ val: @entangle('selected_project_id') }">
             <select wire:model.live="selected_project_id"
@@ -114,11 +113,11 @@
                 };
             @endphp
 
-            <div class="bg-white rounded-2xl py-4 border border-gray-100 border-t border-t-blue-700 border-b border-b-blue-700 shadow-2xs hover:shadow-xs transition duration-200 flex flex-col justify-between overflow-hidden relative group">
+            <div class="bg-white rounded-2xl py-1 border border-gray-100 border-t border-t-blue-700 border-b border-b-blue-700 shadow-2xs hover:shadow-xs transition duration-200 flex flex-col justify-between overflow-hidden relative group">
                 <!-- En-tête de la carte -->
                 <div class="p-5 space-y-3">
                     <div class="flex justify-between items-center">
-                        <span class="text-xs font-bold text-gray-400 tracking-wider">
+                        <span class="text-xs font-bold text-blue-500 tracking-wider">
                             <i class="las la-calendar-alt text-sm"></i> {{ $rapport->report_date->format('d/m/Y') }}
                         </span>
 
@@ -128,19 +127,19 @@
                         </span>
                     </div>
 
-                    <div>
-                        <h3 class="text-base font-black text-gray-800 capitalize">
+                    <div class="border-b border-gray-200 pb-5">
+                        <h3 class="text-lg font-black text-gray-800">
                             {{ $rapport->full_title }}
                         </h3>
-                        <p class="text-xs text-gray-400 font-medium mt-0.5">
-                            <i class="las la-clock"></i> {{ count($rapport->activities) }} activité(s) indexée(s) ({{ $rapport->activities->sum('duration') }}h)
+                        <p class="text-xs text-gray-600 font-medium mt-0.5">
+                            <i class="las la-clock"></i> {{ count($rapport->activities) }} activité(s) indexée(s) : <span class="font-bold"> ({{ round($rapport->activities->sum('duration')) }}h)</span>
                         </p>
                     </div>
 
                     <!-- Aperçu Réalisations -->
                     <div class="pt-2">
-                        <span class="text-[10px] font-bold text-gray-500 uppercase block tracking-wider">Dernières réalisations :</span>
-                        <p class="text-xs text-gray-600 line-clamp-2 mt-1 leading-relaxed italic">
+                        <span class="text-[10px] font-bold text-gray-800 uppercase block tracking-wider">Dernières réalisations :</span>
+                        <p class="text-xs text-gray-800 line-clamp-2 mt-1 leading-relaxed italic">
                             "{{ $rapport->achievements ?? 'Aucune description rédigée...' }}"
                         </p>
                     </div>
@@ -148,7 +147,7 @@
 
                 <!-- Pied de la carte (Actions) -->
                 <div class="bg-gray-50/70 border-t border-gray-100 px-5 py-3 flex justify-between items-center gap-2">
-                    <span class="text-[10px] text-gray-400">
+                    <span class="text-[10px] text-gray-600">
                         @if($rapport->submitted_at)
                             Soumis le {{ $rapport->submitted_at->format('d/m à H:i') }}
                         @else
@@ -162,11 +161,13 @@
                             <i class="las la-edit text-sm"></i> Editer
                         </a>
 
-                        <a href="{{ route('rapports.print', ['reportId' => $rapport->id]) }}"
-                        class="inline-flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-700 hover:text-blue-600 hover:border-blue-300 transition shadow-2xs">
-                            <i class="las la-print text-sm"></i>
-                            Imprimer le rapport
-                        </a>
+                        @if ($rapport->status == 'approuvé')
+                            <a href="{{ route('rapports.print', ['reportId' => $rapport->id]) }}"
+                                class="inline-flex items-center gap-2 px-3 py-2 text-white text-xs font-bold  bg-blue-600 rounded-xl hover:bg-blue-700 transition shadow-2xs">
+                                <i class="las la-print text-sm"></i>
+                                Imprimer
+                            </a>
+                        @endif
 
                         <!-- Supprimer -->
                         <x-ui.button variant="danger" size="sm" wire:click="confirmDelete({{ $rapport->id }})" title="Retirer ce rapport">
