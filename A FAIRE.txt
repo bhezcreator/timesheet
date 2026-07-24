@@ -167,7 +167,7 @@ resources/
         Toutes les activités du mois concerné(projet indiquer) Ok
         Impression :
             - mettre les regles avant l'Impression : validation du rapport avant; Ok
-        Lier les fichiers : docs pdf ou images au rapport
+        Lier les fichiers : docs pdf ou images au rapport Ok
 
     - Validation des rapports :
         Le superviseur peut :
@@ -175,8 +175,8 @@ resources/
             Lire toutes les activités
             Ajouter un commentaire
             Valider
-            Rejeter
-            Demander une correction
+            Rejeter :
+                - Demander une correction
 
         Voici concrètement comment elle s'intègre et s'utilise dans l'application :
             1. Le flux de validation (Cycle de vie)
@@ -190,19 +190,11 @@ resources/
 
             - Mise à jour en BDD : Le statut de l'activité repasse à 'Rejeté' et la colonne rejection_reason enregistre le texte du manager.
 
-
-    - Gestion des périodes :
-        Définir le jour limite
-        Définir l'heure limite
-        Bloquer une période
-        Réouvrir exceptionnellement une période
-        Empêcher la modification des activités après la clôture.
-
     - Notifications :
         npm install laravel-echo
         Notification automatique lorsqu'un :
             rapport est soumis
-            rapport est validé
+            rapport est approuvé
             rapport est rejeté
             nouvelle affectation est réalisée
             période est clôturée

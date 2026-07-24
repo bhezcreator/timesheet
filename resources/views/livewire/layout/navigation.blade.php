@@ -32,6 +32,11 @@ new class extends Component
             'route' => 'rapports.index',
         ],
         [
+            'title' => 'Validations',
+            'icon'  => 'la-check',
+            'route' => 'validates.supervisor',
+        ],
+        [
             'title' => 'Personnels',
             'icon'  => 'la-users',
             'route' => 'users.index',
