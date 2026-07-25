@@ -82,7 +82,7 @@ Route::middleware(['auth'])
             ->name('rapports.print');
 
         Route::get('/validates/supervisor', SupervisedReports::class)
-            ->name('validates.supervisor');
+            ->name('validations.supervisor');
 
         Route::get('/validations/{report}/show', ValidationShow::class)
             ->name('validations.show');

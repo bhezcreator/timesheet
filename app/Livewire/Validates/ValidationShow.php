@@ -2,13 +2,13 @@
 
 namespace App\Livewire\Validates;
 
+use App\Events\UniversalModelStatusChanged;
 use App\Models\MonthlyReport;
 use App\Models\ReportValidation;
 use Illuminate\Support\Facades\Auth;
-use Livewire\Component;
-use Livewire\Attributes\Layout;
-use App\Events\ReportValidatedOrRejected; // Remplacez par votre classe d'événement réelle
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Layout;
+use Livewire\Component;
 
 #[Layout('layouts.app')]
 class ValidationShow extends Component
@@ -20,8 +20,8 @@ class ValidationShow extends Component
     public $comment = '';
 
     protected $rules = [
-        'decision' => 'required|in:approuvé,rejeté',
-        'comment' => 'required_if:decision,rejeté|nullable|string|min:10',
+        'decision' => 'required|in:Validé,Rejeté',
+        'comment' => 'required_if:Validé,Rejeté|nullable|string|min:10',
     ];
 
     protected $messages = [
@@ -41,18 +41,17 @@ class ValidationShow extends Component
         $this->validate();
 
         DB::transaction(function () {
+            $targetStatus = $this->decision === 'Validé' ? 'approuvé' : 'rejeté';
             // 1. Enregistrement ou mise à jour de la validation
             ReportValidation::updateOrCreate(
                 ['monthly_report_id' => $this->report->id],
                 [
                     'validator_id' => Auth::id(),
-                    'decision' => $this->decision,
+                    'decision' => $targetStatus,
                     'comment' => $this->comment,
                     'validated_at' => now(),
                 ]
             );
-
-            $targetStatus = $this->decision === 'Validé' ? 'approuvé' : 'rejeté';
 
             // 2. Mise à jour du statut du rapport global
             $this->report->update([
@@ -72,7 +71,7 @@ class ValidationShow extends Component
         });
 
         // 4. Déclenchement universel pour votre cas de Rapport Mensuel
-        event(new \App\Events\UniversalModelStatusChanged(
+        event(new UniversalModelStatusChanged(
             model: $this->report,
             recipient: $this->report->user, // L'agent recevra la notification
             title: "Mise à jour : " . $this->report->full_title,
@@ -85,13 +84,11 @@ class ValidationShow extends Component
 
         // 5. Notification Flash de succès & Redirection
         session()->flash('message', 'Le traitement du rapport a été sécurisé et enregistré avec succès.');
-
         return redirect()->route('validations.supervisor');
     }
 
-
     public function render()
     {
-        return view('livewire.validates.validation-show'); // Ajustez selon votre layout global
+        return view('livewire.validates.validation-show');
     }
 }

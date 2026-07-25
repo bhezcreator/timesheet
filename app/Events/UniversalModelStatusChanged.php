@@ -5,8 +5,10 @@ namespace App\Events;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Broadcasting\PrivateChannel;
 
-class UniversalModelStatusChanged
+class UniversalModelStatusChanged implements ShouldBroadcast
 {
     use Dispatchable, SerializesModels;
 
@@ -37,5 +39,12 @@ class UniversalModelStatusChanged
         $this->comment = $comment;
         $this->routeUrl = $routeUrl;
         $this->icon = $icon;
+    }
+
+    public function broadcastOn(): array
+    {
+        return [
+            new PrivateChannel('App.Models.User.' . $this->recipient->id),
+        ];
     }
 }

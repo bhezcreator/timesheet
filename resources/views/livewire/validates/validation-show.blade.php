@@ -7,7 +7,7 @@
 
     <!-- Fil d'Ariane & Bouton Retour -->
     <div class="flex items-center mb-4">
-        <a href="{{ route('validates.supervisor') }}"
+        <a href="{{ route('validations.supervisor') }}"
             wire:navigate class="font-semibold text-gray-500 inline-flex items-center gap-2 text-sm hover:text-indigo-600 transition-colors">
             <i class="las la-arrow-left text-base"></i> Retour à la liste
         </a>
@@ -23,9 +23,9 @@
                 </p>
             </div>
 
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium shadow-sm
-                @if($report->status === 'En attente') bg-amber-50 text-amber-700 border border-amber-200
-                @elseif($report->status === 'Validé') bg-emerald-50 text-emerald-700 border border-emerald-200
+            <span class="inline-flex items-center px-3 py-2 rounded-full text-xs font-bold shadow-sm
+                @if($report->status === 'soumis') bg-amber-50 text-amber-700 border border-amber-200
+                @elseif($report->status === 'approuvé') bg-emerald-50 text-emerald-700 border border-emerald-200
                 @else bg-rose-50 text-rose-700 border border-rose-200 @endif">
                 ● Status : {{ $report->status }}
             </span>
@@ -229,10 +229,16 @@
                                 "{{ $report->validation->comment }}"
                             </p>
                         @endif
-                        <p class="text-xs text-gray-500 mt-3 pt-2 border-t border-black border-opacity-5">
-                            Traité par : <span class="font-semibold text-gray-700">{{ $report->validation->validator->name }}</span> <br>
-                            Le : {{ $report->validation->validated_at->format('d/m/Y à H:i') }}
-                        </p>
+                        <div class="text-xs text-gray-500 mt-4 pt-3 border-t border-gray-100 flex flex-col gap-1.5">
+                            <div class="flex items-center gap-1.5">
+                                <i class="las la-user-check text-base text-gray-400"></i>
+                                <span>Traité par : <span class="font-semibold text-gray-700">{{ $report->validation->validator->name }}</span></span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <i class="las la-calendar-check text-base text-gray-400"></i>
+                                <span>Le : <span class="font-medium text-gray-700">{{ $report->validation->validated_at->format('d/m/Y à H:i') }}</span></span>
+                            </div>
+                        </div>
                     </div>
                 @else
                     <!-- Formulaire Livewire Interactif -->

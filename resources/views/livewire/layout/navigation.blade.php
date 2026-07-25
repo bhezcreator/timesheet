@@ -34,7 +34,7 @@ new class extends Component
         [
             'title' => 'Validations',
             'icon'  => 'la-check',
-            'route' => 'validates.supervisor',
+            'route' => 'validations.supervisor',
         ],
         [
             'title' => 'Personnels',
