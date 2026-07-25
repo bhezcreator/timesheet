@@ -8,8 +8,17 @@ use Livewire\Component;
 
 class Notify extends Component
 {
-    // Écouteur Livewire pour intercepter les nouvelles notifications système
-    protected $listeners = ['echo:private-App.Models.User.{auth.id},.Illuminate\\Notifications\\Events\\BroadcastNotificationCreated' => 'playAlertSound'];
+    /**
+     * Génère dynamiquement l'écouteur d'événement pour l'utilisateur connecté
+     */
+    public function getListeners()
+    {
+        $userId = $this->user->id;
+
+        return [
+            "echo:private-App.Models.User.{$userId},.Illuminate\\Notifications\\Events\\BroadcastNotificationCreated" => 'playAlertSound',
+        ];
+    }
 
     public User $user;
 

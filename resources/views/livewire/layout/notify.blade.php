@@ -1,6 +1,16 @@
 <div class="flex items-center gap-4">
     <!-- Notifications (Dropdown Interactif Alpine.js) -->
-    <div class="relative" x-data="{ open: false }">
+    <div class="relative" x-data="{
+        open: false,
+        play() {
+            $refs.audioPlayer.currentTime = 0;
+            $refs.audioPlayer.play().catch(e => console.log('Audio en attente d interaction utilisateur'));
+        }
+        }" @play-notification-sound.window="play()">
+
+        <!-- Élément Audio Invisible (Utilisation d'un son système standard ou hébergé) -->
+        <audio x-ref="audioPlayer" src="https://mixkit.co" preload="auto"></audio>
+
         <!-- Bouton Cloche -->
         <button @click="open = !open" class="relative cursor-pointer text-gray-500 hover:text-indigo-600 focus:outline-none transition-colors">
             <i class="las la-bell text-2xl"></i>
@@ -23,7 +33,6 @@
             class="absolute right-0 mt-3 w-80 bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden"
             x-cloak>
 
-            <!-- En-tête du volet -->
             <div class="p-3 border-b border-gray-100 font-semibold text-xs text-gray-700 bg-gray-50/80 flex justify-between items-center">
                 <span class="flex items-center gap-1">
                     <i class="las la-bell text-sm text-gray-400"></i> Centre de notifications
@@ -35,18 +44,16 @@
                 @endif
             </div>
 
-            <!-- Conteneur de défilement des lignes -->
             <div class="max-h-64 overflow-y-auto divide-y divide-gray-50">
                 @forelse($user->notifications->take(5) as $notification)
-                    <a href="{{ $notification->data['route_url'] ?? '#' }}"
-                    class="p-3.5 flex items-start gap-3 hover:bg-gray-50 transition-colors block {{ $notification->read_at ? 'opacity-60' : 'bg-indigo-50/10' }}">
+                    <!-- Remplacement de <a> par un bouton d'action Livewire pour intercepter le clic -->
+                    <button wire:click.prevent="readSingle('{{ $notification->id }}')"
+                    class="p-3.5 flex items-start gap-3 hover:bg-gray-50 transition-colors w-full text-left block {{ $notification->read_at ? 'opacity-60' : 'bg-indigo-50/10' }}">
 
-                        <!-- Icône universelle -->
                         <div class="p-2 rounded-lg bg-gray-50 border border-gray-100 shadow-sm shrink-0 flex items-center justify-center">
                             <i class="{{ $notification->data['icon'] ?? 'las la-info-circle text-gray-500' }} text-lg"></i>
                         </div>
 
-                        <!-- Textes indicatifs -->
                         <div class="flex-1 min-w-0">
                             <p class="text-xs font-bold text-gray-900 truncate">{{ $notification->data['title'] }}</p>
                             <p class="text-xs text-gray-600 mt-0.5 line-clamp-2 leading-relaxed">{{ $notification->data['message'] }}</p>
@@ -61,9 +68,8 @@
                                 <i class="las la-clock"></i> {{ $notification->created_at->diffForHumans() }}
                             </span>
                         </div>
-                    </a>
+                    </button>
                 @empty
-                    <!-- Zone vide si aucune notification -->
                     <div class="p-6 text-center text-xs text-gray-400 italic flex flex-col items-center gap-1">
                         <i class="las la-inbox text-2xl text-gray-300"></i>
                         <span>Aucune notification pour le moment.</span>
