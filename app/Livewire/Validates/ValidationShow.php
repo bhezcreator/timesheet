@@ -7,6 +7,8 @@ use App\Models\ReportValidation;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
+use App\Events\ReportValidatedOrRejected; // Remplacez par votre classe d'événement réelle
+use Illuminate\Support\Facades\DB;
 
 #[Layout('layouts.app')]
 class ValidationShow extends Component
@@ -38,28 +40,46 @@ class ValidationShow extends Component
     {
         $this->validate();
 
-        // 1. Enregistrement ou mise à jour de la validation
-        ReportValidation::updateOrCreate(
-            ['monthly_report_id' => $this->report->id],
-            [
-                'validator_id' => Auth::id(),
-                'decision' => $this->decision,
-                'comment' => $this->comment,
-                'validated_at' => now(),
-            ]
-        );
+        DB::transaction(function () {
+            // 1. Enregistrement ou mise à jour de la validation
+            ReportValidation::updateOrCreate(
+                ['monthly_report_id' => $this->report->id],
+                [
+                    'validator_id' => Auth::id(),
+                    'decision' => $this->decision,
+                    'comment' => $this->comment,
+                    'validated_at' => now(),
+                ]
+            );
 
-        // 2. Mise à jour du statut du rapport global
-        $this->report->update([
-            'status' => $this->decision == 'Validé' ? 'approuvé' : 'rejeté'
-        ]);
+            $targetStatus = $this->decision === 'Validé' ? 'approuvé' : 'rejeté';
 
-        // 3. Notification Flash de succès
-        session()->flash('message', 'Le traitement du rapport a été effectué avec succès.');
+            // 2. Mise à jour du statut du rapport global
+            $this->report->update([
+                'status' => $targetStatus
+            ]);
 
-        // 4. Redirection demandée
+            // 3. Préparation des données pour les activités
+            $activityUpdateData = ['status' => $targetStatus];
+
+            // Copie du commentaire dans la colonne rejection_reason uniquement en cas de rejet
+            if ($this->decision === 'Rejeté') {
+                $activityUpdateData['rejection_reason'] = $this->comment;
+            }
+
+            // Mise à jour en cascade de toutes les activités rattachées
+            $this->report->activities()->update($activityUpdateData);
+        });
+
+        // 4. Déclenchement de l'événement (à l'extérieur de la transaction pour éviter les faux-départs)
+        event(new ReportValidatedOrRejected($this->report));
+
+        // 5. Notification Flash de succès & Redirection
+        session()->flash('message', 'Le traitement du rapport a été sécurisé et enregistré avec succès.');
+
         return redirect()->route('validations.supervisor');
     }
+
 
     public function render()
     {

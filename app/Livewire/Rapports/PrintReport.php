@@ -21,7 +21,6 @@ class PrintReport extends Component
 
         // Chargement du rapport avec ses relations de base
         $this->report = MonthlyReport::with(['user', 'project'])
-            ->where('user_id', Auth::id())
             ->findOrFail($this->reportId);
 
         // Détection : si project_ids est vide/null, c'est un rapport "Tous les projets" (Multi-projets)

@@ -17,17 +17,18 @@
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium shadow-sm
-                    @if($report->status === 'En attente') bg-amber-50 text-amber-700 border border-amber-200
-                    @elseif($report->status === 'Validé') bg-emerald-50 text-emerald-700 border border-emerald-200
-                    @else bg-rose-50 text-rose-700 border border-rose-200 @endif">
-                    ● Status : {{ $report->status }}
-                </span>
                 <h1 class="text-2xl font-bold text-gray-900 mt-2">{{ $report->fullTitle }}</h1>
-                <p class="text-sm text-gray-500 mt-1">
-                    Soumis par <span class="font-semibold text-gray-700">{{ $report->user->name }}</span> le {{ $report->submitted_at?->format('d/m/Y à H:i') ?? 'N/A' }}
+                <p class="text-sm px-2 py-1 text-gray-500 mt-1 bg-blue-50 border border-blue-200 inline-flex items-center gap-1 shadow-sm rounded-full">
+                    Soumis par <span class="font-semibold text-gray-700">{{ $report->user->name.' '.$report->user->first_name }}</span> le {{ $report->submitted_at?->format('d/m/Y à H:i') ?? 'N/A' }}
                 </p>
             </div>
+
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium shadow-sm
+                @if($report->status === 'En attente') bg-amber-50 text-amber-700 border border-amber-200
+                @elseif($report->status === 'Validé') bg-emerald-50 text-emerald-700 border border-emerald-200
+                @else bg-rose-50 text-rose-700 border border-rose-200 @endif">
+                ● Status : {{ $report->status }}
+            </span>
         </div>
     </div>
 
@@ -41,18 +42,38 @@
                 <div class="border-b border-gray-200 bg-gray-50 px-6 py-4">
                     <h2 class="text-lg font-semibold text-gray-900">Synthèse Globale du Mois</h2>
                 </div>
-                <div class="p-6 space-y-6 divide-y divide-gray-100">
-                    <div>
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Objectifs fixés</h3>
-                        <div class="text-gray-700 prose prose-sm max-w-none">{!! nl2br(e($report->objectives)) !!}</div>
+                <div class="p-6 space-y-6 bg-gray-50/50 rounded-xl border border-gray-100/80">
+                    <!-- Objectifs fixés -->
+                    <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                                <i class="las la-bullseye text-lg"></i>
+                            </div>
+                            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Objectifs fixés</h3>
+                        </div>
+                        <div class="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap break-words px-1">{!! nl2br(e($report->objectives)) !!}</div>
                     </div>
-                    <div class="pt-6">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Réalisations majeures</h3>
-                        <div class="text-gray-700 prose prose-sm max-w-none">{!! nl2br(e($report->achievements)) !!}</div>
+
+                    <!-- Réalisations majeures -->
+                    <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                                <i class="las la-trophy text-lg"></i>
+                            </div>
+                            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Réalisations majeures</h3>
+                        </div>
+                        <div class="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap break-words px-1">{!! nl2br(e($report->achievements)) !!}</div>
                     </div>
-                    <div class="pt-6">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Prochaines actions prévues</h3>
-                        <div class="text-gray-700 prose prose-sm max-w-none">{!! nl2br(e($report->next_actions)) !!}</div>
+
+                    <!-- Prochaines actions prévues -->
+                    <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                                <i class="las la-angle-double-right text-lg"></i>
+                            </div>
+                            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Prochaines actions prévues</h3>
+                        </div>
+                        <div class="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap break-words px-1">{!! nl2br(e($report->next_actions)) !!}</div>
                     </div>
                 </div>
             </div>
@@ -66,31 +87,66 @@
                 @if($report->activities->isEmpty())
                     <div class="p-6 text-center text-gray-500 italic">Aucune activité détaillée enregistrée pour ce rapport.</div>
                 @else
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200 text-left">
-                            <thead class="bg-gray-50">
+                    <div class="overflow-x-auto border border-gray-100 rounded-xl shadow-sm bg-white">
+                        <table class="min-w-full divide-y divide-gray-200/80 text-left">
+                            <thead class="bg-gray-50/70">
                                 <tr>
-                                    <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Description / Tâche</th>
-                                    <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Statut</th>
+                                    <th scope="col" class="px-6 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                        <div class="flex items-center gap-1.5">
+                                            <i class="las la-heading text-base text-gray-400"></i>
+                                            <span>Titre de l'activité</span>
+                                        </div>
+                                    </th>
+                                    <th scope="col" class="px-6 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                        <div class="flex items-center gap-1.5">
+                                            <i class="las la-align-left text-base text-gray-400"></i>
+                                            <span>Description / Tâche</span>
+                                        </div>
+                                    </th>
+                                    <th scope="col" class="px-6 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                        <div class="flex items-center gap-1.5">
+                                            <i class="las la-info-circle text-base text-gray-400"></i>
+                                            <span>Statut</span>
+                                        </div>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-100">
                                 @foreach($report->activities as $activity)
-                                    <tr class="hover:bg-gray-50 transition">
-                                        <td class="px-6 py-4">
-                                            <p class="text-sm text-gray-900 font-medium">{{ $activity->description }}</p>
+                                    <tr class="hover:bg-gray-50/60 transition-colors group">
+                                        <!-- Colonne Titre -->
+                                        <td class="px-6 py-4 align-middle">
+                                            <span class="text-sm font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                                                {{ $loop->iteration.'. '.$activity->titre ?? 'Sans titre' }}
+                                            </span>
+                                        </td>
+
+                                        <!-- Colonne Description -->
+                                        <td class="px-6 py-4 max-w-md align-top">
+                                            <p class="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap break-words">
+                                                {!! nl2br(e($activity->description)) !!}
+                                            </p>
                                             @if($activity->rejection_reason)
-                                                <p class="text-xs text-rose-600 mt-1 bg-rose-50 p-2 rounded border border-rose-100">
-                                                    <strong>Motif rejet historique :</strong> {{ $activity->rejection_reason }}
-                                                </p>
+                                                <div class="mt-2 inline-flex items-start gap-1.5 text-xs text-rose-700 bg-rose-50/80 p-2.5 rounded-lg border border-rose-100/70 shadow-inner w-full">
+                                                    <i class="las la-exclamation-circle text-base shrink-0 mt-0.5"></i>
+                                                    <p class="whitespace-pre-wrap break-words">
+                                                        <strong class="font-bold">Motif du rejet historique :</strong> {{ $activity->rejection_reason }}
+                                                    </p>
+                                                </div>
                                             @endif
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                            <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium
-                                                @if($activity->status === 'Validé') bg-emerald-100 text-emerald-800
-                                                @elseif($activity->status === 'Rejeté') bg-rose-100 text-rose-800
-                                                @else bg-gray-100 text-gray-800 @endif">
-                                                {{ $activity->status }}
+
+                                        <!-- Colonne Statut -->
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm  align-middle">
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold shadow-sm transition-all
+                                                @if($activity->status === 'approuvé') bg-emerald-50 text-emerald-700 border border-emerald-200/60
+                                                @elseif($activity->status === 'rejeté') bg-rose-50 text-rose-700 border border-rose-200/60
+                                                @else bg-gray-50 text-gray-600 border border-gray-200/60 @endif">
+                                                <span class="w-1.5 h-1.5 rounded-full
+                                                    @if($activity->status === 'approuvé') bg-emerald-500
+                                                    @elseif($activity->status === 'rejeté') bg-rose-500
+                                                    @else bg-gray-400 @endif"></span>
+                                                <span class="capitalize">{{ $activity->status }}</span>
                                             </span>
                                         </td>
                                     </tr>
@@ -108,7 +164,8 @@
             <!-- Zone Fichiers / Pièces jointes (Spatie Media Library) -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    📎 Pièces Jointes
+                    <i class="las la-paperclip text-xl text-indigo-500"></i>
+                    <span>Pièces Jointes</span>
                 </h2>
 
                 @if($report->getMedia('attachments')->isEmpty())
@@ -118,13 +175,23 @@
                         @foreach($report->getMedia('attachments') as $media)
                             <li class="flex items-center justify-between p-3 hover:bg-gray-50 transition">
                                 <div class="flex items-center space-x-3 truncate">
-                                    <!-- Icône dynamique selon le type de fichier -->
+                                    <!-- Icône dynamique Line Awesome selon le type de fichier -->
                                     @if(str_contains($media->mime_type, 'pdf'))
-                                        <span class="text-red-500 font-bold text-xs bg-red-50 p-2 rounded">PDF</span>
+                                        <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-rose-50 text-rose-600">
+                                            <i class="las la-file-pdf text-2xl"></i>
+                                        </div>
                                     @elseif(str_contains($media->mime_type, 'image'))
-                                        <span class="text-blue-500 font-bold text-xs bg-blue-50 p-2 rounded">IMG</span>
+                                        <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-blue-50 text-blue-600">
+                                            <i class="las la-file-image text-2xl"></i>
+                                        </div>
+                                    @elseif(str_contains($media->mime_type, 'spreadsheet') || str_contains($media->mime_type, 'excel') || in_array($media->extension, ['xls', 'xlsx']))
+                                        <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600">
+                                            <i class="las la-file-excel text-2xl"></i>
+                                        </div>
                                     @else
-                                        <span class="text-gray-500 font-bold text-xs bg-gray-50 p-2 rounded">DOC</span>
+                                        <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-gray-50 text-gray-600">
+                                            <i class="las la-file-word text-2xl"></i>
+                                        </div>
                                     @endif
 
                                     <div class="truncate">
@@ -134,9 +201,19 @@
                                         <p class="text-xs text-gray-400">{{ $media->human_readable_size }}</p>
                                     </div>
                                 </div>
-                                <a href="{{ $media->getUrl() }}" target="_blank" class="ml-4 text-sm font-medium text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-1 rounded transition">
-                                    Ouvrir
-                                </a>
+
+                                <!-- Bouton intelligent : Télécharge si Excel/Word, Ouvre si PDF/Image -->
+                                @if(str_contains($media->mime_type, 'spreadsheet') || str_contains($media->mime_type, 'excel') || str_contains($media->mime_type, 'word') || !str_contains($media->mime_type, 'pdf') && !str_contains($media->mime_type, 'image'))
+                                    <a href="{{ $media->getUrl() }}" download class="ml-4 inline-flex items-center gap-1 text-sm font-semibold text-emerald-600 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition-colors">
+                                        <i class="las la-download"></i>
+                                        <span>Télécharger</span>
+                                    </a>
+                                @else
+                                    <a href="{{ $media->getUrl() }}" target="_blank" class="ml-4 inline-flex items-center gap-1 text-sm font-semibold text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors">
+                                        <i class="las la-eye"></i>
+                                        <span>Ouvrir</span>
+                                    </a>
+                                @endif
                             </li>
                         @endforeach
                     </ul>
@@ -165,34 +242,69 @@
                         <div class="space-y-2">
                             <label class="block text-sm font-medium text-gray-700">Votre Décision</label>
 
-                            <div class="grid grid-cols-1 gap-2">
-                                <label class="flex items-center justify-center p-3 border rounded-lg cursor-pointer transition select-none
-                                    {{ $decision === 'Validé' ? 'bg-emerald-50 border-emerald-400 text-emerald-800 ring-2 ring-emerald-200' : 'bg-white border-gray-200 hover:bg-gray-50 text-gray-700' }}">
+                            <div class="grid grid-cols-1 gap-3">
+                                <!-- Option Valider -->
+                                <label class="flex items-center justify-start p-4 border rounded-xl cursor-pointer transition-all select-none gap-3 shadow-sm
+                                    {{ $decision === 'Validé' ? 'bg-emerald-50 border-emerald-400 text-emerald-800 ring-4 ring-emerald-100 font-semibold' : 'bg-white border-gray-200 hover:bg-gray-50 text-gray-700' }}">
                                     <input type="radio" wire:model.live="decision" value="Validé" class="sr-only">
-                                    ✅ Valider le rapport
+                                    <div class="w-8 h-8 rounded-full flex items-center justify-center transition-colors
+                                        {{ $decision === 'Validé' ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-400' }}">
+                                        <i class="las la-check-circle text-xl"></i>
+                                    </div>
+                                    <span>Valider le rapport</span>
                                 </label>
 
-                                <label class="flex items-center justify-center p-3 border rounded-lg cursor-pointer transition select-none
-                                    {{ $decision === 'Rejeté' ? 'bg-rose-50 border-rose-400 text-rose-800 ring-2 ring-rose-200' : 'bg-white border-gray-200 hover:bg-gray-50 text-gray-700' }}">
+                                <!-- Option Rejeter -->
+                                <label class="flex items-center justify-start p-4 border rounded-xl cursor-pointer transition-all select-none gap-3 shadow-sm
+                                    {{ $decision === 'Rejeté' ? 'bg-rose-50 border-rose-400 text-rose-800 ring-4 ring-rose-100 font-semibold' : 'bg-white border-gray-200 hover:bg-gray-50 text-gray-700' }}">
                                     <input type="radio" wire:model.live="decision" value="Rejeté" class="sr-only">
-                                    ❌ Rejeter / Demander des corrections
+                                    <div class="w-8 h-8 rounded-full flex items-center justify-center transition-colors
+                                        {{ $decision === 'Rejeté' ? 'bg-rose-500 text-white' : 'bg-gray-100 text-gray-400' }}">
+                                        <i class="las la-times-circle text-xl"></i>
+                                    </div>
+                                    <span>Rejeter / Demander des corrections</span>
                                 </label>
                             </div>
+
                             @error('decision') <span class="text-xs text-rose-600 mt-1 block font-medium">{{ $message }}</span> @enderror
                         </div>
 
                         <!-- Champ Commentaire / Motif -->
-                        <div class="space-y-1">
-                            <label for="comment" class="block text-sm font-medium text-gray-700">
-                                Commentaire ou Motif de rejet
-                                <span class="{{ $decision === 'Rejeté' ? 'text-rose-500 font-bold' : 'text-gray-400 font-normal' }}">
-                                    ({{ $decision === 'Rejeté' ? 'Obligatoire' : 'Optionnel' }})
+                        <div class="space-y-2 bg-gray-50/50 p-4 rounded-xl border border-gray-100 shadow-inner">
+                            <div class="flex justify-between items-center mb-4">
+                                <label for="comment" class="text-sm font-semibold text-gray-800 flex items-center gap-1.5">
+                                    <i class="las la-comment-alt text-lg {{ $decision === 'Rejeté' ? 'text-rose-500' : 'text-indigo-500' }}"></i>
+                                    Commentaire ou Motif de rejet
+                                </label>
+                                <span class="text-xs px-2 py-0.5 rounded-full font-medium transition-colors duration-200
+                                    {{ $decision === 'Rejeté' ? 'bg-rose-100 text-rose-700 font-bold' : 'bg-gray-200 text-gray-600' }}">
+                                    {{ $decision === 'Rejeté' ? 'Obligatoire' : 'Optionnel' }}
                                 </span>
-                            </label>
-                            <textarea id="comment" wire:model="comment" rows="4"
-                                class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md @error('comment') border-rose-300 focus:ring-rose-500 focus:border-rose-500 @enderror"
-                                placeholder="{{ $decision === 'Rejeté' ? 'Veuillez préciser de manière claire les livrables manquants ou les corrections attendues...' : 'Indiquez ici vos remarques ou félicitations...' }}"></textarea>
-                            @error('comment') <span class="text-xs text-rose-600 mt-1 block font-medium">{{ $message }}</span> @enderror
+                            </div>
+
+                            <div class="relative">
+                                <textarea id="comment"
+                                    wire:model="comment"
+                                    x-data="{
+                                        resize() {
+                                            $el.style.height = 'auto';
+                                            $el.style.height = $el.scrollHeight + 'px'
+                                        }
+                                    }"
+                                    x-init="resize()"
+                                    @input="resize()"
+                                    rows="3"
+                                    class="block w-full rounded-xl border-gray-200 bg-white mt-4 px-4 py-3 text-sm text-blue-900 shadow-sm transition-all focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 resize-none overflow-hidden
+                                    @error('comment') border-rose-300 focus:border-rose-500 focus:ring-rose-100 @enderror"
+                                    placeholder="{{ $decision === 'Rejeté' ? 'Expliquez ici clairement les corrections attendues...' : 'Saisissez vos remarques ou encouragements...' }}"></textarea>
+                            </div>
+
+                            @error('comment')
+                                <span class="text-xs text-rose-600 flex items-center gap-1 font-medium mt-1">
+                                    <i class="las la-exclamation-circle text-sm"></i>
+                                    {{ $message }}
+                                </span>
+                            @enderror
                         </div>
 
                         <!-- Bouton de soumission avec état de chargement -->

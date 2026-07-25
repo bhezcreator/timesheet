@@ -176,15 +176,17 @@
                             {{-- Actions --}}
                             <td class="px-6 py-4 text-right whitespace-nowrap align-top">
                                 <div class="flex justify-end gap-2">
-                                    <a href="{{ route('rapports.print', $report->id) }}"
-                                        class="inline-flex items-center justify-center p-2 rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 shadow-sm transition">
+                                    <a href="{{ route('rapports.print', ['reportId' => $report->id]) }}"
+                                        class="inline-flex items-center justify-center p-2 rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 shadow-sm transition-all"
+                                        title="Imprimer le rapport">
                                         <i class="las la-print text-xl"></i>
                                     </a>
 
                                     @can('validations.effectuer')
                                         <a href="{{ route('validations.show', $report->id) }}"
-                                            class="inline-flex items-center justify-center p-2 rounded-lg text-white-700 bg-red hover:bg-blue-50 shadow-sm transition">
-                                            <i class="las la-check-circle"></i>
+                                            class="inline-flex items-center justify-center p-2 rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 shadow-sm transition-all"
+                                            title="Valider le rapport">
+                                            <i class="las la-check-circle text-xl"></i>
                                         </a>
                                     @endcan
                                 </div>
