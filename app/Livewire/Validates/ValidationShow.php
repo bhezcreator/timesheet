@@ -72,7 +72,7 @@ class ValidationShow extends Component
         });
 
         // 4. Déclenchement de l'événement (à l'extérieur de la transaction pour éviter les faux-départs)
-        event(new ReportValidatedOrRejected($this->report));
+        // event(new ReportValidatedOrRejected($this->report));
 
         // 5. Notification Flash de succès & Redirection
         session()->flash('message', 'Le traitement du rapport a été sécurisé et enregistré avec succès.');
