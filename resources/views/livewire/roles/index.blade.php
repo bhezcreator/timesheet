@@ -20,12 +20,7 @@
             </x-ui.alert>
         @enderror
 
-        <!-- Affichage global des erreurs de validation ($errors) -->
-{{--         @error('role')
-            <x-ui.alert type="error" class="mb-4 mt-8">
-                {{ $message }}
-            </x-ui.alert>
-        @enderror --}}
+
                 <!-- Affichage global des erreurs de validation ($errors) -->
         @if($errors->any())
             <x-ui.alert type="error" class="mb-4 mt-8">
@@ -52,7 +47,7 @@
                 </x-slot:action>
             </x-ui.empty-state>
         @else
-                        <x-ui.table :columns="['N°', 'Nom du Rôle', 'Permissions assignées', 'Type d\'accès', 'Actions']">
+            <x-ui.table :columns="['N°', 'Nom du Rôle', 'Permissions assignées', 'Type d\'accès', 'Actions']">
                 <x-slot:header>
                     <div class="flex justify-between items-center mb-4">
                         <h1 class="text-2xl font-bold text-gray-900">

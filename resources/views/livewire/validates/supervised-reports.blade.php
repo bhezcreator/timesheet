@@ -92,12 +92,12 @@
                 icon="las la-file-alt"
             />
         @else
-            <x-ui.table :columns="['N°', 'Collaborateur', 'Période', 'Statut', 'Soumis le', 'Heures', 'PJ', 'Actions']">
+            <x-ui.table :columns="['N°', 'Collaborateur', 'Période', 'Statut', 'Soumis le', 'Heures', 'Pièces jointes', 'Actions']">
                 <tbody>
                     @foreach($reports as $report)
                         <tr wire:key="report-{{ $report->id }}" class="hover:bg-gray-50 transition-colors">
                             {{-- N° --}}
-                            <td class="px-6 py-4 text-sm text-gray-400 font-semibold align-top">
+                            <td class="px-4 py-4 text-sm text-gray-400 font-semibold align-top">
                                 {{ ($reports->currentPage() - 1) * $reports->perPage() + $loop->iteration }}
                             </td>
 
@@ -106,7 +106,7 @@
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center font-bold text-blue-700 overflow-hidden">
                                         @if($report->user?->photo)
-                                            <img src="{{ $report->user->photo }}" class="w-full h-full object-cover">
+                                            <img src="{{ Storage::url($report->user->photo) }}" class="w-full h-full object-cover">
                                         @else
                                             {{ strtoupper(substr($report->user?->first_name ?? 'U', 0, 1)) }}{{ strtoupper(substr($report->user?->last_name ?? 'N', 0, 1)) }}
                                         @endif
@@ -155,14 +155,14 @@
                             </td>
 
                             {{-- Heures --}}
-                            <td class="px-6 py-4 text-center align-top">
+                            <td class="px-6 py-4 align-top">
                                 <x-ui.badge variant="info">
                                     {{ number_format($report->activities->sum('duration'), 2) }} h
                                 </x-ui.badge>
                             </td>
 
                             {{-- Pièces jointes --}}
-                            <td class="px-6 py-4 text-center align-top">
+                            <td class="px-6 py-4 align-top">
                                 @if($report->media->count())
                                     <x-ui.badge variant="primary">
                                         <i class="las la-paperclip mr-1"></i>
@@ -176,14 +176,16 @@
                             {{-- Actions --}}
                             <td class="px-6 py-4 text-right whitespace-nowrap align-top">
                                 <div class="flex justify-end gap-2">
-                                    <x-ui.button variant="outline" href="{{ route('rapports.print', $report->id) }}" target="_blank">
-                                        <i class="las la-print"></i>
-                                    </x-ui.button>
+                                    <a href="{{ route('rapports.print', $report->id) }}"
+                                        class="inline-flex items-center justify-center p-2 rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 shadow-sm transition">
+                                        <i class="las la-print text-xl"></i>
+                                    </a>
 
                                     @can('validations.effectuer')
-                                        <x-ui.button href="{{ route('validations.show', $report->id) }}">
+                                        <a href="{{ route('validations.show', $report->id) }}"
+                                            class="inline-flex items-center justify-center p-2 rounded-lg text-white-700 bg-red hover:bg-blue-50 shadow-sm transition">
                                             <i class="las la-check-circle"></i>
-                                        </x-ui.button>
+                                        </a>
                                     @endcan
                                 </div>
                             </td>
@@ -192,7 +194,7 @@
                 </tbody>
             </x-ui.table>
 
-            <div class="p-4 border-t">
+            <div class="p-2">
                 <x-ui.pagination :paginator="$reports" />
             </div>
         @endif

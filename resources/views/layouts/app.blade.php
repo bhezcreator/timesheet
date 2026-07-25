@@ -35,7 +35,6 @@
                         </div>
 
                         <div>
-
                             <h1 class="font-bold text-xl">
                                 Timesheet
                             </h1>
@@ -52,17 +51,16 @@
                     <livewire:layout.navigation />
                 </div>
             </aside>
-            <!-- Main Area -->
 
+            <!-- Main Area -->
             <div class="flex-1 flex flex-col">
                 <!-- Header -->
                 <header class="h-20 bg-white border-b border-gray-200 flex items-center justify-between px-6">
                     <livewire:layout.mobile-menu />
+
                     <div class="hidden md:block">
                         @if(isset($header))
-
                             {{ $header }}
-
                         @else
                             <h2 class="text-xl font-semibold">
                                 Tableau de bord
@@ -71,58 +69,37 @@
                     </div>
 
                     <div class="flex items-center gap-4">
+                        <!-- Notifications -->
                         <button class="relative text-gray-500 hover:text-indigo-600">
                             <i class="las la-bell text-2xl"></i>
                             <span class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
                         </button>
 
+                        <!-- Profil Utilisateur -->
                         <div class="flex items-center gap-3">
-
-
                             <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
-
-
                                 <i class="las la-user text-indigo-600 text-xl"></i>
-
-
                             </div>
 
-
-
                             <div class="hidden md:block">
-
-
-                                <p class="text-sm font-semibold">
-
+                                <p class="text-sm font-semibold text-gray-800">
                                     {{ auth()->user()->name ?? 'Utilisateur' }}
-
                                 </p>
-
-
-                                <p class="text-xs text-gray-500">
-
-                                    Administrateur
-
+                                <p class="text-xs text-gray-500 font-medium capitalize">
+                                    {{ auth()->user()?->getRoleNames()->first() ?? 'Aucun rôle' }}
                                 </p>
-
-
                             </div>
 
                         </div>
                     </div>
-
                 </header>
 
                 <!-- Page Content -->
-
                 <main class="flex-1">
-
                     <div class="w-full p-6 overflow-y-auto h-[calc(100vh-80px)] relative">
-                        <!-- Écran de chargement (Overlay) qui s'affiche uniquement lors des requêtes Livewire -->
-                        <div
-                            wire:loading
-                            class="absolute inset-0 bg-gray-900/10 backdrop-blur-[2px] z-50 flex items-center justify-center transition-all"
-                        >
+
+                        <!-- Écran de chargement (Overlay) Livewire -->
+                        <div wire:loading class="absolute inset-0 bg-gray-900/10 backdrop-blur-[2px] z-50 flex items-center justify-center transition-all">
                             <div class="bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center border border-gray-100 min-w-[160px]">
                                 <x-ui.spinner size="lg" class="text-blue-600" />
                                 <p class="mt-3 text-sm font-medium text-gray-600 tracking-wide">
@@ -131,12 +108,12 @@
                             </div>
                         </div>
 
-                        <!-- Le contenu de votre page s'affiche ici normalement -->
+                        <!-- Contenu dynamique -->
                         <div class="w-full">
                             {{ $slot }}
                         </div>
-                    </div>
 
+                    </div>
                 </main>
             </div>
 

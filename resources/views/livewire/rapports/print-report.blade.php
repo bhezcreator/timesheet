@@ -180,8 +180,8 @@
             <div class="flex flex-col items-end justify-center space-y-2">
                 <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block text-right w-full">Signature du déclarant</span>
                 <div class="h-24 w-48 border border-gray-200 bg-gray-50/30 rounded-xl p-2 flex items-center justify-center relative overflow-hidden">
-                    @if($report->user && $report->user->signature)
-                        <img src="{{ $report->user->signature }}" alt="Signature Électronique" class="max-h-full max-w-full object-contain mix-blend-multiply">
+                    @if($report->user->signature && Storage::disk('public')->exists($report->user->signature))
+                        <img src="{{ Storage::url($report->user->signature) }}" alt="Signature Électronique" class="max-h-full max-w-full object-contain mix-blend-multiply">
                     @else
                         <span class="text-[10px] text-gray-300 italic">Aucune signature numérisée</span>
                     @endif

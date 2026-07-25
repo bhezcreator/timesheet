@@ -189,6 +189,7 @@ resources/
                 Le système lui impose alors de saisir une explication (ex: "Veuillez préciser les livrables produits pour ce forage").
 
             - Mise à jour en BDD : Le statut de l'activité repasse à 'Rejeté' et la colonne rejection_reason enregistre le texte du manager.
+            - Test : composant
 
     - Notifications :
         npm install laravel-echo

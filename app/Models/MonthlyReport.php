@@ -73,29 +73,6 @@ class MonthlyReport extends Model implements HasMedia
     }
 
     /**
-     * Acesseur pour générer le titre dynamique du rapport
-     * Utilisation dans Blade : {{ $rapport->full_title }}
-     */
-    // protected function fullTitle(): Attribute
-    // {
-    //     return Attribute::make(
-    //         get: function () {
-    //             // Traduction du mois en français (ex: Janvier)
-    //             $monthName = Carbon::create()->month($this->month)->translatedFormat('F');
-
-    //             // Si la colonne est vide ou null, le rapport concerne tous les projets
-    //             if (empty($this->project_ids)) {
-    //                 return "Rapport du mois de " . ucfirst($monthName) . " {$this->year} (pour tous les projets)";
-    //             }
-
-    //             // Si un projet est lié, on affiche son nom grâce au chargement de la relation
-    //             $projectName = $this->project?->name ?? 'Projet Inconnu';
-    //             return "Rapport du mois de " . ucfirst($monthName) . " {$this->year} concernant le projet : {$projectName}";
-    //         }
-    //     );
-    // }
-
-    /**
      * Relation optionnelle avec le Projet si un ID unique est spécifié.
      * Sécurisé : On ne l'exécute QUE si project_ids est un identifiant numérique valide.
      */

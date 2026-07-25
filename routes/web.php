@@ -8,11 +8,10 @@ use App\Livewire\Permissions\Index as PermissionIndex;
 use App\Livewire\Projects\AttributesProject;
 use App\Livewire\Projects\Index as ProjectsIndex;
 
-use App\Livewire\Validates\SupervisedReports;
-
 use App\Livewire\Projects\Show as ProjectsShow;
 
 use App\Livewire\Projects\SubProjectManager;
+
 use App\Livewire\Rapports\CreateUpdate as RapportsCreateUpdate;
 use App\Livewire\Rapports\PrintReport;
 use App\Livewire\Rapports\RapportIndex as RapportsIndex;
@@ -20,7 +19,10 @@ use App\Livewire\Roles\Index as RolesIndex;
 use App\Livewire\Users\Index as UsersIndex;
 use App\Livewire\Users\SettingsTabs;
 use App\Livewire\Users\Show as UsersShow;
+use App\Livewire\Validates\SupervisedReports;
+use App\Livewire\Validates\ValidationShow;
 use Illuminate\Support\Facades\Route;
+
 
 
 
@@ -81,6 +83,9 @@ Route::middleware(['auth'])
 
         Route::get('/validates/supervisor', SupervisedReports::class)
             ->name('validates.supervisor');
+
+        Route::get('/validations/{report}/show', ValidationShow::class)
+            ->name('validations.show');
 
         Route::get('/users', UsersIndex::class)
             ->name('users.index');
