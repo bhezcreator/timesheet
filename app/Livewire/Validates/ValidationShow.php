@@ -71,8 +71,17 @@ class ValidationShow extends Component
             $this->report->activities()->update($activityUpdateData);
         });
 
-        // 4. Déclenchement de l'événement (à l'extérieur de la transaction pour éviter les faux-départs)
-        // event(new ReportValidatedOrRejected($this->report));
+        // 4. Déclenchement universel pour votre cas de Rapport Mensuel
+        event(new \App\Events\UniversalModelStatusChanged(
+            model: $this->report,
+            recipient: $this->report->user, // L'agent recevra la notification
+            title: "Mise à jour : " . $this->report->full_title,
+            messageContent: "Votre rapport mensuel a été traité par le superviseur.",
+            status: $this->decision === 'Validé' ? 'approuvé' : 'rejeté',
+            comment: $this->comment,
+            routeUrl: route('validations.show', $this->report->id),
+            icon: $this->decision === 'Validé' ? 'las la-check-circle text-emerald-500' : 'las la-times-circle text-rose-500'
+        ));
 
         // 5. Notification Flash de succès & Redirection
         session()->flash('message', 'Le traitement du rapport a été sécurisé et enregistré avec succès.');

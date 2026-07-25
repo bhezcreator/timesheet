@@ -68,31 +68,11 @@
                         @endif
                     </div>
 
-                    <div class="flex items-center gap-4">
-                        <!-- Notifications -->
-                        <button class="relative text-gray-500 hover:text-indigo-600">
-                            <i class="las la-bell text-2xl"></i>
-                            <span class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
-                        </button>
+                    <!-- Notification et Profil Utilisateur -->
+                    <livewire:layout.notify />
 
-                        <!-- Profil Utilisateur -->
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                                <i class="las la-user text-indigo-600 text-xl"></i>
-                            </div>
-
-                            <div class="hidden md:block">
-                                <p class="text-sm font-semibold text-gray-800">
-                                    {{ auth()->user()->name ?? 'Utilisateur' }}
-                                </p>
-                                <p class="text-xs text-gray-500 font-medium capitalize">
-                                    {{ auth()->user()?->getRoleNames()->first() ?? 'Aucun rôle' }}
-                                </p>
-                            </div>
-
-                        </div>
-                    </div>
                 </header>
+
 
                 <!-- Page Content -->
                 <main class="flex-1">

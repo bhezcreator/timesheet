@@ -3,24 +3,22 @@
 namespace App\Listeners;
 
 use App\Events\UniversalModelStatusChanged;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
+use App\Notifications\UniversalStatusNotification;
 
 class HandleUniversalStatusNotification
 {
-    /**
-     * Create the event listener.
-     */
-    public function __construct()
-    {
-        //
-    }
-
-    /**
-     * Handle the event.
-     */
     public function handle(UniversalModelStatusChanged $event): void
     {
-        //
+        if ($event->recipient) {
+            $event->recipient->notify(new UniversalStatusNotification(
+                $event->model,
+                $event->title,
+                $event->messageContent,
+                $event->status,
+                $event->comment,
+                $event->routeUrl,
+                $event->icon
+            ));
+        }
     }
 }
