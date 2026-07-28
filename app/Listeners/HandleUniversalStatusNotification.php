@@ -10,6 +10,7 @@ class HandleUniversalStatusNotification
     public function handle(UniversalModelStatusChanged $event): void
     {
         if ($event->recipient) {
+            // Méthode standard - stocke ET broadcast
             $event->recipient->notify(new UniversalStatusNotification(
                 $event->model,
                 $event->title,

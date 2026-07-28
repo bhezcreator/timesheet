@@ -48,20 +48,16 @@ class UniversalStatusNotification extends Notification implements ShouldQueue
 
     public function toMail($notifiable): MailMessage
     {
-        $mail = (new MailMessage)
-            ->subject($this->title)
-            ->greeting("Bonjour {$notifiable->name},")
-            ->line($this->messageContent)
-            ->line("Statut actuel : **" . ucfirst($this->status) . "**");
-
-        if ($this->comment) {
-            $mail->line("Note / Motif :")
-                ->line("> " . $this->comment);
-        }
-
-        return $mail
-            ->action('Ouvrir l\'élément', $this->routeUrl)
-            ->line('Merci pour votre collaboration.');
+        return (new MailMessage)
+            ->subject("🔔 " . $this->title)
+            ->view('emails.universal-status', [
+                'title' => $this->title,
+                'notifiableName' => $notifiable->name,
+                'messageContent' => $this->messageContent,
+                'status' => $this->status,
+                'comment' => $this->comment,
+                'routeUrl' => $this->routeUrl,
+            ]);
     }
 
     public function toArray($notifiable): array

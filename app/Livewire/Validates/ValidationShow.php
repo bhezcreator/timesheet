@@ -78,7 +78,7 @@ class ValidationShow extends Component
             messageContent: "Votre rapport mensuel a été traité par le superviseur.",
             status: $this->decision === 'Validé' ? 'approuvé' : 'rejeté',
             comment: $this->comment,
-            routeUrl: route('validations.show', $this->report->id),
+            routeUrl: $this->decision === 'Validé' ? route('rapports.index') : route('rapports.update', $this->report->id),
             icon: $this->decision === 'Validé' ? 'las la-check-circle text-emerald-500' : 'las la-times-circle text-rose-500'
         ));
 

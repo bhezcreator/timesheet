@@ -4,7 +4,6 @@
             Rapports à validés
         </h2>
     </x-slot>
-
     <!-- Grille des Filtres -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-white p-4 border-t border-t-blue-700 rounded-2xl shadow-xs">
         <!-- Filtre Collaborateur -->
@@ -180,7 +179,7 @@
                                         <a href="{{ route('rapports.print', ['reportId' => $report->id]) }}"
                                             class="inline-flex items-center justify-center p-2 rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 shadow-sm transition-all"
                                             title="Imprimer le rapport">
-                                            <i class="las la-print text-xl"></i>
+                                            <i class="las la-print text-xl mx-1"></i> Imprimer
                                         </a>
                                     @endif
 
@@ -189,7 +188,7 @@
                                             <a href="{{ route('validations.show', $report->id) }}"
                                                 class="inline-flex items-center justify-center p-2 rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 shadow-sm transition-all"
                                                 title="Valider le rapport">
-                                                <i class="las la-check-circle text-xl"></i>
+                                                <i class="las la-check-circle text-xl mx-1"></i> Validé rapport
                                             </a>
                                         @endif
                                     @endcan

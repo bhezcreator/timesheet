@@ -7,9 +7,8 @@
             $refs.audioPlayer.play().catch(e => console.log('Audio en attente d interaction utilisateur'));
         }
         }" @play-notification-sound.window="play()">
-
-        <!-- Élément Audio Invisible (Utilisation d'un son système standard ou hébergé) -->
-        <audio x-ref="audioPlayer" src="https://mixkit.co" preload="auto"></audio>
+        <!-- Fichier stocké localement dans votre projet -->
+        <audio x-ref="audioPlayer" src="{{ asset('audio/notification.mp3') }}" preload="auto"></audio>
 
         <!-- Bouton Cloche -->
         <button @click="open = !open" class="relative cursor-pointer text-gray-500 hover:text-indigo-600 focus:outline-none transition-colors">
@@ -38,7 +37,7 @@
                     <i class="las la-bell text-sm text-gray-400"></i> Centre de notifications
                 </span>
                 @if($user->unreadNotifications->count() > 0)
-                    <button wire:click="markAllAsRead" class="text-[11px] text-indigo-600 hover:text-indigo-800 hover:underline font-bold transition">
+                    <button wire:click="markAllAsRead" class="text-[11px] text-indigo-600 cursor-pointer hover:text-indigo-800 hover:underline font-bold transition">
                         Tout marquer lu
                     </button>
                 @endif
@@ -48,7 +47,7 @@
                 @forelse($user->notifications->take(5) as $notification)
                     <!-- Remplacement de <a> par un bouton d'action Livewire pour intercepter le clic -->
                     <button wire:click.prevent="readSingle('{{ $notification->id }}')"
-                    class="p-3.5 flex items-start gap-3 hover:bg-gray-50 transition-colors w-full text-left block {{ $notification->read_at ? 'opacity-60' : 'bg-indigo-50/10' }}">
+                    class="p-3.5 flex items-start cursor-pointer gap-3 hover:bg-blue-100 transition-colors w-full text-left block {{ $notification->read_at ? 'opacity-60' : 'bg-indigo-50/10' }}">
 
                         <div class="p-2 rounded-lg bg-gray-50 border border-gray-100 shadow-sm shrink-0 flex items-center justify-center">
                             <i class="{{ $notification->data['icon'] ?? 'las la-info-circle text-gray-500' }} text-lg"></i>
@@ -58,7 +57,7 @@
                             <p class="text-xs font-bold text-gray-900 truncate">{{ $notification->data['title'] }}</p>
                             <p class="text-xs text-gray-600 mt-0.5 line-clamp-2 leading-relaxed">{{ $notification->data['message'] }}</p>
 
-                            @if(!$notification->read_at && isset($notification->data['comment']))
+                            @if(!$notification->read_at && !empty($notification->data['comment']))
                                 <p class="text-[11px] text-gray-500 italic bg-gray-50 p-1.5 rounded mt-1 border border-gray-100 truncate">
                                     "{{ $notification->data['comment'] }}"
                                 </p>

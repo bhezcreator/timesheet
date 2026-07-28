@@ -157,9 +157,11 @@
 
                     <div class="flex items-center gap-2">
                         <!-- Éditer / Mettre à jour -->
-                        <a href="{{ route('rapports.update', ['reportId' => $rapport->id]) }}" class="px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-gray-700 shadow-3xs hover:bg-gray-50 hover:text-blue-600 transition flex items-center gap-1">
-                            <i class="las la-edit text-sm"></i> Editer
-                        </a>
+                        @if ($rapport->status !== 'approuvé')
+                            <a href="{{ route('rapports.update', ['reportId' => $rapport->id]) }}" class="px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-gray-700 shadow-3xs hover:bg-gray-50 hover:text-blue-600 transition flex items-center gap-1">
+                                <i class="las la-edit text-sm"></i> Editer
+                            </a>
+                        @endif
 
                         @if ($rapport->status == 'approuvé')
                             <a href="{{ route('rapports.print', ['reportId' => $rapport->id]) }}"
@@ -170,9 +172,11 @@
                         @endif
 
                         <!-- Supprimer -->
-                        <x-ui.button variant="danger" size="sm" wire:click="confirmDelete({{ $rapport->id }})" title="Retirer ce rapport">
-                            <i class="las la-trash text-sm"></i>
-                        </x-ui.button>
+                        @if ($rapport->status !== 'approuvé')
+                            <x-ui.button variant="danger" size="sm" wire:click="confirmDelete({{ $rapport->id }})" title="Retirer ce rapport">
+                                <i class="las la-trash text-sm"></i>
+                            </x-ui.button>
+                        @endif
                     </div>
                 </div>
             </div>
