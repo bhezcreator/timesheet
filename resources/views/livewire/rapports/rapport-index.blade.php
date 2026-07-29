@@ -139,14 +139,28 @@
                     <!-- Aperçu Réalisations -->
                     <div class="pt-2">
                         <span class="text-[10px] font-bold text-gray-800 uppercase block tracking-wider">Dernières réalisations :</span>
-                        <p class="text-xs text-gray-800 line-clamp-2 mt-1 leading-relaxed italic">
+                        <p class="text-xs text-gray-800 line-clamp-2 mt-1 leading-relaxed italic whitespace-pre-line break-words">
                             "{{ $rapport->achievements ?? 'Aucune description rédigée...' }}"
                         </p>
                     </div>
                 </div>
 
+                @if ($rapport->status === 'approuvé' || $rapport->status === 'rejeté')
+                    @php
+                        $comment = $rapport->validation->comment;
+                    @endphp
+
+                    @if (!empty($comment))
+                        <div class="bg-gray-50/70 border-t border-gray-100 px-5 py-1">
+                            <p class="text-xs text-gray-800 mt-1 leading-relaxed italic whitespace-pre-wrap break-words">
+                                "{{ $comment ?? 'Aucun commentaire...' }}"
+                            </p>
+                        </div>
+                    @endif
+                @endif
+
                 <!-- Pied de la carte (Actions) -->
-                <div class="bg-gray-50/70 border-t border-gray-100 px-5 py-3 flex justify-between items-center gap-2">
+                <div class="border-t border-gray-100 bg-white px-5 py-3 flex justify-between items-center gap-2">
                     <span class="text-[10px] text-gray-600">
                         @if($rapport->submitted_at)
                             Soumis le {{ $rapport->submitted_at->format('d/m à H:i') }}

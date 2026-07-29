@@ -1,7 +1,7 @@
 <div class="p-4 space-y-6">
-    <div class="flex items-center gap-2 text-gray-600 text-sm print:hidden ">
+    <div class="flex items-center gap-2 text-gray-600 text-sm print:hidden">
         <i class="las la-info-circle text-lg text-blue-500"></i>
-        <span>Ajustez vos options de mise en page (activer les graphismes d'arrière-plan) avant de valider.</span>
+        <span>Avant impression : assurez-vous d'activer les graphismes d'arrière-plan pour inclure tous les éléments visuels.</span>
     </div>
 
     <!-- Zone d'actions (Masquée lors de l'impression) -->
@@ -41,7 +41,7 @@
         <div class="grid grid-cols-2 gap-6 bg-gray-50 p-4 rounded-xl text-xs print:bg-gray-50/50">
             <div class="space-y-1.5">
                 <span class="text-[10px] uppercase font-bold text-gray-400 tracking-wider block">Collaborateur</span>
-                <div class="font-bold text-gray-800 text-sm">{{ $report->user->name }}</div>
+                <div class="font-bold text-gray-800 text-sm">{{ $report->user->name.' '.$report->user->first_name }}</div>
                 <div class="text-gray-500">{{ $report->user->email }}</div>
             </div>
             <div class="space-y-1.5 text-right">
@@ -91,7 +91,7 @@
                         <tfoot>
                             <tr class="bg-gray-50 font-bold border-t border-gray-200 text-gray-800">
                                 <td colspan="5" class="p-3 text-right uppercase tracking-wider text-[10px]">Volume Horaire Total Cumulé :</td>
-                                <td class="p-3 text-right text-sm font-black text-blue-600 bg-blue-50/50">{{ number_format($totalReportHours, 2) }}h</td>
+                                <td class="p-3 text-right text-sm font-black text-blue-600 bg-blue-50/50">{{ number_format($totalReportHours, 0) }}h</td>
                             </tr>
                         </tfoot>
                     </table>
@@ -129,11 +129,11 @@
                                 <td class="p-3 uppercase tracking-wider text-[10px]">Totaux par Projet :</td>
                                 @foreach($projectsList as $pId => $pName)
                                     <td class="p-3 text-center border-l border-gray-200 text-gray-700">
-                                        {{ number_format($activities->where('project_id', $pId)->sum('duration'), 2) }}h
+                                        {{ number_format($activities->where('project_id', $pId)->sum('duration'), 0) }}h
                                     </td>
                                 @endforeach
                                 <td class="p-3 text-right text-sm font-black text-blue-600 border-l border-gray-200 bg-blue-50/50">
-                                    {{ number_format($totalReportHours, 2) }}h
+                                    {{ number_format($totalReportHours, 0) }}h
                                 </td>
                             </tr>
                         </tfoot>
@@ -148,37 +148,55 @@
                 <span class="text-[10px] font-bold text-blue-600 uppercase tracking-wider flex items-center gap-1">
                     <i class="las la-bullseye text-sm"></i> Objectifs assignés
                 </span>
-                <p class="text-xs text-gray-600 whitespace-pre-line leading-relaxed">{{ $report->objectives ?? 'Aucun renseigné.' }}</p>
+                <p class="text-xs text-gray-600 whitespace-pre-wrap break-words leading-relaxed">
+                    {{ $report->objectives ?? 'Aucun renseigné.' }}
+                </p>
             </div>
 
             <div class="bg-gray-50/40 border border-gray-200/60 p-4 rounded-xl space-y-2">
                 <span class="text-[10px] font-bold text-green-600 uppercase tracking-wider flex items-center gap-1">
                     <i class="las la-check-circle text-sm"></i> Réalisations validées
                 </span>
-                <p class="text-xs text-gray-600 whitespace-pre-line leading-relaxed">{{ $report->achievements ?? 'Aucune renseignée.' }}</p>
+                <p class="text-xs text-gray-600 whitespace-pre-wrap break-words leading-relaxed">{{ $report->achievements ?? 'Aucune renseignée.' }}</p>
             </div>
 
             <div class="bg-gray-50/40 border border-gray-200/60 p-4 rounded-xl space-y-2">
                 <span class="text-[10px] font-bold text-purple-600 uppercase tracking-wider flex items-center gap-1">
                     <i class="las la-rocket text-sm"></i> Actions futures
                 </span>
-                <p class="text-xs text-gray-600 whitespace-pre-line leading-relaxed">{{ $report->next_actions ?? 'Aucune planifiée.' }}</p>
+                <p class="text-xs text-gray-600 whitespace-pre-wrap break-words leading-relaxed">{{ $report->next_actions ?? 'Aucune planifiée.' }}</p>
             </div>
         </div>
 
+        <!-- Déclaration légale d'authenticité -->
+        <div class="space-y-2 flex flex-col justify-center">
+            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Clause d'authentification</span>
+            <p class="text-[11px] text-gray-500 leading-relaxed italic">
+                Je soussigné, certifie sur l'honneur l'exactitude des informations fournies ci-dessus reflétant fidèlement l'état d'avancement ainsi que le décompte des heures allouées aux activités des projets concernés pour la période déclarée.
+            </p>
+        </div>
+
         <!-- BLOC LÉGAL, AUTHENTIFICATION & SIGNATURE -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6 border-t border-gray-200 break-inside-avoid">
-            <!-- Déclaration légale d'authenticité -->
-            <div class="space-y-2 flex flex-col justify-center">
-                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Clause d'authentification</span>
-                <p class="text-[11px] text-gray-500 leading-relaxed italic">
-                    Je soussigné, certifie sur l'honneur l'exactitude des informations fournies ci-dessus reflétant fidèlement l'état d'avancement ainsi que le décompte des heures allouées aux activités des projets concernés pour la période déclarée.
-                </p>
+        <div class="grid grid-cols-2 gap-1 pt-6 border-t border-gray-200 break-inside-avoid">
+            <!-- Signature électronique du déclarant -->
+            <div class="flex flex-col items-start justify-center space-y-2">
+                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block text-left w-full">Signature du superviseur</span>
+                <div class="h-24 w-48 border border-gray-200 bg-gray-50/30 rounded-xl p-2 flex items-center justify-center relative overflow-hidden">
+                    @if($report->user->supervisor->signature && Storage::disk('public')->exists($report->user->supervisor->signature))
+                        <img src="{{ Storage::url($report->user->supervisor->signature) }}" alt="Signature Électronique" class="max-h-full max-w-full object-contain mix-blend-multiply">
+                    @else
+                        <span class="text-[10px] text-gray-300 italic">Aucune signature numérisée</span>
+                    @endif
+                </div>
+                <span class="text-[12px] text-left font-medium text-gray-700">Signé électroniquement par <br>
+                    <span class="font-bold text-[14px]">{{ $report->user->supervisor->name.' '.$report->user->supervisor->first_name ?? 'N/A' }}</span> <br>
+                    <span class="font-bold">{{ $report->user->supervisor->job_title }}</span>
+                </span>
             </div>
 
             <!-- Signature électronique du déclarant -->
             <div class="flex flex-col items-end justify-center space-y-2">
-                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block text-right w-full">Signature du déclarant</span>
+                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block text-right">Signature du déclarant</span>
                 <div class="h-24 w-48 border border-gray-200 bg-gray-50/30 rounded-xl p-2 flex items-center justify-center relative overflow-hidden">
                     @if($report->user->signature && Storage::disk('public')->exists($report->user->signature))
                         <img src="{{ Storage::url($report->user->signature) }}" alt="Signature Électronique" class="max-h-full max-w-full object-contain mix-blend-multiply">
@@ -186,7 +204,10 @@
                         <span class="text-[10px] text-gray-300 italic">Aucune signature numérisée</span>
                     @endif
                 </div>
-                <span class="text-[10px] font-medium text-gray-400">Signé électroniquement par {{ $report->user->name ?? 'N/A' }}</span>
+                <span class="text-[12px] text-end font-medium text-gray-700">Signé électroniquement par  <br>
+                    <span class="font-bold text-[14px]">{{ $report->user->name.' '.$report->user->first_name ?? 'N/A' }}</span> <br>
+                    <span class="font-bold">{{ $report->user->job_title }}</span>
+                </span>
             </div>
         </div>
 

@@ -184,7 +184,7 @@
 
                 <!-- Bouton d'action Minimaliste -->
                 <div class="btn-wrapper">
-                    <a href="{{ $routeUrl }}" class="btn">Ouvrir l'élément gddd →</a>
+                    <a href="{{ $routeUrl }}" class="btn">Ouvrir l'élément →</a>
                 </div>
 
                 <div class="divider"></div>

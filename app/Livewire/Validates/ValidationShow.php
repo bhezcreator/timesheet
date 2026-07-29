@@ -5,6 +5,7 @@ namespace App\Livewire\Validates;
 use App\Events\UniversalModelStatusChanged;
 use App\Models\MonthlyReport;
 use App\Models\ReportValidation;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
@@ -81,6 +82,39 @@ class ValidationShow extends Component
             routeUrl: $this->decision === 'Validé' ? route('rapports.index') : route('rapports.update', $this->report->id),
             icon: $this->decision === 'Validé' ? 'las la-check-circle text-emerald-500' : 'las la-times-circle text-rose-500'
         ));
+
+        if ($this->decision === 'Validé') {
+            // Récupérer tous les utilisateurs avec la permission
+            $users = User::permission('rapports.voir_tous')->get();
+
+            foreach ($users as $user) {
+                event(new UniversalModelStatusChanged(
+                    model: $this->report,
+                    recipient: $user, // L'agent recevra la notification
+                    title: "Validation du : " . $this->report->full_title,
+                    messageContent: "Le rapport mensuel du colaborateur " . $this->report->user->name . ' ' . $this->report->user->first_name . " a été approuvé par son superviseur.",
+                    status: 'approuvé',
+                    comment: '',
+                    routeUrl: route('rapports.print', ['reportId' => $this->report->id]),
+                    icon: 'las la-check-circle text-emerald-500'
+                ));
+            }
+
+            if (!empty($this->report->user->supervisor)) {
+                $supervise = $this->report->user->supervisor;
+
+                event(new UniversalModelStatusChanged(
+                    model: $this->report,
+                    recipient: $supervise,
+                    title: "Validation du : " . $this->report->full_title,
+                    messageContent: "Le rapport mensuel du colaborateur " . $this->report->user->name . ' ' . $this->report->user->first_name . " a été approuvé avec succès.",
+                    status: 'approuvé',
+                    comment: '',
+                    routeUrl: route('rapports.print', ['reportId' => $this->report->id]),
+                    icon: 'las la-check-circle text-emerald-500'
+                ));
+            }
+        }
 
         // 5. Notification Flash de succès & Redirection
         session()->flash('message', 'Le traitement du rapport a été sécurisé et enregistré avec succès.');

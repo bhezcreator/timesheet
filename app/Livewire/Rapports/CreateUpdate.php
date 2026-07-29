@@ -14,6 +14,7 @@ use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use App\Events\UniversalModelStatusChanged;
 
 #[Layout('layouts.app')]
 class CreateUpdate extends Component
@@ -238,6 +239,21 @@ class CreateUpdate extends Component
                 'monthly_report_id' => $report->id,
                 'status' => $submit ? 'soumis' : 'brouillon',
             ]);
+
+            if ($submit) {
+                $supervise = $report->user->supervisor;
+
+                event(new UniversalModelStatusChanged(
+                    model: $report,
+                    recipient: $supervise,
+                    title: "Soumission du : " . $report->full_title,
+                    messageContent: "Le colaborateur " . $report->user->name . ' ' . $report->user->first_name . " vient de soumetre son rapport.",
+                    status: 'soumis',
+                    comment: '',
+                    routeUrl: route('validations.show', $report->id),
+                    icon: 'las la-check-circle text-emerald-500'
+                ));
+            }
 
             session()->flash('message', $submit ? 'Rapport soumis avec succès !' : 'Brouillon enregistré avec succès !');
 

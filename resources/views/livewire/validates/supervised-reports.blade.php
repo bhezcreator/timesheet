@@ -4,6 +4,7 @@
             Rapports à validés
         </h2>
     </x-slot>
+
     <!-- Grille des Filtres -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-white p-4 border-t border-t-blue-700 rounded-2xl shadow-xs">
         <!-- Filtre Collaborateur -->
@@ -156,7 +157,7 @@
                             {{-- Heures --}}
                             <td class="px-6 py-4 align-top">
                                 <x-ui.badge variant="info">
-                                    {{ number_format($report->activities->sum('duration'), 2) }} h
+                                    {{ number_format($report->activities->sum('duration'), 0) }} h
                                 </x-ui.badge>
                             </td>
 

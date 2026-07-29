@@ -168,10 +168,9 @@ resources/
         Impression :
             - mettre les regles avant l'Impression : validation du rapport avant; Ok
         Lier les fichiers : docs pdf ou images au rapport Ok
+        # On ne peut pas générer deux rapport dans un meme mois/année pour un projet/agent ou le rapport de type mixte(all)/agent Ok
 
-        # On ne peut pas générer deux rapport dans un mois pour un projet ou le rapport de type mixte(global)
-
-    - Validation des rapports :
+    - Validation des rapports : ok
         Le superviseur peut :
             Voir les rapports soumis
             Lire toutes les activités
@@ -193,7 +192,13 @@ resources/
             - Mise à jour en BDD : Le statut de l'activité repasse à 'Rejeté' et la colonne rejection_reason enregistre le texte du manager.
             - Test : composant
 
-    - Notifications :
+###################################################
+
+# Afficher le commentaire d'un rapport(Refus ou Validation) Ok
+# Arranger l'interface d'Impression ok
+# Envoie des notification pour comptable ayant la permission : rapports.voir_tous Ok
+
+    - Notifications : Ok
         npm install laravel-echo
         Notification automatique lorsqu'un :
             rapport est soumis
@@ -203,27 +208,26 @@ resources/
             période est clôturée
         Création des Jobs(pour envoie auto des notifications)
 
-    - Tableau de bord(Pour l'agent) :
+    - Tableau de bord(Pour l'agent) : Ok
         activités du jour
         activités du mois
         nombre d'heures
         rapports soumis
         rapports en attente
 
-    - Tableau de bord(Pour le superviseur) :
-        rapports à valider
-        statistiques de son équipe
-        activités récentes
-        taux de validation
+    - Tableau de bord(Pour le superviseur) : Ok
+        rapports à valider (user à permission : validations.voir)
+        statistiques de son équipe (user à permission : validations.voir)
+        taux de validation (user à permission : validations.voir)
 
-    - Tableau de bord(Pour l'administrateur) :
-        nombre d'utilisateurs
+    - Tableau de bord(Pour l'admin) : Ok
         projets actifs
         sous-projets
-        activités réalisées
-        heures prestées
         statistiques globales
 
+###################################################
+- Composant qui affiche les statistiques téléchageables : PDF, Excel : Projet, Rapport approuvé;
+- application la regle de reception d'email ou pas via la colonne settings['email'] de User
 - Test pour chaque étape
 - Création des Services(Amélioré les codes)
 - Création des Files d'attente
