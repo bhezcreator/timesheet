@@ -129,7 +129,7 @@
 
                     <div class="border-b border-gray-200 pb-5">
                         <h3 class="text-lg font-black text-gray-800">
-                            {{ $rapport->full_title }}
+                            {{ $rapport->full_title }} ggt
                         </h3>
                         <p class="text-xs text-gray-600 font-medium mt-0.5">
                             <i class="las la-clock"></i> {{ count($rapport->activities) }} activité(s) indexée(s) : <span class="font-bold"> ({{ round($rapport->activities->sum('duration')) }}h)</span>

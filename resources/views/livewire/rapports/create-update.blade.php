@@ -33,6 +33,10 @@
         </div>
     </div>
 
+    @error('permission')
+        <x-ui.alert type="error" class="mb-6">{{ $message }}</x-ui.alert> <br>
+    @enderror
+
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <!-- COLONNE GAUCHE : Configuration & Contenu du Rapport (Prend 2 colonnes sur grand écran) -->
         <div class="lg:col-span-2 space-y-6">

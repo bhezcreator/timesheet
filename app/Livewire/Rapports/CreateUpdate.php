@@ -189,53 +189,86 @@ class CreateUpdate extends Component
 
     public function save($submit = false)
     {
-        if ($this->ID_report) {
-            $this->checkPermissionOrFail("rapports.modifier");
-        } else {
-            $this->checkPermissionOrFail("rapports.creer");
-        }
-
-        $selected_project_id = ($this->selected_project_id === 'all') ? '' : $this->selected_project_id;
-        $this->validate();
-
-        $data = [
-            'user_id' => $this->user_id,
-            'month' => $this->month,
-            'year' => $this->year,
-            'project_ids' => $selected_project_id,
-            'report_date' => $this->report_date,
-            'objectives' => $this->objectives,
-            'achievements' => $this->achievements,
-            'next_actions' => $this->next_actions,
-            'status' => $submit ? 'soumis' : 'brouillon',
-            'submitted_at' => $submit ? now() : null,
-        ];
-
-        // Sauvegarde ou Mise à jour du rapport
-        $report = MonthlyReport::updateOrCreate(
-            ['id' => $this->ID_report, 'user_id' => $this->user_id],
-            $data
-        );
-
-        // Traitement des pièces jointes Spatie Media Library
-        if (!empty($this->files)) {
-            foreach ($this->files as $file) {
-                $report->addMedia($file->getRealPath())
-                    ->usingFileName($file->getClientOriginalName())
-                    ->toMediaCollection('attachments');
+        try {
+            if ($this->ID_report) {
+                $this->checkPermissionOrFail("rapports.modifier");
+            } else {
+                $this->checkPermissionOrFail("rapports.creer");
             }
-            $this->reset('files');
+
+            $selected_project_id = ($this->selected_project_id === 'all') ? '' : $this->selected_project_id;
+            $this->validate();
+
+            // 🔍 VÉRIFICATION DE LA CONTRAINTE D'UNICITÉ
+            if (!$this->ID_report) {
+                $this->checkUniqueReportConstraint();
+            }
+
+            $data = [
+                'user_id' => $this->user_id,
+                'month' => $this->month,
+                'year' => $this->year,
+                'project_ids' => $selected_project_id,
+                'report_date' => $this->report_date,
+                'objectives' => $this->objectives,
+                'achievements' => $this->achievements,
+                'next_actions' => $this->next_actions,
+                'status' => $submit ? 'soumis' : 'brouillon',
+                'submitted_at' => $submit ? now() : null,
+            ];
+
+            // Sauvegarde ou Mise à jour du rapport
+            $report = MonthlyReport::updateOrCreate(
+                ['id' => $this->ID_report, 'user_id' => $this->user_id],
+                $data
+            );
+
+            // Traitement des pièces jointes Spatie Media Library
+            if (!empty($this->files)) {
+                foreach ($this->files as $file) {
+                    $report->addMedia($file->getRealPath())
+                        ->usingFileName($file->getClientOriginalName())
+                        ->toMediaCollection('attachments');
+                }
+                $this->reset('files');
+            }
+
+            // Lier toutes les activités affichées à ce rapport
+            Activity::whereIn('id', $this->activities->pluck('id'))->update([
+                'monthly_report_id' => $report->id,
+                'status' => $submit ? 'soumis' : 'brouillon',
+            ]);
+
+            session()->flash('message', $submit ? 'Rapport soumis avec succès !' : 'Brouillon enregistré avec succès !');
+
+            return redirect()->route('rapports.index');
+        } catch (\Exception $e) {
+            // Ajouter l'erreur au système de validation de Livewire
+            $this->addError('permission', $e->getMessage());
+            return null;
         }
+    }
 
-        // Lier toutes les activités affichées à ce rapport
-        Activity::whereIn('id', $this->activities->pluck('id'))->update([
-            'monthly_report_id' => $report->id,
-            'status' => $submit ? 'soumis' : 'brouillon',
-        ]);
+    /**
+     * Vérifie la contrainte d'unicité : un seul rapport par projet et par mois
+     * @throws \Exception
+     */
+    private function checkUniqueReportConstraint()
+    {
+        // Déterminer la valeur à vérifier ('' pour 'all', sinon l'ID du projet)
+        $projectValue = ($this->selected_project_id === 'all') ? '' : $this->selected_project_id;
 
-        session()->flash('message', $submit ? 'Rapport soumis avec succès !' : 'Brouillon enregistré avec succès !');
+        $exists = MonthlyReport::where('user_id', $this->user_id)
+            ->where('month', $this->month)
+            ->where('year', $this->year)
+            ->where('project_ids', $projectValue)
+            ->exists();
 
-        return redirect()->route('rapports.index');
+        if ($exists) {
+            $type = $this->selected_project_id === 'all' ? 'global (tous les projets)' : "pour le projet #{$this->selected_project_id}";
+            // Lance une exception qui sera capturée par le système de validation
+            throw new \Exception("Un rapport {$type} existe déjà pour ce mois-ci.");
+        }
     }
 
     public function render()
