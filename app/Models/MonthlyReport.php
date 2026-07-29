@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Project;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
@@ -94,30 +95,105 @@ class MonthlyReport extends Model implements HasMedia
     {
         return \Illuminate\Database\Eloquent\Casts\Attribute::make(
             get: function () {
-                // Sécurité Eloquent : si les données ne sont pas chargées, on quitte proprement
                 if (!isset($this->attributes['month']) || !isset($this->attributes['year'])) {
                     return "Rapport d'activité";
                 }
 
-                $monthNum = (int) $this->attributes['month'];
-                $yearNum = (int) $this->attributes['year'];
+                $monthName = \Carbon\Carbon::createFromDate(
+                    (int) $this->attributes['year'],
+                    (int) $this->attributes['month'],
+                    1
+                )->translatedFormat('F');
 
-                // Traduction sécurisée du mois
-                $monthName = \Carbon\Carbon::createFromDate($yearNum, $monthNum, 1)->translatedFormat('F');
-
-                // Récupération sécurisée du contenu du champ project_ids
+                $baseTitle = "Rapport du mois de " . ucfirst($monthName) . " {$this->attributes['year']}";
                 $projectField = $this->attributes['project_ids'] ?? '';
 
-                // Si c'est vide, null ou un tableau sérialisé vide, c'est pour tous les projets
-                if (empty($projectField) || $projectField === '""' || $projectField === '[]') {
-                    return "Rapport du mois de " . ucfirst($monthName) . " {$yearNum} (pour tous les projets)";
+                // Rapport "all"
+                if (empty($projectField) || $projectField === 'all' || $projectField === '""' || $projectField === '[]') {
+                    return $baseTitle . " (tous les projets)";
                 }
 
-                // Si un ID de projet est présent, on cherche son nom de manière sécurisée sans planter
-                $projectName = \App\Models\Project::find($projectField)?->name ?? 'Projet Inconnu';
+                if ($projectField) {
+                    $projectId = $this->extractProjectId($projectField);
+                    // Rapport projet spécifique
+                    $project = Project::where('id', $projectId)->first();
+                    if ($project) {
+                        return $baseTitle . " concernant le projet : {$project->name}";
+                    }
+                }
 
-                return "Rapport du mois de " . ucfirst($monthName) . " {$yearNum} concernant le projet : {$projectName}";
+                return $baseTitle . " (projet : {$projectField})";
             }
         );
+    }
+
+
+    /**
+     * Extrait l'ID du projet à partir du champ project_ids
+     * Gère les différents formats : string, int, JSON, etc.
+     */
+    private function extractProjectId($projectField)
+    {
+        // Cas 1 : Vide ou null
+        if (empty($projectField) || $projectField === 'null' || $projectField === '') {
+            return null;
+        }
+
+        // Cas 2 : C'est déjà un nombre
+        if (is_numeric($projectField)) {
+            return (int) $projectField;
+        }
+
+        // Cas 3 : C'est une chaîne qui contient un nombre
+        if (is_string($projectField) && is_numeric(trim($projectField, '"'))) {
+            return (int) trim($projectField, '"');
+        }
+
+        // Cas 4 : C'est du JSON
+        if (is_string($projectField) && str_starts_with($projectField, '[')) {
+            try {
+                $decoded = json_decode($projectField, true);
+                if (is_array($decoded) && !empty($decoded)) {
+                    // Si c'est un tableau avec un seul élément
+                    if (count($decoded) === 1 && is_numeric($decoded[0])) {
+                        return (int) $decoded[0];
+                    }
+                    // Si c'est un tableau avec plusieurs éléments (on prend le premier)
+                    if (count($decoded) > 1) {
+                        // Vous pouvez choisir de retourner le premier ou de faire autre chose
+                        return (int) $decoded[0];
+                    }
+                }
+            } catch (\Exception $e) {
+                // Ignorer l'erreur
+            }
+        }
+
+        // Cas 5 : C'est une chaîne JSON avec des guillemets simples
+        if (is_string($projectField) && str_starts_with($projectField, '"')) {
+            try {
+                $decoded = json_decode($projectField);
+                if (is_numeric($decoded)) {
+                    return (int) $decoded;
+                }
+            } catch (\Exception $e) {
+                // Ignorer l'erreur
+            }
+        }
+
+        // Cas 6 : "all" ou "[]"
+        if ($projectField === 'all' || $projectField === '[]' || $projectField === '"all"') {
+            return null;
+        }
+
+        // Dernier recours : essayer de forcer en int
+        if (is_string($projectField)) {
+            $cleaned = preg_replace('/[^0-9]/', '', $projectField);
+            if (!empty($cleaned)) {
+                return (int) $cleaned;
+            }
+        }
+
+        return null;
     }
 }
