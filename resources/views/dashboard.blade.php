@@ -15,8 +15,6 @@
     + Ajouter patient
 </button>
 
-<a href="{{ route('activities.create') }}">Test rapport</a>
-
 <!-- Modale Patient -->
 <x-ui.modal-one id="patient-modal" title="Nouveau patient" size="lg">
     <form class="space-y-4">

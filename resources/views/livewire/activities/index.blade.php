@@ -187,6 +187,8 @@
                                 @if($activite->status === 'brouillon')
                                     <x-ui.badge variant="default">Brouillon</x-ui.badge>
                                     <x-ui.badge variant="warning">En attente</x-ui.badge>
+                                @elseif($activite->status === 'soumis')
+                                    <x-ui.badge variant="info">Soumis</x-ui.badge>
                                 @elseif($activite->status === 'approuvé')
                                     <x-ui.badge variant="success">Approuvé</x-ui.badge>
                                 @else

@@ -169,6 +169,8 @@ resources/
             - mettre les regles avant l'Impression : validation du rapport avant; Ok
         Lier les fichiers : docs pdf ou images au rapport Ok
 
+        # On ne peut pas générer deux rapport dans un mois pour un projet ou le rapport de type mixte(global)
+
     - Validation des rapports :
         Le superviseur peut :
             Voir les rapports soumis

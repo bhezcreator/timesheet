@@ -196,14 +196,6 @@ class CreateUpdate extends Component
         }
 
         $selected_project_id = ($this->selected_project_id === 'all') ? '' : $this->selected_project_id;
-        /*
-            if ($this->selected_project_id === 'all') {
-                $selected_project_id = '';
-            } else {
-                $selected_project_id = $this->selected_project_id;
-            }
-        */
-
         $this->validate();
 
         $data = [
