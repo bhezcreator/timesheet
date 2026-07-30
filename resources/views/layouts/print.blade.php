@@ -52,6 +52,48 @@
                 background: #cbd5e1;
                 border-radius: 4px;
             }
+                /* Styles d'impression */
+    @media print {
+        body {
+            background: white !important;
+            padding: 10px !important;
+        }
+        .print\\:hidden {
+            display: none !important;
+        }
+        .print\\:border-none {
+            border: none !important;
+        }
+        .print\\:shadow-none {
+            box-shadow: none !important;
+        }
+        .print\\:p-0 {
+            padding: 0 !important;
+        }
+        .print\\:bg-gray-50\\/50 {
+            background-color: rgba(249, 250, 251, 0.5) !important;
+        }
+        .break-inside-avoid {
+            break-inside: avoid;
+        }
+        table {
+            font-size: 10px !important;
+        }
+        th, td {
+            padding: 6px 8px !important;
+        }
+        .status-badge {
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+        }
+        .bg-blue-50\/50, .bg-emerald-50\/50, .bg-red-50\/50, .bg-gray-50\/50 {
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+        }
+        .border, .border-gray-200, .border-gray-100 {
+            border-color: #e5e7eb !important;
+        }
+    }
         </style>
     </head>
     <body class="bg-gray-50 font-sans antialiased min-h-screen printable-content">

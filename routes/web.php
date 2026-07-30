@@ -15,13 +15,20 @@ use App\Livewire\Projects\SubProjectManager;
 use App\Livewire\Rapports\CreateUpdate as RapportsCreateUpdate;
 use App\Livewire\Rapports\PrintReport;
 use App\Livewire\Rapports\RapportIndex as RapportsIndex;
+use App\Livewire\Reports\PrintReports;
+use App\Livewire\Reports\ReportList;
 use App\Livewire\Roles\Index as RolesIndex;
 use App\Livewire\Users\Index as UsersIndex;
 use App\Livewire\Users\SettingsTabs;
 use App\Livewire\Users\Show as UsersShow;
 use App\Livewire\Validates\SupervisedReports;
 use App\Livewire\Validates\ValidationShow;
+
+
+use App\Models\MonthlyReport;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
 
 Route::view('/', 'welcome');
 
@@ -77,6 +84,13 @@ Route::middleware(['auth'])
         // Route sécurisée qui demande l'identifiant du rapport à imprimer
         Route::get('/rapports/{reportId}/print', PrintReport::class)
             ->name('rapports.print');
+
+        // Liste rapports pour Admin
+        Route::get('/reports', ReportList::class)->name('reports.index');
+
+        // Impression de la liste de rapport
+        Route::get('/rapports/{filters}/listprint', PrintReports::class)
+            ->name('reports.print');
 
         Route::get('/validates/supervisor', SupervisedReports::class)
             ->name('validations.supervisor');

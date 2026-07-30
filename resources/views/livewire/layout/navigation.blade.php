@@ -31,6 +31,12 @@ new class extends Component
             'icon'  => 'la-chart-bar',
             'route' => 'rapports.index',
         ],
+
+        [
+            'title' => 'Liste Rapport',
+            'icon'  => 'la-list',
+            'route' => 'reports.index',
+        ],
         [
             'title' => 'Validations',
             'icon'  => 'la-check',
