@@ -36,7 +36,7 @@
             <div class="space-y-1">
                 <span class="text-[10px] font-bold text-blue-600 uppercase tracking-widest block">Document Officiel</span>
                 <h1 class="text-2xl font-black text-gray-900 uppercase">Liste des Rapports</h1>
-                <p class="text-xs text-gray-500 font-medium">Généré le {{ now()->locale('fr')->format('d F Y à H:i') }}</p>
+                <p class="text-xs text-gray-500 font-medium">Généré le {{ now()->translatedFormat('d F Y à H:i') }}</p>
             </div>
             <!-- Emplacement du Logo de l'entreprise -->
             <div class="shrink-0">
@@ -56,7 +56,7 @@
                 <div class="space-y-1">
                     <span class="text-[10px] uppercase font-bold text-gray-400 tracking-wider block">Période</span>
                     <div class="font-semibold text-gray-800">
-                        {{ Carbon\Carbon::createFromDate($filters['year'], $filters['month'], 1)->locale('fr')->format('F Y') }}
+                        {{ Carbon\Carbon::createFromDate($filters['year'], $filters['month'], 1)->translatedFormat('F Y') }}
                     </div>
                 </div>
             @endif
@@ -128,7 +128,7 @@
                                         <div class="text-gray-500 text-[10px]">{{ $report->user->email ?? '' }}</div>
                                     </td>
                                     <td class="p-3">
-                                        {{ Carbon\Carbon::createFromDate($report->year, $report->month, 1)->locale('fr')->format('F Y') }}
+                                        {{ Carbon\Carbon::createFromDate($report->year, $report->month, 1)->translatedFormat('F Y') }}
                                     </td>
                                     <td class="p-3">
                                         @php

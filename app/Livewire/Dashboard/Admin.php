@@ -137,7 +137,8 @@ class Admin extends Component
             ->map(function ($item) {
                 $date = Carbon::createFromDate($item->year, $item->month, 1);
                 return [
-                    'month' => $date->locale('fr')->format('M'),
+                    'month' => $date->translatedFormat('F'), // Déjà formaté
+                    'month_number' => $item->month,
                     'total' => $item->total,
                 ];
             })

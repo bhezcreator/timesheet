@@ -141,6 +141,12 @@ class ReportList extends Component
         return redirect()->route('reports.print', ['filters' => $params]);
     }
 
+    public function refreshData()
+    {
+        $this->loadStatistics();
+        $this->dispatch('statistics-updated');
+    }
+
     public function resetFilters()
     {
         $this->status = '';

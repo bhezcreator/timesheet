@@ -1,7 +1,7 @@
 <div>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Liste rapports/mois
+            Liste rapports
         </h2>
     </x-slot>
 
@@ -12,7 +12,7 @@
                 Liste des Rapports
             </h1>
             <p class="mt-1 text-sm text-gray-600">
-                Liste des rapports mensuels
+                Liste des rapports mensuels/Semestriel/Hebdomadaire
             </p>
         </div>
 
@@ -35,20 +35,20 @@
             </button>
 
             <button
-                wire:click="$refresh"
+                wire:click="refreshData"
                 wire:loading.attr="disabled"
-                wire:target="$refresh"
+                wire:target="refreshData"
                 class="inline-flex items-center cursor-pointer px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
-                <svg wire:loading.remove wire:target="$refresh" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg wire:loading.remove wire:target="refreshData" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
-                <svg wire:loading wire:target="$refresh" class="animate-spin w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg wire:loading wire:target="refreshData" class="animate-spin w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <span wire:loading.remove wire:target="$refresh">Actualiser</span>
-                <span wire:loading wire:target="$refresh">Actualisation...</span>
+                <span wire:loading.remove wire:target="refreshData">Actualiser</span>
+                <span wire:loading wire:target="refreshData">Actualisation...</span>
             </button>
         </div>
     </div>
@@ -263,7 +263,7 @@
                     </span>
                 @endif
 
-                <button wire:click="resetFilters" class="text-xs text-blue-600 hover:text-blue-800 font-medium hover:underline">
+                <button wire:click="resetFilters" class="text-xs cursor-pointer font-medium hover:underline ml-1.5 text-red-400 hover:text-red-600">
                     Tout effacer
                 </button>
             </div>
@@ -303,9 +303,9 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 text-sm text-gray-600">
-                                {{ Carbon\Carbon::createFromDate($report->year, $report->month, 1)->locale('fr')->format('F Y') }}
-                            </td>
+                           <td class="px-6 py-4 text-sm text-gray-600">
+    {{ Carbon\Carbon::createFromDate($report->year, $report->month, 1)->translatedFormat('F Y') }}
+</td>
                             <td class="px-6 py-4 text-sm text-gray-600">
                                 @php
                                     $projectIds = $report->project_ids;

@@ -20,6 +20,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Définir la locale de Carbon en français
         Carbon::setLocale('fr');
     }
 }
