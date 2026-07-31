@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Illuminate\Support\Facades\RateLimiter;
 
 #[Layout('layouts.app')]
 class CreateUpdate extends Component
@@ -125,6 +126,12 @@ class CreateUpdate extends Component
         $this->calculateMonthlyWorkingDays(app(\App\Services\CalendarBusinessService::class));
     }
 
+    // Forcer le fuseau horaire
+    protected function getCurrentDate()
+    {
+        return Carbon::now(config('app.timezone'));
+    }
+
     /**
      * Écouteur réactif sur le changement de projet pour mettre à jour les sous-projets liés.
      * et calcul d'avancement du projet rar rapport à user en ligne
@@ -202,8 +209,25 @@ class CreateUpdate extends Component
     }
 
     /**
-     * Règles de validation standardisées.
+     * Déclenche la validation en temps réel dès qu'une propriété change côté client
      */
+    public function updated($propertyName)
+    {
+        $this->validateOnly($propertyName);
+    }
+
+    /**
+     * Personnalisation des phrases de messages d'erreur
+     */
+    protected function messages()
+    {
+        return [
+            'end_time.after' => "L'heure de fin doit impérativement être postérieure à l'heure de début.",
+            '*.required' => "Le champ :attribute est obligatoire.",
+            '*.date_format' => "Le champ :attribute ne respecte pas le format requis (Heures:Minutes).",
+        ];
+    }
+
     protected function rules()
     {
         return [
@@ -219,10 +243,38 @@ class CreateUpdate extends Component
     }
 
     /**
+     * Traduction des champs pour les messages d'erreur de ce composant
+     */
+    protected function validationAttributes()
+    {
+        return [
+            'titre' => 'titre',
+            'project_id' => 'projet',
+            'sub_project_id' => 'sous-projet',
+            'activity_type_id' => "type d'activité",
+            'activity_date' => "date d'activité",
+            'start_time' => 'heure de début',
+            'end_time' => 'heure de fin',
+            'description' => 'description',
+        ];
+    }
+
+    /**
      * Enregistre ou modifie l'activité en appliquant le service AppSettingsService.
      */
     public function save(AppSettingsService $settingsService, TimesheetLockService $lockService, CalendarBusinessService $calendarService)
     {
+        // Limitation du nombre de tentatives
+        $key = 'activity_save_' . $this->user_id . '_' . $this->activity_date;
+
+        if (RateLimiter::tooManyAttempts($key, 10)) {
+            throw ValidationException::withMessages([
+                'activity' => ["Trop de tentatives. Veuillez attendre 5 minutes."]
+            ]);
+        }
+
+        RateLimiter::hit($key, 300); // 5 minutes
+
         $carbonDate = Carbon::parse($this->activity_date);
 
         // 1. Calcul immédiat de la durée pour les validations suivantes
@@ -269,7 +321,7 @@ class CreateUpdate extends Component
 
         // --- 1.3. VÉRIFICATION DU VERROUILLAGE DES MOIS PASSÉS ---
         // Si l'activité appartient à un mois antérieur au mois en cours
-        if ($carbonDate->format('Y-m') < $today->format('Y-m')) {
+        if ($carbonDate->format('Y-m') < $this->getCurrentDate()->format('Y-m')) {
 
             // Cas A : L'activité appartient exactement au mois précédent (M-1) et on a dépassé le jour limite
             if ($carbonDate->format('Y-m') === $today->copy()->subMonth()->format('Y-m') && $today->day > $lockDay) {
@@ -285,7 +337,6 @@ class CreateUpdate extends Component
                 ]);
             }
         }
-
 
         // 2. Restriction sur Jour verrouillé / Clôture mensuelle (Prioritaire pour économiser le serveur)
         if ($lockService->isDateLocked($carbonDate)) {
@@ -371,16 +422,27 @@ class CreateUpdate extends Component
      */
     protected function hasTimeOverlap(string $date, string $startTime, string $endTime): bool
     {
+        // Vérifier que les temps sont bien formatés
+        if (
+            !preg_match('/^([01]\d|2[0-3]):([0-5]\d)$/', $startTime) ||
+            !preg_match('/^([01]\d|2[0-3]):([0-5]\d)$/', $endTime)
+        ) {
+            return true; // Format invalide = bloquer
+        }
+
+        // Ajouter un buffer de sécurité (30 secondes)
+        $startBuffer = Carbon::parse($startTime)->subSeconds(30)->format('H:i');
+        $endBuffer = Carbon::parse($endTime)->addSeconds(30)->format('H:i');
+
         return Activity::query()
             ->where('user_id', $this->user_id)
             ->whereDate('activity_date', $date)
-            // On ignore la ligne en cours si on modifie
             ->when($this->isEditMode, function ($query) {
                 $query->where('id', '!=', $this->activityId);
             })
-            ->where(function ($query) use ($startTime, $endTime) {
-                $query->where('start_time', '<', $endTime)
-                    ->where('end_time', '>', $startTime);
+            ->where(function ($query) use ($startBuffer, $endBuffer) {
+                $query->where('start_time', '<', $endBuffer)
+                    ->where('end_time', '>', $startBuffer);
             })
             ->exists();
     }
