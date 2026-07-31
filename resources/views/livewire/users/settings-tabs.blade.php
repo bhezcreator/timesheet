@@ -93,5 +93,12 @@
                 @livewire('users.settings')
             </div>
         @endif
+
+                {{-- Contenu : Journal activité --}}
+        @if($activeTab === 'logs')
+            <div class="space-y-4 animate-fade-in" wire:key="tab-content-security">
+                @livewire('activity-logs')
+            </div>
+        @endif
     </div>
 </div>

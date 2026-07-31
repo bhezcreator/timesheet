@@ -20,6 +20,7 @@ class SettingsTabs extends Component
         'type'  => ['label' => 'Type activités', 'icon' => 'la-tags'],
         'blockedDay'  => ['label' => 'Jours verrouillés', 'icon' => 'la-calendar-times'],
         'general'  => ['label' => 'Paramètres généraux', 'icon' => 'la-sliders-h'],
+        'logs' => ['label' => 'Journal d\'activité', 'icon' => 'la-history'],
     ];
 
     public function changeTab(string $tabName)

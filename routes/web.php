@@ -29,7 +29,8 @@ use App\Livewire\Validates\ValidationShow;
 use App\Models\MonthlyReport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
+// Dans routes/web.php
+use App\Livewire\ActivityLogs;
 
 
 Route::view('/', 'welcome');
@@ -45,6 +46,8 @@ Route::view('profile', 'profile')
 Route::middleware(['auth'])
     ->prefix('admin')
     ->group(function () {
+
+        Route::get('/logs', ActivityLogs::class)->name('logs.index');
 
         Route::get('/notifications', NotificationsIndex::class)
             ->name('notifications.index');
