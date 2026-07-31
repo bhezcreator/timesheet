@@ -1,4 +1,4 @@
-<div class="p-0">
+<div class="p-5 border-t border-t-blue-700 rounded-2xl shadow-xs bg-white">
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             Paramètres
@@ -11,7 +11,7 @@
     </div>
 
     {{-- Système d'onglets --}}
-    <div class="bg-white border border-gray-200 my-4">
+    <div class="bg-white border border-gray-200 my-4 rounded-t-xl">
 
         {{-- Version Mobile : Menu déroulant (S'affiche uniquement sur les petits écrans) --}}
         <div class="sm:hidden mb-4">
@@ -51,7 +51,7 @@
     </div>
 
     {{-- Conteneur dynamique de contenu --}}
-    <div class="bg-white rounded-2xl border border-gray-100 p-6 shadow-xs min-h-[300px] transition-all duration-200">
+    <div class="bg-white p-0 pt-4 shadow-xs min-h-[300px] transition-all duration-200">
 
         {{-- Contenu : Profil --}}
         @if($activeTab === 'profile')

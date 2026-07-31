@@ -5,7 +5,7 @@
         </h2>
     </x-slot>
     <!-- Barre de Navigation Moderne -->
-    <div class="flex flex-col sm:flex-row justify-between items-center bg-white p-4 shadow-sm gap-4 border-t border-t-blue-700">
+    <div class="flex flex-col sm:flex-row justify-between items-center bg-white p-4 shadow-sm gap-4 border-t border-t-blue-700 rounded-xl">
         <!-- Vues (Année, Mois, Semaine) -->
         <div class="inline-flex p-1 bg-gray-100 rounded-lg w-full sm:w-auto">
             <button wire:click="changeView('year')" class="flex-1 sm:flex-initial cursor-pointer px-4 py-2 text-sm font-medium rounded-md transition {{ $viewMode === 'year' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-900' }}">
@@ -39,11 +39,11 @@
     </div>
 
     <!-- Conteneur Calendrier Principal -->
-    <div class="bg-white shadow-sm overflow-hidden">
+    <div class="bg-white shadow-sm overflow-hidden rounded-xl">
 
         <!-- MODE MOIS & SEMAINE -->
         @if($viewMode === 'month' || $viewMode === 'week')
-            <div class="bg-white grid grid-cols-1 md:grid-cols-7 border-b border-t border-t-blue-700 border-gray-200 hidden md:grid">
+            <div class="bg-white grid grid-cols-1 md:grid-cols-7 border-b border-t border-t-blue-700 border-gray-200 hidden rounded-xl md:grid">
                 @foreach(['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'] as $dayName)
                     <div class="py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ $dayName }}</div>
                 @endforeach

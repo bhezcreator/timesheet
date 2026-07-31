@@ -230,12 +230,11 @@ resources/
 - Composant pour Afficher notifications/filtres et pagination Ok
 
 - Composant Projet
-- application la regle de reception d'email ou pas via la colonne settings['email'] de User
+- application la regle de reception d'email ou pas via la colonne settings['email'] de User Ok
+- Ajout ActivityLogs Ok
+
 - Création des Services(Amélioré les codes)
 - Création des Files d'attente
-- Ajout ActivityLogs
-
 - Amélioration des codes(design + sécurité)
 - Test pour chaque étape
-- Création API
-- Création App. Desktop et Mobile
+- Création App. Desktop

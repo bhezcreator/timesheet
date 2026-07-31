@@ -1,4 +1,4 @@
-<div class="p-0 mt-8">
+<div class="p-4 mt-8 border border-gray-100 bg-white rounded-xl shadow-sm border-t border-t-blue-700">
     @if(session('permission'))
         <x-ui.alert type="error" class="mb-4 mt-8">
             {{ session('permission') }}
@@ -7,11 +7,10 @@
 
     <!-- En-tête avec bienvenue -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
-        <div>
-            <p class="mt-1 text-sm text-gray-600">
-                Gérez et suivez les activités de votre équipe
-            </p>
-        </div>
+        <p class="mt-1 font-bold text[18px] text-gray-900">
+            Gérez et suivez les activités de votre équipe
+        </p>
+
         <div class="mt-4 sm:mt-0 flex space-x-3">
             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -19,19 +18,6 @@
                 </svg>
                 {{ count($teamMembers) }} membres
             </span>
-            <button
-                wire:click="refresh"
-                wire:loading.attr="disabled"
-                class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-                <svg wire:loading.remove class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                <svg wire:loading class="animate-spin w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                Actualiser
-            </button>
         </div>
     </div>
 
@@ -311,23 +297,6 @@
                     <p>Aucun membre dans votre équipe</p>
                 </div>
             @endforelse
-        </div>
-    </div>
-
-    <!-- Notification de mise à jour -->
-    <div
-        x-data="{ show: false }"
-        x-on:statistics-updated.window="show = true; setTimeout(() => show = false, 3000)"
-        x-show="show"
-        x-transition:enter.duration.300ms
-        x-transition:leave.duration.300ms
-        class="fixed bottom-4 right-4 bg-emerald-500 text-white px-6 py-3 rounded-lg shadow-lg z-50"
-    >
-        <div class="flex items-center">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-            </svg>
-            Statistiques mises à jour
         </div>
     </div>
 </div>

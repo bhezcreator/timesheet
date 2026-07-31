@@ -101,7 +101,7 @@
     </div>
 
     <!-- Grille des rapports (Cards) -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 bg-white rounded-2xl border border-gray-100 shadow-sm p-3">
         @forelse($reports as $rapport)
             @php
                 // Configuration visuelle dynamique selon le statut

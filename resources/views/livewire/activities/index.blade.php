@@ -1,4 +1,4 @@
-<div class="py-0 pb-8">
+<div class="p-0">
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             Gestion des activités

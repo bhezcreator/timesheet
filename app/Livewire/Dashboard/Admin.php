@@ -79,6 +79,12 @@ class Admin extends Component
         $this->loadRecentProjects();
     }
 
+    // Méthode qui sera appelée lorsque l'événement est déclenché : statistics-updated
+    public function onStatisticsUpdated()
+    {
+        $this->loadStatistics();
+    }
+
     /**
      * Statistiques des projets
      */
@@ -234,15 +240,6 @@ class Admin extends Component
                 ];
             })
             ->toArray();
-    }
-
-    /**
-     * Rafraîchit les données
-     */
-    public function refresh()
-    {
-        $this->loadStatistics();
-        $this->dispatch('statistics-updated');
     }
 
     public function render()

@@ -2,7 +2,7 @@
     'columns' => []
 ])
 
-<div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mt-1">
+<div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mt-1 border-t border-t-blue-700">
     <!-- Header du bloc (Optionnel) -->
     @isset($header)
         <div class="px-6 py-4 border-b border-gray-100 bg-white">

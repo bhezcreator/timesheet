@@ -1,4 +1,4 @@
-<div class="p-0">
+<div class="p-4 border border-gray-100 bg-white rounded-xl shadow-sm border-t border-t-blue-700">
     <!-- En-tête avec bienvenue -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
         <div>
@@ -13,7 +13,7 @@
             <button
                 wire:click="refresh"
                 wire:loading.attr="disabled"
-                class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                class="inline-flex items-center cursor-pointer px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
                 <svg wire:loading.remove class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -29,27 +29,6 @@
     <!-- Statistiques -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
         <!-- Cartes des statistiques -->
-
-        <!-- Utilisateurs en ligne - Visible uniquement pour les admins -->
-        @if($user?->getRoleNames()->first() === 'Admin')
-            <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-300 p-5 border border-gray-100">
-                <div class="flex items-center justify-between">
-                    <div class="flex-1">
-                        <p class="text-sm font-medium text-gray-600">Utilisateurs en ligne</p>
-                        <p class="mt-2 text-3xl font-bold text-gray-900">{{ $totalUsers }}</p>
-                    </div>
-                    <div class="p-3 bg-green-100 rounded-lg">
-                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                        </svg>
-                    </div>
-                </div>
-                <div class="mt-3 flex items-center text-xs text-gray-500">
-                    <span class="inline-block w-2 h-2 bg-green-500 rounded-full mr-1 animate-pulse"></span>
-                    Actifs maintenant
-                </div>
-            </div>
-        @endif
 
         <!-- Activités du jour -->
         <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-300 p-5 border border-gray-100">
@@ -154,6 +133,27 @@
                 </span>
             </div>
         </div>
+
+                <!-- Utilisateurs en ligne - Visible uniquement pour les admins -->
+        @if($user?->getRoleNames()->first() === 'Admin')
+            <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-300 p-5 border border-gray-100">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-gray-600">Utilisateurs en ligne</p>
+                        <p class="mt-2 text-3xl font-bold text-gray-900">{{ $totalUsers }}</p>
+                    </div>
+                    <div class="p-3 bg-green-100 rounded-lg">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="mt-3 flex items-center text-xs text-gray-500">
+                    <span class="inline-block w-2 h-2 bg-green-500 rounded-full mr-1 animate-pulse"></span>
+                    Actifs maintenant
+                </div>
+            </div>
+        @endif
     </div>
 
     <!-- Section supplémentaire - Activités récentes (optionnelle) -->

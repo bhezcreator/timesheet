@@ -1,4 +1,4 @@
-<div>
+<div class="p-4 border border-gray-100 bg-white rounded-xl shadow-sm border-t border-t-blue-700">
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             Liste rapports

@@ -267,13 +267,10 @@ class Supervisor extends Component
             ->toArray();
     }
 
-    /**
-     * Rafraîchit les données
-     */
-    public function refresh()
+    // Méthode qui sera appelée lorsque l'événement est déclenché : statistics-updated
+    public function onStatisticsUpdated()
     {
         $this->loadStatistics();
-        $this->dispatch('statistics-updated');
     }
 
     /**

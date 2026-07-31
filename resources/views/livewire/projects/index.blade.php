@@ -1,4 +1,4 @@
-<div class="py-0">
+<div class="p-4 border border-gray-100 bg-white rounded-xl shadow-sm border-t border-t-blue-700">
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             Gestion des projets
@@ -65,7 +65,7 @@
                 <!-- Grille principale des cartes de projets -->
                 <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
                     @foreach($projects as $project)
-                        <div class="flex flex-col bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200" wire:key="project-card-{{ $project->id }}">
+                        <div class="flex flex-col bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200 border-t border-t-blue-700" wire:key="project-card-{{ $project->id }}">
 
                             <!-- 1. EN HAUT : Informations principales du Projet -->
                             <div class="p-6 border-b border-gray-50">
