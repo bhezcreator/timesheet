@@ -61,10 +61,35 @@ class Index extends Component
             'job_title'   => ['required', 'string', 'max:255'],
             'supervisor_id' => ['nullable', 'integer', 'exists:users,id'],
             'email'       => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $this->userId],
-            'password'    => $this->userId ? ['nullable', 'string', 'min:8'] : ['required', 'string', 'min:8'],
             'is_active'   => ['required', 'boolean'],
-            'selectedRoles' => ['required', 'array', 'min:1'],
+            'selectedRoles' => [
+                'required',
+                'array',
+                'min:1',
+                // 1. Validation de chaque rôle
+                function ($attribute, $value, $fail) {
+                    $roles = Role::whereIn('id', $value)->get();
+
+                    // 2. Vérification que tous les rôles existent
+                    if ($roles->count() !== count($value)) {
+                        $fail('Un ou plusieurs rôles sont invalides.');
+                    }
+                }
+            ],
+            'password' => [
+                $this->userId ? 'nullable' : 'required',
+                'string',
+                'min:8',
+                // 4. Validation de la force du mot de passe
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/'
+            ],
         ];
+    }
+
+    public function mount()
+    {
+        // 1. Nettoyer le mot de passe en mémoire
+        $this->password = '';
     }
 
     protected function checkPermissionOrFail(string $permission): bool
@@ -78,28 +103,81 @@ class Index extends Component
         ]);
     }
 
+    // public function render()
+    // {
+    //     $searchTerm = '%' . str_replace(['%', '_'], ['\%', '\_'], $this->search) . '%';
+
+    //     $users = User::query()
+    //         ->with(['supervisor', 'roles'])
+    //         ->where(function ($query) use ($searchTerm) {
+    //             $query->where('name', 'like', $searchTerm)
+    //                 ->orWhere('first_name', 'like', $searchTerm)
+    //                 ->orWhere('email', 'like', $searchTerm)
+    //                 ->orWhere('num_order', 'like', $searchTerm);
+    //         })
+    //         ->latest()
+    //         ->paginate(10);
+
+    //     $supervisors = User::query()
+    //         ->where('is_active', true)
+    //         ->when($this->userId, fn($q) => $q->where('id', '!=', $this->userId))
+    //         ->orderBy('name')
+    //         ->get();
+
+    //     $allRoles = Role::query()->orderBy('name')->get();
+
+    //     return view('livewire.users.index', [
+    //         'users' => $users,
+    //         'supervisors' => $supervisors,
+    //         'allRoles' => $allRoles,
+    //     ]);
+    // }
     public function render()
     {
-        $searchTerm = '%' . str_replace(['%', '_'], ['\%', '\_'], $this->search) . '%';
+        // 1. Nettoyage et validation de la recherche
+        $searchTerm = trim($this->search);
+        $searchTerm = preg_replace('/[^\p{L}\p{N}\s\-_.@]/u', '', $searchTerm);
 
+        // 2. Construction sécurisée avec bindings
         $users = User::query()
             ->with(['supervisor', 'roles'])
-            ->where(function ($query) use ($searchTerm) {
-                $query->where('name', 'like', $searchTerm)
-                    ->orWhere('first_name', 'like', $searchTerm)
-                    ->orWhere('email', 'like', $searchTerm)
-                    ->orWhere('num_order', 'like', $searchTerm);
+            ->when(!empty($searchTerm), function ($query) use ($searchTerm) {
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->where('name', 'LIKE', '%' . $searchTerm . '%')
+                        ->orWhere('first_name', 'LIKE', '%' . $searchTerm . '%')
+                        ->orWhere('email', 'LIKE', '%' . $searchTerm . '%')
+                        ->orWhere('num_order', 'LIKE', '%' . $searchTerm . '%');
+                });
+            })
+            // 3. Filtrer par permissions
+            ->when(!Gate::allows('admin'), function ($query) {
+                // 4. Les utilisateurs normaux ne voient que leur équipe
+                $userId = Auth::id();
+                $subordinates = User::where('supervisor_id', $userId)->pluck('id');
+                $query->whereIn('id', $subordinates->push($userId));
             })
             ->latest()
             ->paginate(10);
 
+        // 5. Sécurisation des superviseurs
         $supervisors = User::query()
             ->where('is_active', true)
             ->when($this->userId, fn($q) => $q->where('id', '!=', $this->userId))
+            ->when(!Gate::allows('admin'), function ($query) {
+                // 6. Non-admin ne voit que ses subordonnés
+                $query->where('supervisor_id', Auth::id());
+            })
             ->orderBy('name')
+            ->limit(100)
             ->get();
 
-        $allRoles = Role::query()->orderBy('name')->get();
+        $allRoles = Role::query()
+            ->when(!Gate::allows('admin'), function ($query) {
+                // 7. Non-admin ne voit que les rôles de base
+                $query->whereIn('name', ['user', 'editor']);
+            })
+            ->orderBy('name')
+            ->get();
 
         return view('livewire.users.index', [
             'users' => $users,
@@ -143,6 +221,11 @@ class Index extends Component
             $this->checkPermissionOrFail("utilisateurs.modifier");
             $this->validate();
 
+            // Vérification des cycles de supervision
+            if ($this->supervisor_id) {
+                $this->validateSupervisorCycle($this->supervisor_id);
+            }
+
             $user = User::findOrFail($this->userId);
 
             $data = [
@@ -162,13 +245,23 @@ class Index extends Component
 
             $user->update($data);
 
-            $roleNames = Role::whereIn('id', $this->selectedRoles)->pluck('name')->toArray();
+            // Synchronisation sécurisée des rôles
+            $roleNames = Role::whereIn('id', $this->selectedRoles)
+                ->where('guard_name', 'web') // Filtrer par guard
+                ->pluck('name')
+                ->toArray();
+
             $user->syncRoles($roleNames);
 
             session()->flash('success', 'Personnel et habilitations mis à jour avec succès.');
         } else {
             $this->checkPermissionOrFail("utilisateurs.creer");
             $this->validate();
+
+            // Vérification des cycles de supervision
+            if ($this->supervisor_id) {
+                $this->validateSupervisorCycle($this->supervisor_id);
+            }
 
             $user = User::create([
                 'num_order'   => trim($this->num_order),
@@ -188,13 +281,45 @@ class Index extends Component
                 ]
             ]);
 
-            $roleNames = Role::whereIn('id', $this->selectedRoles)->pluck('name')->toArray();
+            // Synchronisation sécurisée des rôles
+            $roleNames = Role::whereIn('id', $this->selectedRoles)
+                ->where('guard_name', 'web') // Filtrer par guard
+                ->pluck('name')
+                ->toArray();
+
             $user->syncRoles($roleNames);
 
             session()->flash('success', 'Personnel créé et affecté avec succès.');
         }
 
         $this->closeModal();
+    }
+
+    protected function validateSupervisorCycle(int $supervisorId): void
+    {
+        // Empêcher un utilisateur d'être son propre superviseur
+        if ($this->userId && $supervisorId === $this->userId) {
+            throw ValidationException::withMessages([
+                'supervisor_id' => ["Un utilisateur ne peut pas être son propre superviseur."]
+            ]);
+        }
+
+        // Vérifier les cycles de supervision (boucles)
+        $visited = [];
+        $currentId = $supervisorId;
+        $userId = $this->userId ?? Auth::id();
+
+        while ($currentId && !in_array($currentId, $visited)) {
+            if ($currentId === $userId) {
+                throw ValidationException::withMessages([
+                    'supervisor_id' => ["Cette configuration créerait une boucle de supervision."]
+                ]);
+            }
+
+            $visited[] = $currentId;
+            $supervisor = User::find($currentId);
+            $currentId = $supervisor?->supervisor_id;
+        }
     }
 
     public function confirmDelete(int $id)

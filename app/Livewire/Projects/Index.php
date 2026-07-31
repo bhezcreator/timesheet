@@ -282,6 +282,13 @@ class Index extends Component
     {
         $this->checkPermissionOrFail("projets.supprimer");
 
+        // Validation supplémentaire pour la suppression
+        if (!Gate::allows('projets.supprimer', Project::find($id))) {
+            throw ValidationException::withMessages([
+                'permission' => ["Vous n'avez pas les droits pour supprimer ce projet."]
+            ]);
+        }
+
         $project = Project::findOrFail($id);
         $this->deleteId = $project->id;
         $this->deleteName = $project->name;
