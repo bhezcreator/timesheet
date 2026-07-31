@@ -13,6 +13,12 @@
             </x-ui.alert>
         @endif
 
+        @error('permission')
+            <x-ui.alert type="error" class="mb-4 mt-8">
+                {{ $message }}
+            </x-ui.alert>
+        @enderror
+
         <!-- Liste récapitulative des alertes de saisie -->
         @if($errors->any())
             <x-ui.alert type="error" class="mb-4 mt-8">
@@ -31,7 +37,7 @@
         @endif
 
         <!-- Tableau principal ou État vide -->
-        @if(!$projects->count() And empty($search))
+        @if(!$projects->count() && empty($search))
             <x-ui.empty-state title="Aucun projet trouvé" description="Créez et configurez vos projets d'entreprise." icon="las la-folder-open">
                 <x-slot:action>
                     <x-ui.button wire:click="openModal">
@@ -41,7 +47,7 @@
             </x-ui.empty-state>
         @else
             <div>
-                {{-- Section En-tête : Titre, Bouton d'ajout et Barre de Recherche globale --}}
+                <!-- Section En-tête : Titre, Bouton d'ajout et Barre de Recherche globale -->
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                     <div>
                         <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Liste des projets</h1>
@@ -56,12 +62,12 @@
                     <x-ui.forms.input wire:model.live.debounce.300ms="search" placeholder="Recherche par code, nom ou statut..." />
                 </div>
 
-                {{-- Grille principale des cartes de projets --}}
+                <!-- Grille principale des cartes de projets -->
                 <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
                     @foreach($projects as $project)
                         <div class="flex flex-col bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200" wire:key="project-card-{{ $project->id }}">
 
-                            {{-- 1. EN HAUT : Informations principales du Projet --}}
+                            <!-- 1. EN HAUT : Informations principales du Projet -->
                             <div class="p-6 border-b border-gray-50">
                                 <div class="flex items-start justify-between gap-4">
                                     <div class="space-y-1">
@@ -84,13 +90,13 @@
                                         </h2>
                                     </div>
 
-                                    {{-- Numéro d'index discret --}}
+                                    <!-- Numéro d'index discret -->
                                     <span class="text-xs font-bold text-gray-300 bg-gray-50 h-7 w-7 rounded-full flex items-center justify-center shrink-0">
                                         {{ ($projects->currentPage() - 1) * $projects->perPage() + $loop->iteration }}
                                     </span>
                                 </div>
 
-                                {{-- Métadonnées (Manager & Dates) --}}
+                                <!-- Métadonnées (Manager & Dates) -->
                                 <div class="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-dashed border-gray-100 text-xs">
                                     <div class="space-y-1">
                                         <span class="text-gray-400 block font-medium uppercase tracking-wider">Manager</span>
@@ -103,20 +109,20 @@
                                         <span class="text-gray-400 block font-medium uppercase tracking-wider">Période</span>
                                         <span class="font-medium text-gray-700 flex items-center gap-1">
                                             <i class="las la-calendar text-sm text-gray-400"></i>
-                                            {{ $project->start_date ? \Carbon\Carbon::parse($project->start_date)->format('d/m/Y') : '??' }}
+                                            {{ $project->start_date ? Carbon\Carbon::parse($project->start_date)->format('d/m/Y') : '??' }}
                                             →
-                                            {{ $project->end_date ? \Carbon\Carbon::parse($project->end_date)->format('d/m/Y') : '??' }}
+                                            {{ $project->end_date ? Carbon\Carbon::parse($project->end_date)->format('d/m/Y') : '??' }}
                                         </span>
                                     </div>
                                 </div>
                             </div>
 
-                            {{-- Description du projet --}}
+                            <!-- Description du projet -->
                             <div class="px-6 bg-white border-b border-gray-50 text-sm text-gray-500 line-clamp-2 leading-relaxed min-h-[2.5rem]" title="{{ $project->description }}">
                                 {{ $project->description ?? 'Aucune description disponible pour ce sous-projet.' }}
                             </div>
 
-                            {{-- 2. EN BAS : Liste des Sous-Projets (Lots) liés --}}
+                            <!-- 2. EN BAS : Liste des Sous-Projets (Lots) liés -->
                             <div class="flex-1 p-6 bg-gray-50/50">
                                 <div class="flex items-center justify-between mb-3">
                                     <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
@@ -149,7 +155,7 @@
                                 @endif
                             </div>
 
-                            {{-- 3. PARTIE : Nombre des personnels Attribués --}}
+                            <!-- 3. PARTIE : Nombre des personnels Attribués -->
                             <div class="flex-1 p-4 bg-blue-50/50">
                                 <div class="flex items-center justify-between mb-3">
                                     <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
@@ -161,7 +167,7 @@
                                 </div>
                             </div>
 
-                            {{-- 4. PIED DE PAGE : Boutons d'actions du Projet --}}
+                            <!-- 4. PIED DE PAGE : Boutons d'actions du Projet -->
                             <div class="p-4 bg-white border-t border-gray-50 rounded-b-2xl flex items-center justify-end gap-2">
                                 <a href="{{ route('projects.subprojects', ['projectId' => $project->id]) }}" wire:navigate class="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium rounded-xl border border-gray-200 bg-green text-gray-700 hover:text-blue-600 hover:bg-blue-50/50 hover:border-blue-100 transition shadow-xs mr-auto"
                                     title="Gérer les sous-projets"><i class="las la-folder-plus text-base"></i><span>Sous-projet</span>
@@ -194,8 +200,14 @@
         @endif
     </div>
 
-    <!-- FENÊTRE MODALE : Saisie de données du Projet -->
-    <x-ui.modal-one id="project-modal" title="{{ $projectId ? 'Mise à jour du projet' : 'Créer un nouveau projet' }}" size="xl">
+    <!-- MODALE : Saisie de données du Projet -->
+    <x-ui.modal
+        id="project-modal"
+        :show="$showModal"
+        title="{{ $projectId ? 'Mise à jour du projet' : 'Créer un nouveau projet' }}"
+        size="xl"
+        subtitle="{{ $projectId ? 'Modifiez les informations du projet' : 'Créez un nouveau projet avec ses détails' }}"
+    >
         <div class="space-y-5">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <x-ui.forms.input label="Code du Projet" name="code" wire:model="code" placeholder="Ex: PRJ-001" required />
@@ -203,13 +215,14 @@
                     <x-ui.forms.input label="Intitulé du Projet" name="name" wire:model="name" placeholder="Ex: Migration Cloud ERP" required />
                 </div>
             </div>
+            <x-ui.forms.error name="code" />
+            <x-ui.forms.error name="name" />
 
             <div class="w-full">
                 <x-ui.forms.textarea
-                wire:model="description"
+                    wire:model="description"
                     name="description"
                     label="Description / Objectifs"
-                    wire:model="description"
                     rows="3"
                     placeholder="Saisir la description ou le résumé du projet..."
                     helper="Décrivez les activités réalisées."
@@ -233,6 +246,7 @@
                         'icon'        => 'las la-user-tie'
                     ])->toArray()"
                 />
+                <x-ui.forms.error name="manager_id" />
 
                 <!-- Intégration du composant Select personnalisé pour le Statut -->
                 <x-ui.forms.select
@@ -242,32 +256,33 @@
                     :selected="$status"
                     required
                     :options="[
-                            [
-                                'value'       => 'brouillon',
-                                'label'       => 'Brouillon',
-                                'icon'        => 'las la-edit', {{-- Icône de stylo/édition pour un brouillon --}}
-                                'description' => 'En cours d\'écriture'
-                            ],
-                            [
-                                'value'       => 'active',
-                                'label'       => 'Actif',
-                                'icon'        => 'las la-play-circle', {{-- Icône de lecture/lancement pour un projet actif --}}
-                                'description' => 'Projet actif et en cours d\'exécution'
-                            ],
-                            [
-                                'value'       => 'annuler',
-                                'label'       => 'Annulé',
-                                'icon'        => 'las la-ban', {{-- Icône de restriction/interdiction claire pour une annulation --}}
-                                'description' => 'Projet stoppé ou abandonné'
-                            ],
-                            [
-                                'value'       => 'complete',
-                                'label'       => 'Complété',
-                                'icon'        => 'las la-check-circle', {{-- Icône de succès verte de coche pour la complétion --}}
-                                'description' => 'Projet clôturé avec succès'
-                            ]
-                        ]"
+                        [
+                            'value'       => 'brouillon',
+                            'label'       => 'Brouillon',
+                            'icon'        => 'las la-edit',
+                            'description' => 'En cours d\'écriture'
+                        ],
+                        [
+                            'value'       => 'active',
+                            'label'       => 'Actif',
+                            'icon'        => 'las la-play-circle',
+                            'description' => 'Projet actif et en cours d\'exécution'
+                        ],
+                        [
+                            'value'       => 'annuler',
+                            'label'       => 'Annulé',
+                            'icon'        => 'las la-ban',
+                            'description' => 'Projet stoppé ou abandonné'
+                        ],
+                        [
+                            'value'       => 'complete',
+                            'label'       => 'Complété',
+                            'icon'        => 'las la-check-circle',
+                            'description' => 'Projet clôturé avec succès'
+                        ]
+                    ]"
                 />
+                <x-ui.forms.error name="status" />
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -280,32 +295,58 @@
                     placeholder="Sélectionner la date de début..."
                     required
                 />
+                <x-ui.forms.error name="start_date" />
 
                 <!-- Champ Date de Fin Prévisionnelle -->
                 <x-ui.forms.datepicker
-                wire:model="end_date"
+                    wire:model="end_date"
                     name="end_date"
                     label="Date de Fin Prévisionnelle"
                     :selected="$end_date"
                     placeholder="Sélectionner la date de fin..."
                     required
                 />
+                <x-ui.forms.error name="end_date" />
             </div>
         </div>
 
         <x-slot:footer>
             <div class="flex justify-end gap-3">
-                <x-ui.button variant="outline" wire:click="closeModal" data-close-modal>Annuler</x-ui.button>
-                <x-ui.button wire:click="save" wire:loading.attr="disabled">
-                    <span wire:loading.remove><i class="las la-save mr-1"></i> Enregistrer le projet</span>
-                    <span wire:loading><i class="las la-spinner la-spin mr-1"></i> Traitement...</span>
+                <x-ui.button
+                    variant="outline"
+                    wire:click="closeModal"
+                    wire:loading.attr="disabled"
+                    wire:target="closeModal"
+                >
+                    <span wire:loading.remove wire:target="closeModal">Annuler</span>
+                    <span wire:loading wire:target="closeModal">
+                        <i class="las la-spinner la-spin mr-1"></i>
+                    </span>
+                </x-ui.button>
+
+                <x-ui.button
+                    wire:click="save"
+                    wire:loading.attr="disabled"
+                    wire:target="save"
+                >
+                    <span wire:loading.remove wire:target="save">
+                        <i class="las la-save mr-1"></i> Enregistrer le projet
+                    </span>
+                    <span wire:loading wire:target="save">
+                        <i class="las la-spinner la-spin mr-1"></i> Traitement...
+                    </span>
                 </x-ui.button>
             </div>
         </x-slot:footer>
-    </x-ui.modal-one>
+    </x-ui.modal>
 
-    <!-- FENÊTRE MODALE : Confirmation de suppression -->
-    <x-ui.modal-one id="delete-project-modal" title="Confirmation de suppression" size="sm">
+    <!-- MODALE : Confirmation de suppression -->
+    <x-ui.modal
+        :show="$showDeleteModal"
+        id="delete-project-modal"
+        title="Confirmation de suppression"
+        size="sm"
+    >
         <div class="text-center py-2">
             <i class="las la-exclamation-triangle text-red-500 text-5xl block mb-3 animate-pulse"></i>
             <h3 class="text-lg font-bold text-gray-800 mb-1">Supprimer le projet ?</h3>
@@ -313,23 +354,34 @@
                 Voulez-vous supprimer définitivement la fiche du projet <span class="font-bold text-gray-900">"{{ $deleteName }}"</span> ? Les liaisons avec les activités et sous-projets associés seront rompues.
             </p>
         </div>
+
         <x-slot:footer>
             <div class="flex justify-center w-full gap-3">
-                <x-ui.button variant="outline" data-close-modal>
+                <x-ui.button
+                    variant="outline"
+                    wire:click="closeDeleteModal"
+                    wire:loading.attr="disabled"
+                    wire:target="closeDeleteModal"
+                >
                     Annuler
                 </x-ui.button>
-                <x-ui.button variant="danger" wire:click="delete({{ $deleteId ?? 0 }})" wire:loading.attr="disabled">
-                    <span wire:loading.remove>
-                        <i class="las la-trash"></i>
+
+                <x-ui.button
+                    variant="danger"
+                    wire:click="delete"
+                    wire:loading.attr="disabled"
+                    wire:target="delete"
+                >
+                    <span wire:loading.remove wire:target="delete">
+                        <i class="las la-trash mr-1"></i>
                         Confirmer la suppression
                     </span>
-
-                    <span wire:loading class="flex items-center gap-2">
-                        <x-ui.spinner size="sm" color="white"/>
+                    <span wire:loading wire:target="delete">
+                        <i class="las la-spinner la-spin mr-1"></i>
                         Suppression...
                     </span>
                 </x-ui.button>
             </div>
         </x-slot:footer>
-    </x-ui.modal-one>
+    </x-ui.modal>
 </div>

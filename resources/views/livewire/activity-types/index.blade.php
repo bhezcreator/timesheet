@@ -5,13 +5,19 @@
         </h2>
     </x-slot>
 
-    <div class="w-full">
+    <div class="w-full mt-0">
         <!-- Alertes de session -->
         @if(session('success'))
             <x-ui.alert type="success" class="mb-4 mt-8">
                 {{ session('success') }}
             </x-ui.alert>
         @endif
+
+        @error('permission')
+            <x-ui.alert type="error" class="mb-4 mt-8">
+                {{ $message }}
+            </x-ui.alert>
+        @enderror
 
         <!-- Affichage global des erreurs de validation ($errors) -->
         @if($errors->any())
@@ -113,8 +119,14 @@
         @endif
     </div>
 
-    <!-- Modale A : Création et Modification -->
-    <x-ui.modal-one id="activity-type-modal" title="{{ $activityTypeId ? 'Modifier le type activité' : 'Ajouter un nouveau type activité' }}" size="xl">
+    <!-- MODALE : Création et Modification -->
+    <x-ui.modal
+        id="activity-type-modal"
+        :show="$showModal"
+        title="{{ $activityTypeId ? 'Modifier le type activité' : 'Ajouter un nouveau type activité' }}"
+        size="xl"
+        subtitle="{{ $activityTypeId ? 'Modifiez les informations du type d\'activité' : 'Créez un nouveau type d\'activité' }}"
+    >
         <form wire:submit.prevent="save" class="space-y-6">
             <!-- Nom -->
             <x-ui.forms.input
@@ -129,10 +141,9 @@
             <!-- Description -->
             <div>
                 <x-ui.forms.textarea
-                wire:model="description"
+                    wire:model="description"
                     name="description"
                     label="Description"
-                    wire:model="description"
                     rows="3"
                     placeholder="Optionnel : Ajoutez des détails sur l'usage de ce type..."
                 />
@@ -177,21 +188,44 @@
 
             <!-- Pied de modale pour actions -->
             <div class="flex justify-end gap-2 border-t border-gray-100 pt-4 mt-6">
-                <x-ui.button type="button" variant="outline" wire:click="closeModal">
-                    Annuler
+                <x-ui.button
+                    type="button"
+                    variant="outline"
+                    wire:click="closeModal"
+                    wire:loading.attr="disabled"
+                    wire:target="closeModal"
+                >
+                    <span wire:loading.remove wire:target="closeModal">Annuler</span>
+                    <span wire:loading wire:target="closeModal">
+                        <i class="las la-spinner la-spin mr-1"></i>
+                    </span>
                 </x-ui.button>
-                <x-ui.button wire:click="save" wire:loading.attr="disabled">
-                    <span wire:loading.remove><i class="las la-save mr-1"></i> Enregistrer le projet</span>
-                    <span wire:loading><i class="las la-spinner la-spin mr-1"></i> Traitement...</span>
+
+                <x-ui.button
+                    wire:click="save"
+                    wire:loading.attr="disabled"
+                    wire:target="save"
+                >
+                    <span wire:loading.remove wire:target="save">
+                        <i class="las la-save mr-1"></i> Enregistrer
+                    </span>
+                    <span wire:loading wire:target="save">
+                        <i class="las la-spinner la-spin mr-1"></i> Traitement...
+                    </span>
                 </x-ui.button>
             </div>
         </form>
-    </x-ui.modal-one>
+    </x-ui.modal>
 
-    <!-- Modale B : Validation de la suppression destructive -->
-    <x-ui.modal-one id="delete-activity-type-modal" title="Confirmer la suppression" size="md">
+    <!-- MODALE : Confirmation de suppression -->
+    <x-ui.modal
+        :show="$showDeleteModal"
+        id="delete-activity-type-modal"
+        title="Confirmer la suppression"
+        size="md"
+    >
         <div class="space-y-4">
-                        <div class="flex items-center gap-3 text-red-600">
+            <div class="flex items-center gap-3 text-red-600">
                 <i class="las la-exclamation-triangle text-3xl"></i>
                 <h3 class="text-lg font-bold">Attention : Action irréversible</h3>
             </div>
@@ -202,13 +236,31 @@
             </p>
 
             <div class="flex justify-end gap-2 border-t border-gray-100 pt-4">
-                <x-ui.button variant="outline" wire:click="closeModal">
+                <x-ui.button
+                    variant="outline"
+                    wire:click="closeDeleteModal"
+                    wire:loading.attr="disabled"
+                    wire:target="closeDeleteModal"
+                >
                     Annuler
                 </x-ui.button>
-                <x-ui.button variant="danger" wire:click="delete({{ $deleteId ?? 0 }})">
-                    Supprimer définitivement
+
+                <x-ui.button
+                    variant="danger"
+                    wire:click="delete"
+                    wire:loading.attr="disabled"
+                    wire:target="delete"
+                >
+                    <span wire:loading.remove wire:target="delete">
+                        <i class="las la-trash mr-1"></i>
+                        Supprimer définitivement
+                    </span>
+                    <span wire:loading wire:target="delete">
+                        <i class="las la-spinner la-spin mr-1"></i>
+                        Suppression...
+                    </span>
                 </x-ui.button>
             </div>
         </div>
-    </x-ui.modal-one>
+    </x-ui.modal>
 </div>

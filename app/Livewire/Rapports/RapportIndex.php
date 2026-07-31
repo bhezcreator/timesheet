@@ -4,7 +4,6 @@ namespace App\Livewire\Rapports;
 
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
-
 use App\Models\MonthlyReport;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -21,6 +20,9 @@ class RapportIndex extends Component
     public $month = '';
     public $year = '';
     public $selected_project_id = 'all';
+
+    // Gestion Modal
+    public bool $showDeleteModal = false;
 
     // Propriétés pour la modale de suppression
     public $deleteId = null;
@@ -54,9 +56,8 @@ class RapportIndex extends Component
         $report = MonthlyReport::where('user_id', $this->user_id)->findOrFail($reportId);
         $this->deleteId = $report->id;
         // Nom affiché dans la modale : exemple "Rapport de Janvier 2026"
-        $this->deleteName = "Rapport de " . now()->month($report->month)->translatedFormat('F') . " " . $report->year;
-
-        $this->dispatch('open-modal', id: 'delete-report-modal');
+        $this->deleteName = $report->full_title;
+        $this->showDeleteModal = true;
     }
 
     public function delete()
@@ -72,10 +73,15 @@ class RapportIndex extends Component
 
                 session()->flash('message', 'Le rapport a été supprimé avec succès.');
             }
-
-            $this->dispatch('close-modal', 'delete-report-modal');
-            $this->reset(['deleteId', 'deleteName']);
         }
+
+        $this->closeDeleteModal();
+    }
+
+    public function closeDeleteModal()
+    {
+        $this->showDeleteModal = false;
+        $this->reset(['deleteId', 'deleteName']);
     }
 
     public function render()

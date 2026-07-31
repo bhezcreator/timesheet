@@ -13,6 +13,12 @@
             </x-ui.alert>
         @endif
 
+        @error('permission')
+            <x-ui.alert type="error" class="mb-4 mt-8">
+                {{ $message }}
+            </x-ui.alert>
+        @enderror
+
         <!-- Affichage global des erreurs de validation ($errors) -->
         @if($errors->any())
             <x-ui.alert type="error" class="mb-4 mt-8">
@@ -29,7 +35,7 @@
         @endif
 
         <!-- Liste des données ou État vide -->
-        @if(!$permissions->count() And empty($search))
+        @if(!$permissions->count() && empty($search))
             <x-ui.empty-state title="Aucune permission" description="Créez votre première permission." icon="las la-key">
                 <x-slot:action>
                     <x-ui.button wire:click="openModal">
@@ -91,8 +97,14 @@
         @endif
     </div>
 
-    <!-- Modale de Création / Édition -->
-    <x-ui.modal-one id="permission-modal" title="{{ $permissionId ? 'Modifier permission' : 'Nouvelle permission' }}">
+    <!-- MODALE : Création / Édition -->
+    <x-ui.modal
+        id="permission-modal"
+        :show="$showModal"
+        title="{{ $permissionId ? 'Modifier permission' : 'Nouvelle permission' }}"
+        size="md"
+        subtitle="{{ $permissionId ? 'Modifiez le nom de la permission' : 'Créez une nouvelle permission' }}"
+    >
         <div class="space-y-4">
             <x-ui.forms.input
                 label="Nom de la permission"
@@ -105,25 +117,42 @@
 
         <x-slot:footer>
             <div class="flex justify-end gap-3">
-                <x-ui.button variant="outline" wire:click="closeModal" data-close-modal>
-                    Annuler
+                <x-ui.button
+                    variant="outline"
+                    wire:click="closeModal"
+                    wire:loading.attr="disabled"
+                    wire:target="closeModal"
+                >
+                    <span wire:loading.remove wire:target="closeModal">Annuler</span>
+                    <span wire:loading wire:target="closeModal">
+                        <i class="las la-spinner la-spin mr-1"></i>
+                    </span>
                 </x-ui.button>
 
-                <x-ui.button wire:click="save" wire:loading.attr="disabled">
-                    <span wire:loading.remove>
+                <x-ui.button
+                    wire:click="save"
+                    wire:loading.attr="disabled"
+                    wire:target="save"
+                >
+                    <span wire:loading.remove wire:target="save">
                         <i class="las la-save mr-1"></i> Sauvegarder
                     </span>
-                    <span wire:loading>
+                    <span wire:loading wire:target="save">
                         <i class="las la-spinner la-spin mr-1"></i> Chargement...
                     </span>
                 </x-ui.button>
             </div>
         </x-slot:footer>
-    </x-ui.modal-one>
+    </x-ui.modal>
 
-    <x-ui.modal-one id="delete-permission-modal" title="Confirmation">
+    <!-- MODALE : Confirmation de suppression -->
+    <x-ui.modal
+        :show="$showDeleteModal"
+        id="delete-permission-modal"
+        title="Confirmation de suppression"
+        size="sm"
+    >
         <div class="flex flex-col items-center text-center py-2">
-
             <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-5">
                 <i class="las la-trash-alt text-3xl text-red-600"></i>
             </div>
@@ -146,39 +175,35 @@
             <p class="mt-5 text-sm text-red-600 bg-red-100 px-4 py-2 rounded-lg">
                 Cette action est définitive et ne peut pas être annulée.
             </p>
-
         </div>
 
         <x-slot:footer>
             <div class="flex justify-end gap-3">
                 <x-ui.button
                     variant="outline"
-                    data-close-modal
+                    wire:click="closeDeleteModal"
+                    wire:loading.attr="disabled"
+                    wire:target="closeDeleteModal"
                 >
                     Annuler
                 </x-ui.button>
 
                 <x-ui.button
                     variant="danger"
-                    wire:click="delete({{ $deleteId ?? 0 }})"
+                    wire:click="delete"
                     wire:loading.attr="disabled"
+                    wire:target="delete"
                 >
-
-                    <span wire:loading.remove>
+                    <span wire:loading.remove wire:target="delete">
                         <i class="las la-trash"></i>
                         Supprimer
                     </span>
-
-                    <span wire:loading class="flex items-center gap-2">
-                        <x-ui.spinner size="sm" color="white"/>
+                    <span wire:loading wire:target="delete" class="flex items-center gap-2">
+                        <i class="las la-spinner la-spin"></i>
                         Suppression...
                     </span>
-
                 </x-ui.button>
-
             </div>
-
         </x-slot:footer>
-
-    </x-ui.modal-one>
+    </x-ui.modal>
 </div>

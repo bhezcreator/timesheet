@@ -209,8 +209,12 @@
         <x-ui.pagination :paginator="$reports" />
     </div>
 
-    <!-- Modale de Confirmation de Suppression de Rapport -->
-    <x-ui.modal-one id="delete-report-modal" title="Confirmation de suppression" size="sm">
+    <!-- MODALE : Confirmation de Suppression de Rapport -->
+    <x-ui.modal
+        :show="$showDeleteModal"
+        id="delete-report-modal"
+        title="Confirmation de suppression"
+        size="sm">
         <div class="text-center py-2">
             <i class="las la-exclamation-triangle text-red-500 text-5xl block mb-3 animate-pulse"></i>
             <h3 class="text-lg font-bold text-gray-800 mb-1">Supprimer le rapport ?</h3>
@@ -222,18 +226,32 @@
                 Cette opération est irréversible et détachera toutes les activités associées à cette période.
             </p>
         </div>
+
         <x-slot:footer>
             <div class="flex justify-center w-full gap-3">
-                <x-ui.button variant="outline" data-close-modal>Annuler</x-ui.button>
-                <x-ui.button variant="danger" wire:click="delete" wire:loading.attr="disabled" wire:target="delete">
+                <x-ui.button
+                    variant="outline"
+                    wire:click="closeDeleteModal"
+                    wire:loading.attr="disabled"
+                    wire:target="closeDeleteModal"
+                >
+                    Annuler
+                </x-ui.button>
+
+                <x-ui.button
+                    variant="danger"
+                    wire:click="delete"
+                    wire:loading.attr="disabled"
+                    wire:target="delete"
+                >
                     <span wire:loading.remove wire:target="delete" class="flex items-center gap-1">
                         <i class="las la-trash"></i> Confirmer la suppression
                     </span>
                     <span wire:loading wire:target="delete" class="flex items-center gap-2">
-                        <i class="las la-spinner animate-spin"></i> Suppression...
+                        <i class="las la-spinner la-spin"></i> Suppression...
                     </span>
                 </x-ui.button>
             </div>
         </x-slot:footer>
-    </x-ui.modal-one>
+    </x-ui.modal>
 </div>

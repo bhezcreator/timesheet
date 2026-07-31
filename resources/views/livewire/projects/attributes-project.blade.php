@@ -7,10 +7,6 @@
 
     <x-ui.breadcrumb :items="[
         [
-            'label' => 'Tableau de bord',
-            'url'   => route('dashboard')
-        ],
-        [
             'label' => 'Personnels',
             'url'   => route('users.index')
         ],

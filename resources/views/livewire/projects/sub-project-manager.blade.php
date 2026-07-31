@@ -10,10 +10,6 @@
 
     <x-ui.breadcrumb :items="[
         [
-            'label' => 'Tableau de bord',
-            'url'   => route('dashboard')
-        ],
-        [
             'label' => 'Projets',
             'url'   => route('projects.index')
         ],
@@ -55,7 +51,7 @@
         @endif
 
         <!-- Tableau principal ou État vide -->
-        @if(!$subProjects->count() And empty($search))
+        @if(!$subProjects->count() && empty($search))
             <x-ui.empty-state title="Aucun sous-projet" description="Divisez ce projet principal en plusieurs lots technologiques ou opérationnels." icon="las la-folder">
                 <x-slot:action>
                     <x-ui.button wire:click="openModal">
@@ -65,7 +61,7 @@
             </x-ui.empty-state>
         @else
             <div>
-                {{-- Zone En-tête : Titre, Action d'ajout et Barre de recherche --}}
+                <!-- Zone En-tête : Titre, Action d'ajout et Barre de recherche -->
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                     <div>
                         <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Sous-projets configurés</h1>
@@ -80,16 +76,16 @@
                     <x-ui.forms.input wire:model.live.debounce.300ms="search" placeholder="Filtrer les sous-projets par nom..." />
                 </div>
 
-                {{-- Grille responsive de cartes --}}
+                <!-- Grille responsive de cartes -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                     @foreach($subProjects as $sub)
                         <div class="flex flex-col justify-between bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200/80 transition-all duration-200 p-5" wire:key="subproject-card-{{ $sub->id }}">
 
-                            {{-- Partie haute de la carte --}}
+                            <!-- Partie haute de la carte -->
                             <div class="space-y-4">
-                                {{-- Index discret et Statut --}}
+                                <!-- Index discret et Statut -->
                                 <div class="flex items-center justify-between">
-                                    <span class="text-xs font-bold text-gray-300 bg-gray-50 px-2 py-1 rounded-lg">
+                                    <span class="text-xs font-bold text-gray-600 bg-gray-100 px-2 py-1 rounded-lg">
                                         N° {{ ($subProjects->currentPage() - 1) * $subProjects->perPage() + $loop->iteration }}
                                     </span>
 
@@ -104,19 +100,19 @@
                                     </div>
                                 </div>
 
-                                {{-- Titre du sous-projet --}}
+                                <!-- Titre du sous-projet -->
                                 <div>
                                     <h3 class="text-base font-bold text-gray-900 tracking-tight line-clamp-2 min-h-[3rem]" title="{{ $sub->name }}">
                                         {{ $sub->name }}
                                     </h3>
                                 </div>
 
-                                {{-- Description du sous-projet --}}
+                                <!-- Description du sous-projet -->
                                 <div class="mt-2 text-sm text-gray-500 line-clamp-2 leading-relaxed min-h-[2.5rem]" title="{{ $sub->description }}">
                                     {{ $sub->description ?? 'Aucune description disponible pour ce sous-projet.' }}
                                 </div>
 
-                                {{-- Zone Équipe affectée --}}
+                                <!-- Zone Équipe affectée -->
                                 <div class="pt-3 border-t border-gray-50">
                                     <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-2">Équipe affectée</span>
                                     <div class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1">
@@ -134,7 +130,7 @@
                                 </div>
                             </div>
 
-                            {{-- Partie basse : Boutons d'actions --}}
+                            <!-- Partie basse : Boutons d'actions -->
                             <div class="mt-5 pt-4 border-t border-gray-50 flex items-center justify-end gap-2">
                                 <x-ui.button variant="outline" size="sm" wire:click="edit({{ $sub->id }})" title="Modifier le sous-projet" class="!rounded-xl flex-1 justify-center md:flex-none">
                                     <i class="las la-edit text-base"></i> <span class="md:hidden ml-1">Modifier</span>
@@ -156,8 +152,14 @@
         @endif
     </div>
 
-    <!-- FENÊTRE MODALE : Saisie de données du Sous-Projet -->
-    <x-ui.modal-one id="sub-project-modal" title="{{ $subProjectId ? 'Configuration du sous-projet' : 'Créer un sous-projet' }}" size="xl">
+    <!-- MODALE : Saisie de données du Sous-Projet -->
+    <x-ui.modal
+        id="sub-project-modal"
+        :show="$showModal"
+        title="{{ $subProjectId ? 'Configuration du sous-projet' : 'Créer un sous-projet' }}"
+        size="xl"
+        subtitle="{{ $subProjectId ? 'Modifiez les informations du sous-projet' : 'Créez un nouveau sous-projet pour ce projet' }}"
+    >
         <div class="space-y-5">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="md:col-span-2">
@@ -176,6 +178,8 @@
                     ]"
                 />
             </div>
+            <x-ui.forms.error name="name" />
+            <x-ui.forms.error name="status" />
 
             <!-- Description Auto-ajustable -->
             <x-ui.forms.textarea
@@ -187,24 +191,47 @@
                 helper="S'ouvre et s'ajuste dynamiquement en fonction du volume d'informations écrit."
                 maxlength="1000"
             />
+            <x-ui.forms.error name="description" />
         </div>
 
         <!-- Boutons de validation de la modale -->
         <x-slot:footer>
             <div class="flex justify-end gap-3">
-                <x-ui.button variant="outline" wire:click="closeModal" data-close-modal>
-                    Annuler
+                <x-ui.button
+                    variant="outline"
+                    wire:click="closeModal"
+                    wire:loading.attr="disabled"
+                    wire:target="closeModal"
+                >
+                    <span wire:loading.remove wire:target="closeModal">Annuler</span>
+                    <span wire:loading wire:target="closeModal">
+                        <i class="las la-spinner la-spin mr-1"></i>
+                    </span>
                 </x-ui.button>
-                <x-ui.button wire:click="save" wire:loading.attr="disabled">
-                    <span wire:loading.remove><i class="las la-save mr-1"></i> Enregistrer le sous-projet</span>
-                    <span wire:loading><i class="las la-spinner la-spin mr-1"></i> Traitement...</span>
+
+                <x-ui.button
+                    wire:click="save"
+                    wire:loading.attr="disabled"
+                    wire:target="save"
+                >
+                    <span wire:loading.remove wire:target="save">
+                        <i class="las la-save mr-1"></i> Enregistrer le sous-projet
+                    </span>
+                    <span wire:loading wire:target="save">
+                        <i class="las la-spinner la-spin mr-1"></i> Traitement...
+                    </span>
                 </x-ui.button>
             </div>
         </x-slot:footer>
-    </x-ui.modal-one>
+    </x-ui.modal>
 
-    <!-- FENÊTRE MODALE : Confirmation de suppression -->
-    <x-ui.modal-one id="delete-sub-project-modal" title="Confirmation de suppression" size="sm">
+    <!-- MODALE : Confirmation de suppression -->
+    <x-ui.modal
+        :show="$showDeleteModal"
+        id="delete-sub-project-modal"
+        title="Confirmation de suppression"
+        size="sm"
+    >
         <div class="text-center py-2">
             <i class="las la-exclamation-triangle text-red-500 text-5xl block mb-3 animate-pulse"></i>
             <h3 class="text-lg font-bold text-gray-800 mb-1">Supprimer le sous-projet ?</h3>
@@ -214,23 +241,34 @@
                 Les relations d'équipe de ce lot technique seront rompues.
             </p>
         </div>
+
         <x-slot:footer>
             <div class="flex justify-center w-full gap-3">
-                <x-ui.button variant="outline" data-close-modal>
+                <x-ui.button
+                    variant="outline"
+                    wire:click="closeDeleteModal"
+                    wire:loading.attr="disabled"
+                    wire:target="closeDeleteModal"
+                >
                     Annuler
                 </x-ui.button>
-                <x-ui.button variant="danger" wire:click="delete({{ $deleteId ?? 0 }})" wire:loading.attr="disabled">
-                    <span wire:loading.remove>
-                        <i class="las la-trash"></i>
+
+                <x-ui.button
+                    variant="danger"
+                    wire:click="delete"
+                    wire:loading.attr="disabled"
+                    wire:target="delete"
+                >
+                    <span wire:loading.remove wire:target="delete">
+                        <i class="las la-trash mr-1"></i>
                         Confirmer la suppression
                     </span>
-
-                    <span wire:loading class="flex items-center gap-2">
-                        <x-ui.spinner size="sm" color="white"/>
+                    <span wire:loading wire:target="delete">
+                        <i class="las la-spinner la-spin mr-1"></i>
                         Suppression...
                     </span>
                 </x-ui.button>
             </div>
         </x-slot:footer>
-    </x-ui.modal-one>
+    </x-ui.modal>
 </div>

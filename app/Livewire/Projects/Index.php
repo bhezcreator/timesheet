@@ -4,6 +4,7 @@ namespace App\Livewire\Projects;
 
 use App\Models\Project;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
@@ -25,9 +26,12 @@ class Index extends Component
     public string $status = 'brouillon';
 
     public ?int $projectId = null;
-    public bool $isOpen = false;
 
-    // Variables de suppression sécurisée
+    // Gestion Modal
+    public bool $showModal = false;
+    public bool $showDeleteModal = false;
+
+    // Variables de suppression
     public ?int $deleteId = null;
     public ?string $deleteName = null;
 
@@ -56,9 +60,6 @@ class Index extends Component
         ];
     }
 
-    /**
-     * Valide l'accès et lève une exception de validation standard interceptée par l'interface.
-     */
     protected function checkPermissionOrFail(string $permission): bool
     {
         if (Gate::allows($permission)) {
@@ -75,7 +76,7 @@ class Index extends Component
         $searchTerm = '%' . str_replace(['%', '_'], ['\%', '\_'], $this->search) . '%';
 
         $projects = Project::query()
-            ->with(['manager', 'subProjects', 'users']) // Évite le problème des requêtes N+1
+            ->with(['manager', 'subProjects', 'users'])
             ->where(function ($query) use ($searchTerm) {
                 $query->where('name', 'like', $searchTerm)
                     ->orWhere('code', 'like', $searchTerm)
@@ -84,7 +85,6 @@ class Index extends Component
             ->latest()
             ->paginate(2);
 
-        // Liste des gestionnaires actifs pour alimenter le sélecteur personnalisé
         $managers = User::query()
             ->where('is_active', true)
             ->orderBy('name')
@@ -100,8 +100,8 @@ class Index extends Component
     {
         $this->checkPermissionOrFail("projets.creer");
         $this->resetForm();
-        $this->isOpen = true;
-        $this->dispatch('open-modal', id: 'project-modal');
+        $this->showModal = true;
+        $this->showDeleteModal = false;
     }
 
     public function edit($id)
@@ -114,12 +114,12 @@ class Index extends Component
         $this->name = $project->name;
         $this->description = $project->description ?? '';
         $this->manager_id = $project->manager_id;
-        $this->start_date = $project->start_date ? \Carbon\Carbon::parse($project->start_date)->format('Y-m-d') : '';
-        $this->end_date = $project->end_date ? \Carbon\Carbon::parse($project->end_date)->format('Y-m-d') : '';
+        $this->start_date = $project->start_date ? Carbon::parse($project->start_date)->format('Y-m-d') : '';
+        $this->end_date = $project->end_date ? Carbon::parse($project->end_date)->format('Y-m-d') : '';
         $this->status = $project->status;
 
-        $this->isOpen = true;
-        $this->dispatch('open-modal', id: 'project-modal');
+        $this->showModal = true;
+        $this->showDeleteModal = false;
     }
 
     public function save()
@@ -168,30 +168,36 @@ class Index extends Component
         $project = Project::findOrFail($id);
         $this->deleteId = $project->id;
         $this->deleteName = $project->name;
-
-        $this->dispatch('open-modal', id: 'delete-project-modal');
+        $this->showDeleteModal = true;
+        $this->showModal = false;
     }
 
-    public function delete(int $id)
+    public function delete()
     {
         $this->checkPermissionOrFail("projets.supprimer");
 
-        if ($this->deleteId === $id) {
-            $project = Project::findOrFail($id);
+        if ($this->deleteId) {
+            $project = Project::findOrFail($this->deleteId);
             $project->delete();
             session()->flash('success', 'Le projet a été supprimé définitivement.');
         }
 
-        $this->deleteId = null;
-        $this->deleteName = null;
-        $this->dispatch('close-modal', id: 'delete-project-modal');
+        $this->closeDeleteModal();
     }
 
     public function closeModal()
     {
-        $this->isOpen = false;
+        $this->showModal = false;
+        $this->showDeleteModal = false;
         $this->resetForm();
-        $this->dispatch('close-modal', 'project-modal');
+    }
+
+    public function closeDeleteModal()
+    {
+        $this->showDeleteModal = false;
+        $this->showModal = false;
+        $this->deleteId = null;
+        $this->deleteName = null;
     }
 
     private function resetForm()

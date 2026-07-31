@@ -21,6 +21,9 @@ class Index extends Component
     public string $filterYear = '';
     public string $filterStatus = '';
 
+    // Gestion Modal
+    public bool $showDeleteModal = false;
+
     // Variables de suppression
     public ?int $deleteId = null;
     public ?string $deleteName = null;
@@ -140,22 +143,28 @@ class Index extends Component
 
         $this->deleteId = $activity->id;
         $this->deleteName = $activity->titre . ' (' . $activity->activity_date->format('d/m/Y') . ')';
-
-        $this->dispatch('open-modal', id: 'delete-activity-modal');
+        $this->showDeleteModal = true;
     }
 
-    public function delete(int $id)
+    public function delete()
     {
         $this->checkPermissionOrFail("activites.supprimer");
 
-        if ($this->deleteId === $id) {
-            $activity = Activity::where('id', $id)->where('user_id', $this->user_id);
-            $activity->delete();
-            session()->flash('success', 'L\'activité a été retirée de votre feuille de temps avec succès.');
+        if ($this->deleteId) {
+            $activity = Activity::where('id', $this->deleteId)->where('user_id', $this->user_id)->first();
+            if ($activity) {
+                $activity->delete();
+                session()->flash('success', 'L\'activité a été retirée de votre feuille de temps avec succès.');
+            }
         }
 
+        $this->closeDeleteModal();
+    }
+
+    public function closeDeleteModal()
+    {
+        $this->showDeleteModal = false;
         $this->deleteId = null;
         $this->deleteName = null;
-        $this->dispatch('close-modal', 'delete-activity-modal');
     }
 }

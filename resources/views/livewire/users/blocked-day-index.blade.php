@@ -1,6 +1,11 @@
 <div class="py-0">
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            Gestion des jours bloqués
+        </h2>
+    </x-slot>
 
-    <div class="w-full">
+    <div class="w-full mt-0">
         <!-- Alertes de session -->
         @if(session('success'))
             <x-ui.alert type="success" class="mb-4 mt-8">
@@ -8,6 +13,12 @@
             </x-ui.alert>
             <br>
         @endif
+
+        @error('permission')
+            <x-ui.alert type="error" class="mb-4 mt-8">
+                {{ $message }}
+            </x-ui.alert>
+        @enderror
 
         <!-- Affichage global des erreurs de validation ($errors) -->
         @if($errors->any())
@@ -101,8 +112,14 @@
         @endif
     </div>
 
-    <!-- Modale A : Création et Modification -->
-    <x-ui.modal-one id="blocked-day-modal" title="{{ $blockedDayId ? 'Modifier la date verrouillée' : 'Verrouiller une nouvelle date' }}" size="xl">
+    <!-- MODALE : Création et Modification -->
+    <x-ui.modal
+        id="blocked-day-modal"
+        :show="$showModal"
+        title="{{ $blockedDayId ? 'Modifier la date verrouillée' : 'Verrouiller une nouvelle date' }}"
+        size="xl"
+        subtitle="{{ $blockedDayId ? 'Modifiez les informations du jour bloqué' : 'Configurez un nouveau jour bloqué' }}"
+    >
         <form wire:submit.prevent="save" class="space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <!-- Sélecteur de date -->
@@ -133,7 +150,6 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 max-h-64 overflow-y-auto p-1 bg-gray-50 rounded-xl border border-gray-200/50">
                     @foreach($availableTypes as $typeOption)
-                        <!-- Structure identique à vos permissions : simple, native et stable -->
                         <label
                             wire:key="type-option-{{ $loop->index }}"
                             class="relative flex items-start p-3 rounded-lg border transition cursor-pointer select-none shadow-sm {{ $type === $typeOption ? 'border-blue-600 bg-blue-50/30' : 'border-gray-200 bg-white hover:bg-blue-50/30' }}"
@@ -142,7 +158,7 @@
                                 <input
                                     type="radio"
                                     value="{{ $typeOption }}"
-                                    wire:model="type" {{-- Liaison standard sans .live pour éviter l'envoi intempestif au serveur avant le clic sur Save --}}
+                                    wire:model="type"
                                     name="blocked_day_type"
                                     id="type-{{ $loop->index }}"
                                     class="h-4 w-4 rounded-full border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
@@ -172,12 +188,26 @@
 
             <x-slot:footer>
                 <div class="flex justify-end gap-3">
-                    <x-ui.button variant="outline" wire:click="closeModal" data-close-modal>
-                        Annuler
+                    <x-ui.button
+                        type="button"
+                        variant="outline"
+                        wire:click="closeModal"
+                        wire:loading.attr="disabled"
+                        wire:target="closeModal"
+                    >
+                        <span wire:loading.remove wire:target="closeModal">Annuler</span>
+                        <span wire:loading wire:target="closeModal">
+                            <i class="las la-spinner la-spin mr-1"></i>
+                        </span>
                     </x-ui.button>
 
-                    <x-ui.button type="button" wire:click="save" wire:loading.attr="disabled">
-                        <span wire:loading.remove>
+                    <x-ui.button
+                        type="button"
+                        wire:click="save"
+                        wire:loading.attr="disabled"
+                        wire:target="save"
+                    >
+                        <span wire:loading.remove wire:target="save">
                             <i class="las la-save mr-1"></i> Sauvegarder
                         </span>
                         <span wire:loading wire:target="save">
@@ -187,10 +217,15 @@
                 </div>
             </x-slot:footer>
         </form>
-    </x-ui.modal-one>
+    </x-ui.modal>
 
-    <!-- Modale B : Validation de la suppression destructive -->
-    <x-ui.modal-one id="delete-blocked-day-modal" title="Débloquer la date" size="md">
+    <!-- MODALE : Confirmation de suppression -->
+    <x-ui.modal
+        :show="$showDeleteModal"
+        id="delete-blocked-day-modal"
+        title="Débloquer la date"
+        size="md"
+    >
         <div class="space-y-4">
             <div class="flex items-center justify-center gap-3 text-red-600">
                 <i class="las la-exclamation-triangle text-3xl"></i>
@@ -199,26 +234,37 @@
 
             <p class="text-sm text-gray-600 flex flex-col items-center justify-center gap-3">
                 Êtes-vous sûr de vouloir supprimer définitivement la date verrouillée
-                <strong class="text-gray-900">"{{ $deleteName }}" ?</strong>
+                <strong class="text-gray-900">"{{ $deleteName }}"</strong> ?
+                <br>
                 Les utilisateurs pourront à nouveau soumettre des heures à cette date.
             </p>
 
             <div class="flex justify-end gap-2 border-t border-gray-100 pt-4">
-                <x-ui.button variant="outline" wire:click="closeModal" data-close-modal>
+                <x-ui.button
+                    variant="outline"
+                    wire:click="closeDeleteModal"
+                    wire:loading.attr="disabled"
+                    wire:target="closeDeleteModal"
+                >
                     Annuler
                 </x-ui.button>
-                <x-ui.button variant="danger" wire:click="delete({{ $deleteId ?? 0 }})" wire:loading.attr="disabled">
-                    <span wire:loading.remove>
+
+                <x-ui.button
+                    variant="danger"
+                    wire:click="delete"
+                    wire:loading.attr="disabled"
+                    wire:target="delete"
+                >
+                    <span wire:loading.remove wire:target="delete">
                         <i class="las la-trash"></i>
                         Confirmer la suppression
                     </span>
-
-                    <span wire:loading class="flex items-center gap-2">
-                        <x-ui.spinner size="sm" color="white"/>
+                    <span wire:loading wire:target="delete" class="flex items-center gap-2">
+                        <i class="las la-spinner la-spin"></i>
                         Suppression...
                     </span>
                 </x-ui.button>
             </div>
         </div>
-    </x-ui.modal-one>
+    </x-ui.modal>
 </div>

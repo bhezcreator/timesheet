@@ -1,11 +1,11 @@
 <div class="py-0">
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Gestion des rôles &amp; habilitations
+            Gestion des rôles
         </h2>
     </x-slot>
 
-    <div class="w-full">
+    <div class="w-full mt-0">
         <!-- Alertes de session -->
         @if(session('success'))
             <x-ui.alert type="success" class="mb-4 mt-8">
@@ -13,15 +13,12 @@
             </x-ui.alert>
         @endif
 
-        <!-- Erreur exclusive sur l'action de permission ou de rôle critique -->
         @error('permission')
             <x-ui.alert type="error" class="mb-4 mt-8">
                 {{ $message }}
             </x-ui.alert>
         @enderror
 
-
-                <!-- Affichage global des erreurs de validation ($errors) -->
         @if($errors->any())
             <x-ui.alert type="error" class="mb-4 mt-8">
                 <div class="flex flex-col gap-1">
@@ -36,9 +33,8 @@
             <br>
         @endif
 
-        <!-- Liste des rôles sous forme de tableau filtrable -->
-        @if(!$roles->count() And empty($search))
-            <!-- État vide si aucune donnée ne matche -->
+        <!-- Liste des rôles -->
+        @if(!$roles->count() && empty($search))
             <x-ui.empty-state title="Aucun rôle disponible" description="Créez et configurez votre premier rôle d'accès utilisateur." icon="las la-shield-alt">
                 <x-slot:action>
                     <x-ui.button wire:click="openModal">
@@ -64,17 +60,14 @@
                 <tbody>
                     @foreach($roles as $role)
                         <tr class="hover:bg-gray-50 transition-colors" wire:key="role-{{ $role->id }}">
-                            <!-- Index dynamique -->
                             <td class="px-6 py-4 text-sm font-semibold text-gray-400 align-top">
                                 {{ ($roles->currentPage() - 1) * $roles->perPage() + $loop->iteration }}
                             </td>
 
-                            <!-- Nom du rôle -->
                             <td class="px-6 py-4 text-sm font-medium text-gray-900 align-top">
                                 {{ $role->name }}
                             </td>
 
-                            <!-- Liste condensée des badges de permissions attachées -->
                             <td class="px-6 py-4 text-sm max-w-xl align-top">
                                 <div class="flex flex-wrap gap-1">
                                     @forelse($role->permissions as $perm)
@@ -87,14 +80,12 @@
                                 </div>
                             </td>
 
-                            <!-- Guard Name -->
                             <td class="px-6 py-4 text-sm align-top">
                                 <x-ui.badge variant="success">
                                     {{ $role->guard_name }}
                                 </x-ui.badge>
                             </td>
 
-                            <!-- Actions -->
                             <td class="px-6 py-4 text-sm space-x-1 whitespace-nowrap align-top text-right">
                                 <x-ui.button variant="outline" wire:click="edit({{ $role->id }})" title="Modifier le rôle">
                                     <i class="las la-edit"></i>
@@ -108,17 +99,21 @@
                 </tbody>
             </x-ui.table>
 
-            <!-- Liens de pagination réactifs -->
             <div class="mt-5">
                 <x-ui.pagination :paginator="$roles" />
             </div>
         @endif
     </div>
 
-    <!-- Modale A : Création et affectation de Habilitations -->
-    <x-ui.modal-one id="role-modal" title="{{ $roleId ? 'Modifier intitulé et les droits' : 'Ajouter un nouveau rôle' }}" size="xl">
+    <!-- MODALE : Création/Modification -->
+    <x-ui.modal
+        id="role-modal"
+        :show="$showModal"
+        title="{{ $roleId ? 'Modifier intitulé et les droits' : 'Ajouter un nouveau rôle' }}"
+        size="xl"
+        subtitle="{{ $roleId ? 'Modifiez le rôle et ses permissions associées' : 'Créez un nouveau rôle avec ses permissions' }}"
+    >
         <div class="space-y-6">
-            <!-- Nom du rôle -->
             <x-ui.forms.input
                 label="Nom du rôle"
                 name="name"
@@ -127,7 +122,6 @@
             />
             <x-ui.forms.error name="name" />
 
-            <!-- Grille de sélection des permissions disponibles -->
             <div class="border-t border-gray-100 pt-4">
                 <h4 class="text-sm font-bold text-gray-800 mb-3 flex items-center gap-1">
                     <i class="las la-key text-gray-500 text-lg"></i> Attribuer des permissions à ce rôle
@@ -155,7 +149,7 @@
                     </div>
                 @else
                     <p class="text-xs text-yellow-600 bg-yellow-50 p-3 rounded-lg border border-yellow-100">
-                        ⚠️ Aucune permission n'est actuellement créée dans le système. Créez d'abord des permissions avant d'attribuer des droits à ce rôle.
+                        Aucune permission n'est actuellement créée dans le système.
                     </p>
                 @endif
             </div>
@@ -163,24 +157,41 @@
 
         <x-slot:footer>
             <div class="flex justify-end gap-3">
-                <x-ui.button variant="outline" wire:click="closeModal" data-close-modal>
-                    Annuler
+                <x-ui.button
+                    variant="outline"
+                    wire:click="closeModal"
+                    wire:loading.attr="disabled"
+                    wire:target="closeModal"
+                >
+                    <span wire:loading.remove wire:target="closeModal">Annuler</span>
+                    <span wire:loading wire:target="closeModal">
+                        <i class="las la-spinner la-spin mr-1"></i>
+                    </span>
                 </x-ui.button>
 
-                <x-ui.button wire:click="save" wire:loading.attr="disabled">
-                    <span wire:loading.remove>
+                <x-ui.button
+                    wire:click="save"
+                    wire:loading.attr="disabled"
+                    wire:target="save"
+                >
+                    <span wire:loading.remove wire:target="save">
                         <i class="las la-save mr-1"></i> Sauvegarder
                     </span>
-                    <span wire:loading>
+                    <span wire:loading wire:target="save">
                         <i class="las la-spinner la-spin mr-1"></i> Traitement...
                     </span>
                 </x-ui.button>
             </div>
         </x-slot:footer>
-    </x-ui.modal-one>
+    </x-ui.modal>
 
-    <!-- Modale B : Confirmation de suppression sécurisée -->
-    <x-ui.modal-one id="delete-role-modal" title="Confirmation de suppression" size="sm">
+    <!-- MODALE : Confirmation de suppression -->
+    <x-ui.modal
+        :show="$showDeleteModal"
+        id="delete-role-modal"
+        title="Confirmation de suppression"
+        size="sm"
+    >
         <div class="text-center py-2">
             <i class="las la-exclamation-triangle text-red-500 text-5xl block mb-3 animate-pulse"></i>
             <h3 class="text-lg font-bold text-gray-800 mb-1">Supprimer le rôle ?</h3>
@@ -191,21 +202,31 @@
 
         <x-slot:footer>
             <div class="flex justify-center w-full gap-3">
-                <x-ui.button variant="outline" data-close-modal>
+                <x-ui.button
+                    variant="outline"
+                    wire:click="closeDeleteModal"
+                    wire:loading.attr="disabled"
+                    wire:target="closeDeleteModal"
+                >
                     Annuler
                 </x-ui.button>
-                <x-ui.button variant="danger" wire:click="delete({{ $deleteId ?? 0 }})" wire:loading.attr="disabled">
-                    <span wire:loading.remove>
-                        <i class="las la-trash"></i>
+
+                <x-ui.button
+                    variant="danger"
+                    wire:click="delete"
+                    wire:loading.attr="disabled"
+                    wire:target="delete"
+                >
+                    <span wire:loading.remove wire:target="delete">
+                        <i class="las la-trash mr-1"></i>
                         Confirmer la suppression
                     </span>
-
-                    <span wire:loading class="flex items-center gap-2">
-                        <x-ui.spinner size="sm" color="white"/>
+                    <span wire:loading wire:target="delete">
+                        <i class="las la-spinner la-spin mr-1"></i>
                         Suppression...
                     </span>
                 </x-ui.button>
             </div>
         </x-slot:footer>
-    </x-ui.modal-one>
+    </x-ui.modal>
 </div>

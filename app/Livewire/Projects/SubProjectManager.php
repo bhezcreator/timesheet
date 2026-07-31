@@ -26,9 +26,12 @@ class SubProjectManager extends Component
     public string $status = 'brouillon';
 
     public ?int $subProjectId = null;
-    public bool $isOpen = false;
 
-    // Variables de suppression sécurisée
+    // Gestion Modal
+    public bool $showModal = false;
+    public bool $showDeleteModal = false;
+
+    // Variables de suppression
     public ?int $deleteId = null;
     public ?string $deleteName = null;
 
@@ -59,9 +62,6 @@ class SubProjectManager extends Component
         ];
     }
 
-    /**
-     * Valide l'accès et lève une exception de validation standard interceptée par l'interface.
-     */
     protected function checkPermissionOrFail(string $permission): bool
     {
         if (Gate::allows($permission)) {
@@ -78,7 +78,7 @@ class SubProjectManager extends Component
         $searchTerm = '%' . str_replace(['%', '_'], ['\%', '\_'], $this->search) . '%';
 
         $subProjects = SubProject::query()
-            ->with('users') // Évite le problème des requêtes N+1
+            ->with('users')
             ->where('project_id', $this->projectId)
             ->where(function ($query) use ($searchTerm) {
                 $query->where('name', 'like', $searchTerm)
@@ -96,15 +96,14 @@ class SubProjectManager extends Component
     {
         $this->checkPermissionOrFail("projets.creer");
         $this->resetForm();
-        $this->isOpen = true;
-        $this->dispatch('open-modal', id: 'sub-project-modal');
+        $this->showModal = true;
+        $this->showDeleteModal = false;
     }
 
     public function edit($id)
     {
         $this->checkPermissionOrFail("projets.modifier");
 
-        // Sécurité renforcée : On s'assure que le sous-projet appartient bien au projet chargé
         $subProject = SubProject::where('project_id', $this->projectId)->findOrFail($id);
 
         $this->subProjectId = $subProject->id;
@@ -112,8 +111,8 @@ class SubProjectManager extends Component
         $this->description = $subProject->description ?? '';
         $this->status = $subProject->status;
 
-        $this->isOpen = true;
-        $this->dispatch('open-modal', id: 'sub-project-modal');
+        $this->showModal = true;
+        $this->showDeleteModal = false;
     }
 
     public function save()
@@ -135,7 +134,7 @@ class SubProjectManager extends Component
             $this->checkPermissionOrFail("projets.creer");
             $this->validate();
 
-            $subProject = SubProject::create([
+            SubProject::create([
                 'project_id'  => $this->projectId,
                 'name'        => trim($this->name),
                 'description' => trim($this->description) ?: null,
@@ -155,39 +154,42 @@ class SubProjectManager extends Component
         $subProject = SubProject::where('project_id', $this->projectId)->findOrFail($id);
         $this->deleteId = $subProject->id;
         $this->deleteName = $subProject->name;
-
-        $this->dispatch('open-modal', id: 'delete-sub-project-modal');
+        $this->showDeleteModal = true;
+        $this->showModal = false;
     }
 
-    public function delete(int $id)
+    public function delete()
     {
         $this->checkPermissionOrFail("projets.supprimer");
 
-        if ($this->deleteId === $id) {
-            $subProject = SubProject::where('project_id', $this->projectId)->findOrFail($id);
-
-            // Le cascadeOnDelete() en BDD nettoiera sub_project_user, mais Eloquent le gère par précaution
+        if ($this->deleteId) {
+            $subProject = SubProject::where('project_id', $this->projectId)->findOrFail($this->deleteId);
             $subProject->users()->detach();
             $subProject->delete();
-
             session()->flash('success', 'Le sous-projet a été supprimé définitivement.');
         }
 
-        $this->deleteId = null;
-        $this->deleteName = null;
-        $this->dispatch('close-modal', id: 'delete-sub-project-modal');
+        $this->closeDeleteModal();
     }
 
     public function closeModal()
     {
-        $this->isOpen = false;
+        $this->showModal = false;
+        $this->showDeleteModal = false;
         $this->resetForm();
-        $this->dispatch('close-modal', 'sub-project-modal');
+    }
+
+    public function closeDeleteModal()
+    {
+        $this->showDeleteModal = false;
+        $this->showModal = false;
+        $this->deleteId = null;
+        $this->deleteName = null;
     }
 
     private function resetForm()
     {
-        $this->reset(['name', 'description', 'status']);
+        $this->reset(['name', 'description', 'status', 'subProjectId']);
         $this->resetValidation();
         $this->resetPage();
     }

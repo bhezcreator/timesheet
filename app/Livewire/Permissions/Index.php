@@ -17,7 +17,10 @@ class Index extends Component
     // Variables de formulaire sécurisées
     public string $name = '';
     public ?int $permissionId = null;
-    public bool $isOpen = false;
+
+    // Gestion Modal
+    public bool $showModal = false;
+    public bool $showDeleteModal = false;
 
     // Variables de suppression
     public ?int $deleteId = null;
@@ -41,13 +44,9 @@ class Index extends Component
 
     /**
      * Valide une permission et lève une erreur propre interceptée par le Front-End.
-     *
-     * @param string $permission Le nom de la permission à tester
-     * @throws ValidationException
      */
     protected function checkPermissionOrFail(string $permission): bool
     {
-        // Gate::allows() utilise le système d'authentification et fonctionne de manière universelle
         if (Gate::allows($permission)) {
             return true;
         }
@@ -56,7 +55,6 @@ class Index extends Component
             'permission' => ["Action non autorisée : Privilèges insuffisants."]
         ]);
     }
-
 
     public function render()
     {
@@ -79,8 +77,8 @@ class Index extends Component
     {
         // $this->checkPermissionOrFail("manager-permission");
         $this->resetForm();
-        $this->isOpen = true;
-        $this->dispatch('open-modal', id: 'permission-modal');
+        $this->showModal = true;
+        $this->showDeleteModal = false;
     }
 
     public function edit($id)
@@ -90,9 +88,8 @@ class Index extends Component
         $permission = Permission::findOrFail($id);
         $this->permissionId = $permission->id;
         $this->name = $permission->name;
-        $this->isOpen = true;
-
-        $this->dispatch('open-modal', id: 'permission-modal');
+        $this->showModal = true;
+        $this->showDeleteModal = false;
     }
 
     public function save()
@@ -105,7 +102,7 @@ class Index extends Component
             ]);
 
             Permission::findOrFail($this->permissionId)->update([
-                'name' => trim($this->name) // trim() évite les espaces inutiles accidentels
+                'name' => trim($this->name)
             ]);
 
             session()->flash('success', 'Permission modifiée avec succès.');
@@ -131,30 +128,35 @@ class Index extends Component
 
         $this->deleteId = $permission->id;
         $this->deleteName = $permission->name;
-
-        $this->dispatch('open-modal', id: 'delete-permission-modal');
+        $this->showDeleteModal = true;
+        $this->showModal = false;
     }
 
-    // Sécurisation : On passe l'ID de confirmation directement à la méthode de destruction
-    public function delete(int $id)
+    public function delete()
     {
         // $this->checkPermissionOrFail("manager-permission");
-        // Validation croisée : On vérifie que l'ID soumis correspond bien à la demande initiale
-        if ($this->deleteId === $id) {
-            Permission::findOrFail($id)->delete();
+
+        if ($this->deleteId) {
+            Permission::findOrFail($this->deleteId)->delete();
             session()->flash('success', 'Permission supprimée avec succès.');
         }
 
-        $this->deleteId = null;
-        $this->deleteName = null;
-        $this->dispatch('close-modal', id: 'delete-permission-modal');
+        $this->closeDeleteModal();
     }
 
     public function closeModal()
     {
-        $this->isOpen = false;
+        $this->showModal = false;
+        $this->showDeleteModal = false;
         $this->resetForm();
-        $this->dispatch('close-modal', 'permission-modal');
+    }
+
+    public function closeDeleteModal()
+    {
+        $this->showDeleteModal = false;
+        $this->showModal = false;
+        $this->deleteId = null;
+        $this->deleteName = null;
     }
 
     private function resetForm()

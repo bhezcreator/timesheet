@@ -15,10 +15,13 @@ class Index extends Component
     // Variables de formulaire sécurisées
     public string $name = '';
     public ?string $description = null;
-    public string $color = '#3B82F6'; // Bleu par défaut (Tailwind blue-500)
+    public string $color = '#3B82F6';
     public bool $is_active = true;
     public ?int $activityTypeId = null;
-    public bool $isOpen = false;
+
+    // Gestion Modal
+    public bool $showModal = false;
+    public bool $showDeleteModal = false;
 
     // Variables de suppression
     public ?int $deleteId = null;
@@ -44,11 +47,10 @@ class Index extends Component
                 'string',
                 'max:255',
                 'unique:activity_types,name,' . $this->activityTypeId,
-                // Ajout des caractères accentués français (éèàùçâêîôûëïüÉÈÀÇ...)
                 "regex:/^[a-z0-9\-\._ a-z0-9àâäéèêëîïôöùûüç'&(),;.ÂÆÇÈÉÊËÎÏÔŒÙÛÜ]+$/i"
             ],
             'description' => ['nullable', 'string', 'max:500'],
-            'color' => ['required', 'string', 'regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/'], // Validation code HEX
+            'color' => ['required', 'string', 'regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/'],
             'is_active' => ['boolean'],
         ];
     }
@@ -73,7 +75,7 @@ class Index extends Component
         $searchTerm = '%' . str_replace(['%', '_'], ['\%', '\_'], $this->search) . '%';
 
         $activityTypes = ActivityType::query()
-            ->withCount('activities') // Optimisation pour afficher le nombre d'activités liées
+            ->withCount('activities')
             ->when($this->search, function ($query) use ($searchTerm) {
                 $query->where(function ($q) use ($searchTerm) {
                     $q->where('name', 'like', $searchTerm)
@@ -92,8 +94,8 @@ class Index extends Component
     {
         $this->checkPermissionOrFail("types_activites.creer");
         $this->resetForm();
-        $this->isOpen = true;
-        $this->dispatch('open-modal', id: 'activity-type-modal');
+        $this->showModal = true;
+        $this->showDeleteModal = false;
     }
 
     public function edit($id)
@@ -106,9 +108,8 @@ class Index extends Component
         $this->description = $type->description;
         $this->color = $type->color;
         $this->is_active = $type->is_active;
-        $this->isOpen = true;
-
-        $this->dispatch('open-modal', id: 'activity-type-modal');
+        $this->showModal = true;
+        $this->showDeleteModal = false;
     }
 
     public function save()
@@ -158,30 +159,36 @@ class Index extends Component
 
         $this->deleteId = $type->id;
         $this->deleteName = $type->name;
-
-        $this->dispatch('open-modal', id: 'delete-activity-type-modal');
+        $this->showDeleteModal = true;
+        $this->showModal = false;
     }
 
-    public function delete(int $id)
+    public function delete()
     {
         $this->checkPermissionOrFail("types_activites.supprimer");
 
-        if ($this->deleteId === $id) {
-            $type = ActivityType::findOrFail($id);
+        if ($this->deleteId) {
+            $type = ActivityType::findOrFail($this->deleteId);
             $type->delete();
             session()->flash('success', 'Type d\'activité supprimé avec succès.');
         }
 
-        $this->deleteId = null;
-        $this->deleteName = null;
-        $this->dispatch('close-modal', id: 'delete-activity-type-modal');
+        $this->closeDeleteModal();
     }
 
     public function closeModal()
     {
-        $this->isOpen = false;
+        $this->showModal = false;
+        $this->showDeleteModal = false;
         $this->resetForm();
-        $this->dispatch('close-modal', 'activity-type-modal');
+    }
+
+    public function closeDeleteModal()
+    {
+        $this->showDeleteModal = false;
+        $this->showModal = false;
+        $this->deleteId = null;
+        $this->deleteName = null;
     }
 
     private function resetForm()

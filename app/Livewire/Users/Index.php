@@ -25,14 +25,17 @@ class Index extends Component
     public string $job_title = '';
     public ?int $supervisor_id = null;
     public string $email = '';
-    public string $password = ''; // Géré séparément pour édition optionnelle
+    public string $password = '';
     public bool $is_active = true;
-    public array $selectedRoles = []; // Liste des noms/IDs des rôles cochés
+    public array $selectedRoles = [];
 
     public ?int $userId = null;
-    public bool $isOpen = false;
 
-    // Variables de suppression sécurisée
+    // Gestion Modal
+    public bool $showModal = false;
+    public bool $showDeleteModal = false;
+
+    // Variables de suppression
     public ?int $deleteId = null;
     public ?string $deleteName = null;
 
@@ -64,9 +67,6 @@ class Index extends Component
         ];
     }
 
-    /**
-     * Valide l'accès et lève une exception de validation standard interceptée par l'interface.
-     */
     protected function checkPermissionOrFail(string $permission): bool
     {
         if (Gate::allows($permission)) {
@@ -83,7 +83,7 @@ class Index extends Component
         $searchTerm = '%' . str_replace(['%', '_'], ['\%', '\_'], $this->search) . '%';
 
         $users = User::query()
-            ->with(['supervisor', 'roles']) // Eager loading anti-requêtes N+1
+            ->with(['supervisor', 'roles'])
             ->where(function ($query) use ($searchTerm) {
                 $query->where('name', 'like', $searchTerm)
                     ->orWhere('first_name', 'like', $searchTerm)
@@ -93,10 +93,9 @@ class Index extends Component
             ->latest()
             ->paginate(10);
 
-        // Récupération des données pour alimenter les listes déroulantes du formulaire
         $supervisors = User::query()
             ->where('is_active', true)
-            ->when($this->userId, fn($q) => $q->where('id', '!=', $this->userId)) // Éviter l'auto-supervision
+            ->when($this->userId, fn($q) => $q->where('id', '!=', $this->userId))
             ->orderBy('name')
             ->get();
 
@@ -113,8 +112,8 @@ class Index extends Component
     {
         $this->checkPermissionOrFail("utilisateurs.creer");
         $this->resetForm();
-        $this->isOpen = true;
-        $this->dispatch('open-modal', id: 'user-modal');
+        $this->showModal = true;
+        $this->showDeleteModal = false;
     }
 
     public function edit($id)
@@ -131,13 +130,11 @@ class Index extends Component
         $this->supervisor_id = $user->supervisor_id;
         $this->email = $user->email;
         $this->is_active = (bool)$user->is_active;
-        $this->password = ''; // Toujours vide à l'affichage par sécurité
+        $this->password = '';
 
-        // Extraction des IDs des rôles associés pour alimenter les cases à cocher du Front-End
         $this->selectedRoles = $user->roles->pluck('id')->map(fn($id) => (string)$id)->toArray();
-        $this->isOpen = true;
-
-        $this->dispatch('open-modal', id: 'user-modal');
+        $this->showModal = true;
+        $this->showDeleteModal = false;
     }
 
     public function save()
@@ -159,14 +156,12 @@ class Index extends Component
                 'is_active'   => $this->is_active,
             ];
 
-            // Hashage du mot de passe uniquement s'il a été rempli dans le formulaire d'édition
             if (!empty($this->password)) {
                 $data['password'] = Hash::make($this->password);
             }
 
             $user->update($data);
 
-            // Synchronisation sécurisée Spatie via correspondance ID -> Nom
             $roleNames = Role::whereIn('id', $this->selectedRoles)->pluck('name')->toArray();
             $user->syncRoles($roleNames);
 
@@ -208,7 +203,6 @@ class Index extends Component
 
         $user = User::findOrFail($id);
 
-        // Empêcher l'auto-suppression accidentelle ou malveillante
         if ($user->id === Auth::id()) {
             throw ValidationException::withMessages([
                 'user' => ["Action impossible : Vous ne pouvez pas supprimer votre propre compte."]
@@ -217,30 +211,36 @@ class Index extends Component
 
         $this->deleteId = $user->id;
         $this->deleteName = $user->first_name . ' ' . $user->name;
-
-        $this->dispatch('open-modal', id: 'delete-user-modal');
+        $this->showDeleteModal = true;
+        $this->showModal = false;
     }
 
-    public function delete(int $id)
+    public function delete()
     {
         $this->checkPermissionOrFail("utilisateurs.supprimer");
 
-        if ($this->deleteId === $id) {
-            $user = User::findOrFail($id);
+        if ($this->deleteId) {
+            $user = User::findOrFail($this->deleteId);
             $user->delete();
             session()->flash('success', 'Compte Personnel supprimé définitivement.');
         }
 
-        $this->deleteId = null;
-        $this->deleteName = null;
-        $this->dispatch('close-modal', id: 'delete-user-modal');
+        $this->closeDeleteModal();
     }
 
     public function closeModal()
     {
-        $this->isOpen = false;
+        $this->showModal = false;
+        $this->showDeleteModal = false;
         $this->resetForm();
-        $this->dispatch('close-modal', 'user-modal');
+    }
+
+    public function closeDeleteModal()
+    {
+        $this->showDeleteModal = false;
+        $this->showModal = false;
+        $this->deleteId = null;
+        $this->deleteName = null;
     }
 
     private function resetForm()

@@ -18,7 +18,10 @@ class BlockedDayIndex extends Component
     public string $type = 'Jour férié';
     public bool $is_active = true;
     public ?int $blockedDayId = null;
-    public bool $isOpen = false;
+
+    // Gestion Modal
+    public bool $showModal = false;
+    public bool $showDeleteModal = false;
 
     // Variables de suppression
     public ?int $deleteId = null;
@@ -106,8 +109,8 @@ class BlockedDayIndex extends Component
     {
         $this->checkPermissionOrFail("jour_bloque.creer");
         $this->resetForm();
-        $this->isOpen = true;
-        $this->dispatch('open-modal', id: 'blocked-day-modal');
+        $this->showModal = true;
+        $this->showDeleteModal = false;
     }
 
     public function edit($id)
@@ -120,9 +123,8 @@ class BlockedDayIndex extends Component
         $this->name = $blockedDay->name;
         $this->type = $blockedDay->type;
         $this->is_active = (bool)$blockedDay->is_active;
-        $this->isOpen = true;
-
-        $this->dispatch('open-modal', id: 'blocked-day-modal');
+        $this->showModal = true;
+        $this->showDeleteModal = false;
     }
 
     public function save()
@@ -164,30 +166,36 @@ class BlockedDayIndex extends Component
         $blockedDay = BlockedDay::findOrFail($id);
         $this->deleteId = $blockedDay->id;
         $this->deleteName = $blockedDay->name . ' (' . ($blockedDay->date ? $blockedDay->date->format('d/m/Y') : '') . ')';
-
-        $this->dispatch('open-modal', id: 'delete-blocked-day-modal');
+        $this->showDeleteModal = true;
+        $this->showModal = false;
     }
 
-    public function delete(int $id)
+    public function delete()
     {
         $this->checkPermissionOrFail("jour_bloque.supprimer");
 
-        if ($this->deleteId === $id) {
-            $blockedDay = BlockedDay::findOrFail($id);
+        if ($this->deleteId) {
+            $blockedDay = BlockedDay::findOrFail($this->deleteId);
             $blockedDay->delete();
             session()->flash('success', 'Jour bloqué supprimé avec succès.');
         }
 
-        $this->deleteId = null;
-        $this->deleteName = null;
-        $this->dispatch('close-modal', id: 'delete-blocked-day-modal');
+        $this->closeDeleteModal();
     }
 
     public function closeModal()
     {
-        $this->isOpen = false;
+        $this->showModal = false;
+        $this->showDeleteModal = false;
         $this->resetForm();
-        $this->dispatch('close-modal', 'blocked-day-modal');
+    }
+
+    public function closeDeleteModal()
+    {
+        $this->showDeleteModal = false;
+        $this->showModal = false;
+        $this->deleteId = null;
+        $this->deleteName = null;
     }
 
     private function resetForm()
