@@ -3,7 +3,7 @@
     <div class="modal-overlay fixed inset-0 bg-gray-900/60 backdrop-blur-md transition-opacity"></div>
 
     <!-- Wrapper -->
-    <div class="relative min-h-screen flex items-start justify-center p-4 sm:p-6 pt-16 border-t border-t-blue-700">
+    <div class="relative min-h-screen flex items-start justify-center p-4 sm:p-6 pt-10 border-t border-t-blue-700">
         <!-- Modal Card -->
         <div class="modal-content relative w-full {{ $sizeClass() }} bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100 transform transition-all">
 

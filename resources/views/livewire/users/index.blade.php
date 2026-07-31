@@ -46,10 +46,14 @@
         @else
             <x-ui.table :columns="['N°', 'Matricule', 'Collaborateur', 'Poste / Fonction', 'Superviseur', 'Rôles d\'accès', 'Statut', 'Actions']">
                 <x-slot:header>
-                    <div class="flex justify-between items-center mb-4">
-                        <h1 class="text-2xl font-bold text-gray-900">Personnel</h1>
-                        <x-ui.button wire:click="openModal">
-                            <i class="las la-plus mr-1"></i> Ajouter un personnel
+                    <div class="flex flex-col xs:flex-row justify-between items-start xs:items-center gap-3 xs:gap-4 mb-4 sm:mb-6">
+                        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 truncate max-w-full">
+                            Personnel
+                        </h1>
+                        <x-ui.button wire:click="openModal" class="w-full xs:w-auto justify-center">
+                            <i class="las la-plus mr-1.5 sm:mr-2"></i>
+                            <span class="hidden xs:inline text-sm sm:text-base">Ajouter un personnel</span>
+                            <span class="inline xs:hidden text-sm">Ajouter</span>
                         </x-ui.button>
                     </div>
                     <x-ui.forms.input wire:model.live.debounce.300ms="search" placeholder="Recherche par matricule, nom, prénom ou email..." />

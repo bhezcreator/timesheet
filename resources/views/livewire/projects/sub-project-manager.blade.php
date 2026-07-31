@@ -79,7 +79,7 @@
                 <!-- Grille responsive de cartes -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                     @foreach($subProjects as $sub)
-                        <div class="flex flex-col justify-between bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200/80 transition-all duration-200 p-5" wire:key="subproject-card-{{ $sub->id }}">
+                        <div class="flex flex-col justify-between bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200/80 border-t border-t-blue-700 transition-all duration-200 p-5" wire:key="subproject-card-{{ $sub->id }}">
 
                             <!-- Partie haute de la carte -->
                             <div class="space-y-4">

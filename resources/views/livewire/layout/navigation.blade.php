@@ -75,7 +75,7 @@ new class extends Component
     }
 }; ?>
 
-<nav x-data="{ open: false }" class="h-full bg-white border-gray-100 p-4">
+<nav x-data="{ open: false }" class="h-full bg-white border-gray-100 p-0">
     <!-- Desktop Navigation -->
     <div class="hidden lg:flex flex-col h-full justify-between">
         <!-- Liens du menu principal -->

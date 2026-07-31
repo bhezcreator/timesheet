@@ -14,7 +14,6 @@
             rel="stylesheet" />
 
         <!-- Assets -->
-
         @vite([
             'resources/css/app.css',
             'resources/js/app.js'
@@ -25,64 +24,66 @@
 
     <body class="font-sans antialiased bg-gray-50 text-gray-900 h-screen overflow-hidden">
 
-        <div class="min-h-screen flex">
+        <div class="min-h-screen flex flex-col lg:flex-row">
             <!-- Sidebar -->
-            <aside class="hidden lg:flex lg:w-72 lg:flex-col bg-white border-r border-gray-200">
-                <div class="h-20 flex items-center px-6">
-                    <a href="{{ route('dashboard') }}" class="flex items-center gap-3">
-                        <div class="w-11 h-11 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-lg">
-                            <i class="las la-clock text-3xl"></i>
+            <aside class="hidden lg:flex lg:w-72 lg:flex-col lg:flex-shrink-0 bg-white border-r border-gray-200">
+                <div class="h-20 flex items-center px-4 sm:px-6">
+                    <a href="{{ route('dashboard') }}" class="flex items-center gap-2 sm:gap-3">
+                        <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-lg flex-shrink-0">
+                            <i class="las la-clock text-2xl sm:text-3xl"></i>
                         </div>
 
-                        <div>
-                            <h1 class="font-bold text-xl">
+                        <div class="hidden sm:block">
+                            <h1 class="font-bold text-lg sm:text-xl">
                                 Timesheet
                             </h1>
-
-                            <p class="text-xs text-gray-500">
+                            <p class="text-[10px] sm:text-xs text-gray-500">
                                 Timesheet Manager
                             </p>
-
                         </div>
                     </a>
                 </div>
 
-                <div class="flex-1 px-4 py-6">
+                <div class="flex-1 px-3 sm:px-4 py-4 sm:py-6 overflow-y-auto">
                     <livewire:layout.navigation />
                 </div>
             </aside>
 
             <!-- Main Area -->
-            <div class="flex-1 flex flex-col">
+            <div class="flex-1 flex flex-col min-h-screen lg:min-h-0">
                 <!-- Header -->
-                <header class="h-20 bg-white border-b border-gray-200 flex items-center justify-between px-6">
-                    <livewire:layout.mobile-menu />
+                <header class="h-16 sm:h-20 bg-white border-b border-gray-200 flex items-center justify-between px-3 sm:px-6 flex-shrink-0">
+                    <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+                        <livewire:layout.mobile-menu />
 
-                    <div class="hidden md:block">
-                        @if(isset($header))
-                            {{ $header }}
-                        @else
-                            <h2 class="text-xl font-semibold">
-                                Tableau de bord
-                            </h2>
-                        @endif
+                        <div class="hidden md:block min-w-0">
+                            @if(isset($header))
+                                <div class="truncate">
+                                    {{ $header }}
+                                </div>
+                            @else
+                                <h2 class="text-base sm:text-xl font-semibold truncate">
+                                    Tableau de bord
+                                </h2>
+                            @endif
+                        </div>
                     </div>
 
                     <!-- Notification et Profil Utilisateur -->
-                    <livewire:layout.notify />
-
+                    <div class="flex-shrink-0">
+                        <livewire:layout.notify />
+                    </div>
                 </header>
 
-
                 <!-- Page Content -->
-                <main class="flex-1">
-                    <div class="w-full p-6 overflow-y-auto h-[calc(100vh-80px)] relative">
+                <main class="flex-1 min-h-0">
+                    <div class="w-full p-3 sm:p-6 overflow-y-auto h-[calc(100vh-64px)] sm:h-[calc(100vh-80px)] relative">
 
                         <!-- Écran de chargement (Overlay) Livewire -->
                         <div wire:loading class="absolute inset-0 bg-gray-900/10 backdrop-blur-[2px] z-50 flex items-center justify-center transition-all">
-                            <div class="bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center border border-gray-100 min-w-[160px]">
+                            <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-xl flex flex-col items-center border border-gray-100 min-w-[120px] sm:min-w-[160px]">
                                 <x-ui.spinner size="lg" class="text-blue-600" />
-                                <p class="mt-3 text-sm font-medium text-gray-600 tracking-wide">
+                                <p class="mt-2 sm:mt-3 text-xs sm:text-sm font-medium text-gray-600 tracking-wide">
                                     Chargement...
                                 </p>
                             </div>
@@ -96,7 +97,6 @@
                     </div>
                 </main>
             </div>
-
         </div>
 
         @livewireScripts

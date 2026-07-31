@@ -1,21 +1,17 @@
 <div class="py-0">
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Tableau de bord
+            Description du projet
         </h2>
     </x-slot>
 
     <x-ui.breadcrumb :items="[
         [
-            'label' => 'Tableau de bord',
-            'url'   => route('dashboard')
-        ],
-        [
             'label' => 'Projets',
             'url'   => route('projects.index')
         ],
         [
-            'label' => 'Tableau de bord'
+            'label' => 'Description du projet'
         ]
     ]" />
 
