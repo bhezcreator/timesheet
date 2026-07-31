@@ -7,12 +7,15 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Auth;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
 class MonthlyReport extends Model implements HasMedia
 {
-    use InteractsWithMedia;
+    use InteractsWithMedia, LogsActivity;
 
     protected $fillable = [
         'user_id',
@@ -32,6 +35,28 @@ class MonthlyReport extends Model implements HasMedia
         'submitted_at' => 'datetime',
         'project_ids' => 'array',
     ];
+
+    /**
+     * Configuration des logs d'activité
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['status', 'objectives', 'achievements', 'next_actions', 'report_date', 'project_ids'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->useLogName('monthly_report')
+            ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
+                'created' => 'Nouveau rapport mensuel créé',
+                'updated' => 'Rapport mensuel modifié',
+                'submitted' => 'Rapport mensuel soumis',
+                'validated' => 'Rapport mensuel validé',
+                'rejected' => 'Rapport mensuel rejeté',
+                'deleted' => 'Rapport mensuel supprimé',
+                'restored' => 'Rapport mensuel restauré',
+                default => "Rapport mensuel {$eventName}",
+            });
+    }
 
     /**
      * Enregistrement de la collection de médias (Fichiers joints)
@@ -127,7 +152,6 @@ class MonthlyReport extends Model implements HasMedia
         );
     }
 
-
     /**
      * Extrait l'ID du projet à partir du champ project_ids
      * Gère les différents formats : string, int, JSON, etc.
@@ -195,5 +219,159 @@ class MonthlyReport extends Model implements HasMedia
         }
 
         return null;
+    }
+
+    /**
+     * Récupère tous les logs d'activité pour ce rapport
+     */
+    public function activityLogs()
+    {
+        return $this->morphMany(\Spatie\Activitylog\Models\Activity::class, 'subject');
+    }
+
+    /**
+     * Récupère le dernier log d'activité
+     */
+    public function latestActivityLog()
+    {
+        return $this->morphOne(\Spatie\Activitylog\Models\Activity::class, 'subject')->latest('created_at');
+    }
+
+    /**
+     * Récupère les logs de changement de statut
+     */
+    public function statusChangeLogs()
+    {
+        return $this->morphMany(\Spatie\Activitylog\Models\Activity::class, 'subject')
+            ->where('event', 'updated')
+            ->whereRaw("JSON_EXTRACT(properties, '$.attributes.status') IS NOT NULL")
+            ->orWhereRaw("JSON_EXTRACT(properties, '$.old.status') IS NOT NULL");
+    }
+
+    /**
+     * Récupère les logs de soumission
+     */
+    public function submissionLogs()
+    {
+        return $this->morphMany(\Spatie\Activitylog\Models\Activity::class, 'subject')
+            ->where('description', 'Rapport mensuel soumis');
+    }
+
+    /**
+     * Récupère les logs de validation
+     */
+    public function validationLogs()
+    {
+        return $this->morphMany(\Spatie\Activitylog\Models\Activity::class, 'subject')
+            ->where('description', 'Rapport mensuel validé')
+            ->orWhere('description', 'Rapport mensuel rejeté');
+    }
+
+    /**
+     * Scope pour les rapports soumis
+     */
+    public function scopeSubmitted($query)
+    {
+        return $query->whereNotNull('submitted_at');
+    }
+
+    /**
+     * Scope pour les rapports non soumis
+     */
+    public function scopeNotSubmitted($query)
+    {
+        return $query->whereNull('submitted_at');
+    }
+
+    /**
+     * Scope pour les rapports par statut
+     */
+    public function scopeByStatus($query, $status)
+    {
+        return $query->where('status', $status);
+    }
+
+    /**
+     * Scope pour les rapports d'un mois spécifique
+     */
+    public function scopeForMonth($query, $month, $year)
+    {
+        return $query->where('month', $month)->where('year', $year);
+    }
+
+    /**
+     * Scope pour les rapports récents
+     */
+    public function scopeRecent($query, $days = 30)
+    {
+        return $query->where('created_at', '>=', now()->subDays($days));
+    }
+
+    /**
+     * Soumettre le rapport avec log personnalisé
+     */
+    public function submit()
+    {
+        $this->submitted_at = now();
+        $this->status = 'submitted';
+        $this->save();
+
+        // Log personnalisé de soumission
+        activity()
+            ->performedOn($this)
+            ->causedBy(Auth::user())
+            ->withProperties([
+                'submitted_at' => now(),
+                'month' => $this->month,
+                'year' => $this->year,
+                'project_ids' => $this->project_ids
+            ])
+            ->log('Rapport mensuel soumis');
+
+        return $this;
+    }
+
+    /**
+     * Valider le rapport avec log personnalisé
+     */
+    public function validateReport($validatorId, $comment = null)
+    {
+        $this->status = 'validated';
+        $this->save();
+
+        // Log personnalisé de validation
+        activity()
+            ->performedOn($this)
+            ->causedBy(Auth::user())
+            ->withProperties([
+                'validator_id' => $validatorId,
+                'comment' => $comment,
+                'validated_at' => now()
+            ])
+            ->log('Rapport mensuel validé');
+
+        return $this;
+    }
+
+    /**
+     * Rejeter le rapport avec log personnalisé
+     */
+    public function rejectReport($validatorId, $reason)
+    {
+        $this->status = 'rejected';
+        $this->save();
+
+        // Log personnalisé de rejet
+        activity()
+            ->performedOn($this)
+            ->causedBy(Auth::user())
+            ->withProperties([
+                'validator_id' => $validatorId,
+                'reason' => $reason,
+                'rejected_at' => now()
+            ])
+            ->log('Rapport mensuel rejeté');
+
+        return $this;
     }
 }

@@ -231,6 +231,15 @@ class CreateUpdate extends Component
                         ->usingFileName($file->getClientOriginalName())
                         ->toMediaCollection('attachments');
                 }
+                // Dans le contrôleur lors de l'ajout de fichiers
+                activity()
+                    ->performedOn($report)
+                    ->causedBy(Auth::user())
+                    ->withProperties([
+                        'file_count' => $report->getMedia('attachments')->count(),
+                        'file_names' => $report->getMedia('attachments')->pluck('file_name')->toArray()
+                    ])
+                    ->log('Fichiers joints ajoutés au rapport');
                 $this->reset('files');
             }
 
