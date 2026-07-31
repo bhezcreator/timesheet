@@ -293,7 +293,6 @@ class User extends Authenticatable
     public function assignRoleWithLog($role)
     {
         $this->assignRole($role);
-
         activity()
             ->performedOn($this)
             ->causedBy(Auth::user())
@@ -313,7 +312,6 @@ class User extends Authenticatable
     public function removeRoleWithLog($role)
     {
         $this->removeRole($role);
-
         activity()
             ->performedOn($this)
             ->causedBy(Auth::user())
@@ -333,7 +331,6 @@ class User extends Authenticatable
     public function addToProject(Project $project, string $role = null)
     {
         $this->projects()->attach($project, ['role' => $role, 'assigned_at' => now()]);
-
         activity()
             ->performedOn($this)
             ->causedBy(Auth::user())
@@ -355,7 +352,6 @@ class User extends Authenticatable
     public function removeFromProject(Project $project)
     {
         $this->projects()->detach($project);
-
         activity()
             ->performedOn($this)
             ->causedBy(Auth::user())
@@ -479,5 +475,171 @@ class User extends Authenticatable
     {
         return $this->subProjects()->where('sub_project_id', $subProject->id)->exists()
             || $this->hasAccessToProject($subProject->project);
+    }
+
+    /**
+     * Fonction score pour tester la colonne settings
+     * Retourne un tableau avec le score et les détails
+     */
+    public function score(): array
+    {
+        $settings = $this->settings;
+
+        // Vérifier si les settings sont vides ou null
+        if (empty($settings)) {
+            return [
+                'score' => 0,
+                'is_empty' => true,
+                'has_notifications' => false,
+                'has_email_notifications' => false,
+                'has_database_notifications' => false,
+                'details' => 'Aucun paramètre configuré',
+                'settings' => $settings,
+            ];
+        }
+
+        // Vérifier si la structure notifications existe
+        $hasNotifications = isset($settings['notifications']) && is_array($settings['notifications']);
+
+        // Vérifier les notifications spécifiques
+        $hasEmailNotifications = $hasNotifications && isset($settings['notifications']['email']);
+        $hasDatabaseNotifications = $hasNotifications && isset($settings['notifications']['database']);
+
+        // Calculer le score (sur 10 points)
+        $score = 0;
+        $details = [];
+
+        if ($hasNotifications) {
+            $score += 3; // 3 points pour avoir une structure notifications
+            $details[] = 'Structure notifications présente';
+
+            if ($hasEmailNotifications) {
+                $score += 3; // 3 points pour avoir email
+                $details[] = 'Notification email configurée';
+
+                if ($settings['notifications']['email'] === true) {
+                    $score += 2; // 2 points supplémentaires si activé
+                    $details[] = 'Notification email activée';
+                }
+            }
+
+            if ($hasDatabaseNotifications) {
+                $score += 3; // 3 points pour avoir database
+                $details[] = 'Notification database configurée';
+
+                if ($settings['notifications']['database'] === true) {
+                    $score += 2; // 2 points supplémentaires si activé
+                    $details[] = 'Notification database activée';
+                }
+            }
+        } else {
+            $details[] = 'Aucune notification configurée';
+        }
+
+        return [
+            'score' => min($score, 10), // Max 10 points
+            'is_empty' => false,
+            'has_notifications' => $hasNotifications,
+            'has_email_notifications' => $hasEmailNotifications,
+            'has_database_notifications' => $hasDatabaseNotifications,
+            'email_enabled' => $hasEmailNotifications ? $settings['notifications']['email'] : false,
+            'database_enabled' => $hasDatabaseNotifications ? $settings['notifications']['database'] : false,
+            'details' => implode(' - ', $details),
+            'settings' => $settings,
+        ];
+    }
+
+    /**
+     * Vérifie si les settings sont vides
+     */
+    public function hasEmptySettings(): bool
+    {
+        return empty($this->settings);
+    }
+
+    /**
+     * Vérifie si les notifications sont configurées
+     */
+    public function hasNotifications(): bool
+    {
+        if (empty($this->settings)) {
+            return false;
+        }
+
+        return isset($this->settings['notifications']) && is_array($this->settings['notifications']);
+    }
+
+    /**
+     * Vérifie si les notifications email sont activées
+     */
+    public function hasEmailNotifications(): bool
+    {
+        if (empty($this->settings)) {
+            return false;
+        }
+
+        return isset($this->settings['notifications']['email'])
+            && $this->settings['notifications']['email'] === true;
+    }
+
+    /**
+     * Vérifie si les notifications database sont activées
+     */
+    public function hasDatabaseNotifications(): bool
+    {
+        if (empty($this->settings)) {
+            return false;
+        }
+
+        return isset($this->settings['notifications']['database'])
+            && $this->settings['notifications']['database'] === true;
+    }
+
+    /**
+     * Récupère le score sous forme de pourcentage
+     */
+    public function scorePercentage(): int
+    {
+        return $this->score()['score'] * 10;
+    }
+
+    /**
+     * Récupère le niveau de configuration
+     */
+    public function getConfigurationLevel(): string
+    {
+        $score = $this->score()['score'];
+
+        if ($score === 0) {
+            return 'Aucune configuration';
+        } elseif ($score <= 3) {
+            return 'Configuration minimale';
+        } elseif ($score <= 6) {
+            return 'Configuration partielle';
+        } elseif ($score <= 8) {
+            return 'Configuration avancée';
+        } else {
+            return 'Configuration complète';
+        }
+    }
+
+    /**
+     * Récupère la couleur associée au niveau de configuration
+     */
+    public function getConfigurationColor(): string
+    {
+        $score = $this->score()['score'];
+
+        if ($score === 0) {
+            return 'danger';
+        } elseif ($score <= 3) {
+            return 'warning';
+        } elseif ($score <= 6) {
+            return 'info';
+        } elseif ($score <= 8) {
+            return 'primary';
+        } else {
+            return 'success';
+        }
     }
 }

@@ -4,15 +4,17 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 class UniversalStatusNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
     public Model $model;
+    public $recipient;
     public string $title;
     public string $messageContent;
     public string $status;
@@ -25,6 +27,7 @@ class UniversalStatusNotification extends Notification implements ShouldQueue
      */
     public function __construct(
         Model $model,
+        $recipient,
         string $title,
         string $messageContent,
         string $status,
@@ -33,6 +36,7 @@ class UniversalStatusNotification extends Notification implements ShouldQueue
         string $icon = 'las la-info-circle text-indigo-500'
     ) {
         $this->model = $model;
+        $this->recipient = $recipient;
         $this->title = $title;
         $this->messageContent = $messageContent;
         $this->status = $status;
@@ -43,7 +47,44 @@ class UniversalStatusNotification extends Notification implements ShouldQueue
 
     public function via($notifiable): array
     {
-        return ['mail', 'database'];
+        $channels = [];
+
+        // Vérifier si l'utilisateur a des settings vides
+        if ($notifiable->hasEmptySettings()) {
+            // Journaliser que les settings sont vides
+            Log::info("Utilisateur {$notifiable->id} - Settings vides, notification envoyée par défaut");
+            return ['mail', 'database'];
+        }
+
+        // Récupérer le score de configuration
+        $score = $notifiable->score();
+
+        // Si le score est faible, on garde tous les canaux
+        if ($score['score'] <= 3) {
+            Log::info("Utilisateur {$notifiable->id} - Score de configuration faible ({$score['score']}/10), notification envoyée par défaut");
+            return ['mail', 'database'];
+        }
+
+        // Vérifier les notifications email
+        if ($notifiable->hasEmailNotifications()) {
+            $channels[] = 'mail';
+        }
+
+        // Vérifier les notifications database
+        if ($notifiable->hasDatabaseNotifications()) {
+            $channels[] = 'database';
+        }
+
+        // Si aucun canal n'est activé, on utilise les canaux par défaut
+        if (empty($channels)) {
+            Log::info("Utilisateur {$notifiable->id} - Aucun canal activé, notification envoyée par défaut");
+            return ['mail', 'database'];
+        }
+
+        // Journaliser les canaux utilisés
+        Log::info("Utilisateur {$notifiable->id} - Notification envoyée via: " . implode(', ', $channels));
+
+        return $channels;
     }
 
     public function toMail($notifiable): MailMessage
