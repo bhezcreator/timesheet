@@ -227,13 +227,15 @@ resources/
 
 ###################################################
 - Composant qui affiche les statistiques téléchageables : Rapport approuvé; Ok
-- Composant pour Afficher notifications/filtres et pagination
+- Composant pour Afficher notifications/filtres et pagination Ok
+
 - Composant Projet
 - application la regle de reception d'email ou pas via la colonne settings['email'] de User
-- Test pour chaque étape
 - Création des Services(Amélioré les codes)
 - Création des Files d'attente
 - Ajout ActivityLogs
+
 - Amélioration des codes(design + sécurité)
+- Test pour chaque étape
 - Création API
 - Création App. Desktop et Mobile

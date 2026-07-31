@@ -4,14 +4,15 @@ use App\Livewire\Activities\CreateUpdate as ActivitiesCreateUpdate;
 use App\Livewire\Activities\Index as ActivitiesIndex;
 use App\Livewire\Activities\TimesheetCalendar as ActivitiesTimesheetCalendar;
 
+use App\Livewire\NotificationsIndex;
 use App\Livewire\Permissions\Index as PermissionIndex;
 use App\Livewire\Projects\AttributesProject;
+
 use App\Livewire\Projects\Index as ProjectsIndex;
 
 use App\Livewire\Projects\Show as ProjectsShow;
 
 use App\Livewire\Projects\SubProjectManager;
-
 use App\Livewire\Rapports\CreateUpdate as RapportsCreateUpdate;
 use App\Livewire\Rapports\PrintReport;
 use App\Livewire\Rapports\RapportIndex as RapportsIndex;
@@ -22,12 +23,13 @@ use App\Livewire\Users\Index as UsersIndex;
 use App\Livewire\Users\SettingsTabs;
 use App\Livewire\Users\Show as UsersShow;
 use App\Livewire\Validates\SupervisedReports;
+
+
 use App\Livewire\Validates\ValidationShow;
-
-
 use App\Models\MonthlyReport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
 
 
 Route::view('/', 'welcome');
@@ -43,6 +45,9 @@ Route::view('profile', 'profile')
 Route::middleware(['auth'])
     ->prefix('admin')
     ->group(function () {
+
+        Route::get('/notifications', NotificationsIndex::class)
+            ->name('notifications.index');
 
         Route::get('/permissions', PermissionIndex::class)
             ->name('permissions.index');

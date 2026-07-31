@@ -47,7 +47,7 @@
                 @forelse($user->notifications->take(5) as $notification)
                     <!-- Remplacement de <a> par un bouton d'action Livewire pour intercepter le clic -->
                     <button wire:click.prevent="readSingle('{{ $notification->id }}')"
-                    class="p-3.5 flex items-start cursor-pointer gap-3 hover:bg-blue-100 transition-colors w-full text-left block {{ $notification->read_at ? 'opacity-60' : 'bg-indigo-50/10' }}">
+                        class="p-3.5 flex items-start cursor-pointer gap-3 hover:bg-blue-100 transition-colors w-full text-left block {{ $notification->read_at ? 'opacity-60' : 'bg-indigo-50/10' }}">
 
                         <div class="p-2 rounded-lg bg-gray-50 border border-gray-100 shadow-sm shrink-0 flex items-center justify-center">
                             <i class="{{ $notification->data['icon'] ?? 'las la-info-circle text-gray-500' }} text-lg"></i>
@@ -74,6 +74,12 @@
                         <span>Aucune notification pour le moment.</span>
                     </div>
                 @endforelse
+            </div>
+
+            <div class="p-3 border-b border-gray-100 font-semibold text-xs text-gray-700 bg-gray-50/80 flex justify-between items-center">
+                <a href="{{ route('notifications.index') }}" class="text-xs text-center text-gray-500 dark:text-gray-400 w-full hover:text-gray-700 dark:hover:text-gray-300">
+                    <i class="las la-eye text-sm text-gray-400"></i> Voir tout
+                </a>
             </div>
         </div>
     </div>

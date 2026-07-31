@@ -7,6 +7,12 @@
 @source '../**/*.blade.php';
 @source '../**/*.js';
 
+@layer utilities {
+    .bg-gray-750 {
+        background-color: #2d3748;
+    }
+}
+
 /* Vos styles personnalisés */
 
 body {
