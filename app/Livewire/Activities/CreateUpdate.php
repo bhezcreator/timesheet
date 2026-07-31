@@ -7,9 +7,10 @@ use App\Models\ActivityType;
 use App\Models\Project;
 use App\Models\SubProject;
 use App\Models\User;
+use App\Rules\SecureString;
 use App\Services\AppSettingsService;
-use App\Services\TimesheetLockService;
 use App\Services\CalendarBusinessService;
+use App\Services\TimesheetLockService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -63,8 +64,15 @@ class CreateUpdate extends Component
 
         // 1. Contrôle de sécurité et de droits d'accès
         if ($this->isEditMode) {
-            $this->checkPermissionOrFail('activites.modifier');
-            $activity = Activity::where('user_id', $this->user_id)->findOrFail($this->activityId);
+            $this->checkPermissionOrFail('activites.modifier', $this->activityId);
+            $activity = Activity::findOrFail($this->activityId);
+
+            // Vérification que l'utilisateur est bien le propriétaire
+            if ($activity->user_id !== $this->user_id) {
+                throw ValidationException::withMessages([
+                    'permission' => ["Vous ne pouvez pas modifier cette activité."]
+                ]);
+            }
 
             // Sécurité : Impossible de modifier une activité soumise pour approbation ou déjà verrouillée
             if ($activity->status !== 'brouillon' && $activity->status !== 'rejeté') {
@@ -93,7 +101,7 @@ class CreateUpdate extends Component
             $this->subProjects = SubProject::query()
                 ->where('project_id', $this->project_id)
                 ->whereHas('users', function ($query) {
-                    $query->where('user_id', $this->user_id);
+                    $query->where('user_id', (int) $this->user_id);
                 })
                 ->orderBy('name')
                 ->get();
@@ -107,7 +115,7 @@ class CreateUpdate extends Component
         $this->projects = Project::query()
             ->where('status', 'active') // Ajusté selon votre énumération précédente ('Actif' avec majuscule)
             ->whereHas('users', function ($query) {
-                $query->where('user_id', $this->user_id); // Sécurité : exclut les anciens projets terminés pour cet utilisateur
+                $query->where('user_id', (int) $this->user_id); // Sécurité : exclut les anciens projets terminés pour cet utilisateur
             })
             ->orderBy('name')
             ->get();
@@ -136,7 +144,7 @@ class CreateUpdate extends Component
             $this->subProjects = SubProject::query()
                 ->where('project_id', $value)
                 ->whereHas('users', function ($query) {
-                    $query->where('user_id', $this->user_id);
+                    $query->where('user_id', (int) $this->user_id);
                 })
                 ->orderBy('name')
                 ->get();
@@ -172,20 +180,41 @@ class CreateUpdate extends Component
         }
     }
 
+    protected function checkPermissionOrFail(string $permission, ?int $resourceId = null): bool
+    {
+        if (!Gate::allows($permission)) {
+            throw ValidationException::withMessages([
+                'permission' => ["Action non autorisée."]
+            ]);
+        }
+
+        // Vérification de propriété pour les modifications
+        if ($resourceId && $this->isEditMode) {
+            $activity = Activity::find($resourceId);
+            if (!$activity || $activity->user_id !== $this->user_id) {
+                throw ValidationException::withMessages([
+                    'permission' => ["Vous ne pouvez pas modifier cette activité."]
+                ]);
+            }
+        }
+
+        return true;
+    }
+
     /**
      * Règles de validation standardisées.
      */
     protected function rules()
     {
         return [
-            'titre' => ['required', 'string', 'max:255', 'regex:/^[a-z0-9\-\._ a-z0-9àâäéèêëîïôöùûüçÂÆÇÈÉÊËÎÏÔŒÙÛÜ]+$/i'],
+            'titre' => ['required', 'string', 'max:255', new SecureString()],
             'project_id' => ['required', 'exists:projects,id'],
             'sub_project_id' => ['nullable', 'exists:sub_projects,id'],
             'activity_type_id' => ['required', 'exists:activity_types,id'],
             'activity_date' => ['required', 'date'],
             'start_time' => ['required', 'date_format:H:i'],
             'end_time' => ['required', 'date_format:H:i', 'after:start_time'],
-            'description' => ['nullable', 'string', 'max:1000', 'regex:/^[a-z0-9\-\._ a-z0-9àâäéèêëîïôöùûü;:!,?çÂÆÇÈÉÊËÎÏÔŒÙÛÜ]+$/i'],
+            'description' => ['nullable', 'string', 'max:1000', new SecureString()],
         ];
     }
 
@@ -329,17 +358,6 @@ class CreateUpdate extends Component
         }
 
         return $this->redirectRoute('activities.index', navigate: true);
-    }
-
-    protected function checkPermissionOrFail(string $permission): bool
-    {
-        if (Gate::allows($permission)) {
-            return true;
-        }
-
-        throw ValidationException::withMessages([
-            'permission' => ["Action non autorisée : Droits d'accès insuffisants."]
-        ]);
     }
 
     public function render()
