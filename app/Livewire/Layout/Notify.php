@@ -51,7 +51,7 @@ class Notify extends Component
 
             // Petite pause pour laisser Livewire se mettre à jour
             // puis rediriger via JavaScript
-            $this->js("setTimeout(() => { window.location.href = '" . ($notification->data['route_url'] ?? '#') . "'; }, 100)");
+            $this->js("setTimeout(() => { window.location.href = '".($notification->data['route_url'] ?? '#')."'; }, 100)");
         }
     }
 

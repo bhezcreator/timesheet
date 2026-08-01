@@ -2,12 +2,12 @@
 
 namespace App\Livewire\Permissions;
 
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Spatie\Permission\Models\Permission;
-use Livewire\Attributes\Layout;
-use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Facades\Gate;
 
 #[Layout('layouts.app')]
 class Index extends Component
@@ -16,14 +16,17 @@ class Index extends Component
 
     // Variables de formulaire sécurisées
     public string $name = '';
+
     public ?int $permissionId = null;
 
     // Gestion Modal
     public bool $showModal = false;
+
     public bool $showDeleteModal = false;
 
     // Variables de suppression
     public ?int $deleteId = null;
+
     public ?string $deleteName = null;
 
     // Filtre de recherche nettoyé
@@ -52,14 +55,14 @@ class Index extends Component
         }
 
         throw ValidationException::withMessages([
-            'permission' => ["Action non autorisée : Privilèges insuffisants."]
+            'permission' => ['Action non autorisée : Privilèges insuffisants.'],
         ]);
     }
 
     public function render()
     {
         // Nettoyage préventif des caractères spéciaux pour éviter les bugs SQL/XSS
-        $searchTerm = '%' . str_replace(['%', '_'], ['\%', '\_'], $this->search) . '%';
+        $searchTerm = '%'.str_replace(['%', '_'], ['\%', '\_'], $this->search).'%';
 
         $permissions = Permission::query()
             ->when($this->search, function ($query) use ($searchTerm) {
@@ -94,15 +97,15 @@ class Index extends Component
 
     public function save()
     {
-        //$this->checkPermissionOrFail("manager-permission");
+        // $this->checkPermissionOrFail("manager-permission");
 
         if ($this->permissionId) {
             $this->validate([
-                'name' => ['required', 'string', 'max:255', 'unique:permissions,name,' . $this->permissionId]
+                'name' => ['required', 'string', 'max:255', 'unique:permissions,name,'.$this->permissionId],
             ]);
 
             Permission::findOrFail($this->permissionId)->update([
-                'name' => trim($this->name)
+                'name' => trim($this->name),
             ]);
 
             session()->flash('success', 'Permission modifiée avec succès.');
@@ -111,7 +114,7 @@ class Index extends Component
 
             Permission::create([
                 'name' => trim($this->name),
-                'guard_name' => 'web'
+                'guard_name' => 'web',
             ]);
 
             session()->flash('success', 'Permission créée avec succès.');

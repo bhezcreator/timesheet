@@ -17,7 +17,6 @@ class Dropdown extends Component
         $this->position = $position;
     }
 
-
     public function render(): View|Closure|string
     {
         return view('components.ui.dropdown');

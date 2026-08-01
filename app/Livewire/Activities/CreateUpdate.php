@@ -14,31 +14,41 @@ use App\Services\TimesheetLockService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
-use Illuminate\Support\Facades\RateLimiter;
 
 #[Layout('layouts.app')]
 class CreateUpdate extends Component
 {
     // Variables d'état
     public ?int $activityId = null;
+
     public bool $isEditMode = false;
 
     // Champs du formulaire liés au modèle
     public string $titre = '';
+
     public ?int $project_id = null;
+
     public ?int $sub_project_id = null;
+
     public ?int $activity_type_id = null;
+
     public string $activity_date = '';
+
     public string $start_time = '';
+
     public string $end_time = '';
+
     public string $description = '';
 
     // Collections pour l'affichage dynamique
     public $projects = [];
+
     public $subProjects = [];
+
     public $activityTypes = [];
 
     // ID User
@@ -46,11 +56,14 @@ class CreateUpdate extends Component
 
     // Calcul de pourcentage d'avancement du projet par rapport à user actuel
     public string $currentProjectName = '';
+
     public float $projectProgressPercentage = 0;
 
     // Calcul les jours de travail
     public string $monthLabel = '';
+
     public int $workingDaysCount = 0;
+
     public int $userLoggedDaysCount = 0; // Contient le nombre de jours déjà saisis par l'agent
 
     /**
@@ -61,7 +74,7 @@ class CreateUpdate extends Component
         $this->user_id = Auth::id();
 
         $this->activityId = $activityId;
-        $this->isEditMode = !is_null($activityId);
+        $this->isEditMode = ! is_null($activityId);
 
         // 1. Contrôle de sécurité et de droits d'accès
         if ($this->isEditMode) {
@@ -71,20 +84,20 @@ class CreateUpdate extends Component
             // Vérification que l'utilisateur est bien le propriétaire
             if ($activity->user_id !== $this->user_id) {
                 throw ValidationException::withMessages([
-                    'permission' => ["Vous ne pouvez pas modifier cette activité."]
+                    'permission' => ['Vous ne pouvez pas modifier cette activité.'],
                 ]);
             }
 
             // Sécurité : Impossible de modifier une activité soumise pour approbation ou déjà verrouillée
             if ($activity->status !== 'brouillon' && $activity->status !== 'rejeté') {
                 throw ValidationException::withMessages([
-                    'activity' => ["Modification interdite : Cette activité a déjà été transmise pour validation."]
+                    'activity' => ['Modification interdite : Cette activité a déjà été transmise pour validation.'],
                 ]);
             }
 
             if ($lockService->isDateLocked($activity->activity_date)) {
                 throw ValidationException::withMessages([
-                    'activity' => ["Action impossible : La période contenant cette activité est clôturée."]
+                    'activity' => ['Action impossible : La période contenant cette activité est clôturée.'],
                 ]);
             }
 
@@ -123,7 +136,7 @@ class CreateUpdate extends Component
         $this->activityTypes = ActivityType::where('is_active', true)->orderBy('name')->get();
 
         // RCamcum les jours de travail
-        $this->calculateMonthlyWorkingDays(app(\App\Services\CalendarBusinessService::class));
+        $this->calculateMonthlyWorkingDays(app(CalendarBusinessService::class));
     }
 
     // Forcer le fuseau horaire
@@ -158,8 +171,8 @@ class CreateUpdate extends Component
 
             // 3. --- CALCUL DU POURCENTAGE DE PROGRESSION DE L'AGENT ---
             // Récupération des services nécessaires à la volée
-            $calendarService = app(\App\Services\CalendarBusinessService::class);
-            $settingsService = app(\App\Services\AppSettingsService::class);
+            $calendarService = app(CalendarBusinessService::class);
+            $settingsService = app(AppSettingsService::class);
 
             // Récupération des heures cibles quotidiennes (ex: 8h par jour)
             $workdayHours = (float) $settingsService->get('time_workday_hours', 8.0);
@@ -189,18 +202,18 @@ class CreateUpdate extends Component
 
     protected function checkPermissionOrFail(string $permission, ?int $resourceId = null): bool
     {
-        if (!Gate::allows($permission)) {
+        if (! Gate::allows($permission)) {
             throw ValidationException::withMessages([
-                'permission' => ["Action non autorisée."]
+                'permission' => ['Action non autorisée.'],
             ]);
         }
 
         // Vérification de propriété pour les modifications
         if ($resourceId && $this->isEditMode) {
             $activity = Activity::find($resourceId);
-            if (!$activity || $activity->user_id !== $this->user_id) {
+            if (! $activity || $activity->user_id !== $this->user_id) {
                 throw ValidationException::withMessages([
-                    'permission' => ["Vous ne pouvez pas modifier cette activité."]
+                    'permission' => ['Vous ne pouvez pas modifier cette activité.'],
                 ]);
             }
         }
@@ -223,22 +236,22 @@ class CreateUpdate extends Component
     {
         return [
             'end_time.after' => "L'heure de fin doit impérativement être postérieure à l'heure de début.",
-            '*.required' => "Le champ :attribute est obligatoire.",
-            '*.date_format' => "Le champ :attribute ne respecte pas le format requis (Heures:Minutes).",
+            '*.required' => 'Le champ :attribute est obligatoire.',
+            '*.date_format' => 'Le champ :attribute ne respecte pas le format requis (Heures:Minutes).',
         ];
     }
 
     protected function rules()
     {
         return [
-            'titre' => ['required', 'string', 'max:255', new SecureString()],
+            'titre' => ['required', 'string', 'max:255', new SecureString],
             'project_id' => ['required', 'exists:projects,id'],
             'sub_project_id' => ['nullable', 'exists:sub_projects,id'],
             'activity_type_id' => ['required', 'exists:activity_types,id'],
             'activity_date' => ['required', 'date'],
             'start_time' => ['required', 'date_format:H:i'],
             'end_time' => ['required', 'date_format:H:i', 'after:start_time'],
-            'description' => ['nullable', 'string', 'max:1000', new SecureString()],
+            'description' => ['nullable', 'string', 'max:1000', new SecureString],
         ];
     }
 
@@ -265,11 +278,11 @@ class CreateUpdate extends Component
     public function save(AppSettingsService $settingsService, TimesheetLockService $lockService, CalendarBusinessService $calendarService)
     {
         // Limitation du nombre de tentatives
-        $key = 'activity_save_' . $this->user_id . '_' . $this->activity_date;
+        $key = 'activity_save_'.$this->user_id.'_'.$this->activity_date;
 
         if (RateLimiter::tooManyAttempts($key, 10)) {
             throw ValidationException::withMessages([
-                'activity' => ["Trop de tentatives. Veuillez attendre 5 minutes."]
+                'activity' => ['Trop de tentatives. Veuillez attendre 5 minutes.'],
             ]);
         }
 
@@ -287,12 +300,12 @@ class CreateUpdate extends Component
 
         if ($this->exceedsWeeklyHoursCeiling($this->activity_date, $calculatedDuration, $maxWeeklyHours, $settingsService)) {
             throw ValidationException::withMessages([
-                'end_time' => ["Limite hebdomadaire atteinte : L'ajout de cette activité ferait dépasser le plafond global autorisé de {$maxWeeklyHours}h pour cette semaine."]
+                'end_time' => ["Limite hebdomadaire atteinte : L'ajout de cette activité ferait dépasser le plafond global autorisé de {$maxWeeklyHours}h pour cette semaine."],
             ]);
         }
 
         // AJOUT 1 : Gestion dynamique de la validation de la description avant le validate()
-        if (!$settingsService->get('timesheet_require_description')) {
+        if (! $settingsService->get('timesheet_require_description')) {
             // Si la description n'est pas requise, on retire sa règle regex pour qu'elle puisse être vide sans planter
             $currentRules = $this->rules();
             $currentRules['description'] = ['nullable', 'string', 'max:1000'];
@@ -301,7 +314,7 @@ class CreateUpdate extends Component
             $this->validate();
             // Validation manuelle de sécurité si le champ ne contient que des espaces
             if (empty(trim($this->description))) {
-                throw ValidationException::withMessages(['description' => ["Une description détaillée est requise par la configuration système."]]);
+                throw ValidationException::withMessages(['description' => ['Une description détaillée est requise par la configuration système.']]);
             }
         }
 
@@ -314,7 +327,7 @@ class CreateUpdate extends Component
             // Si nous avons atteint ou dépassé le jour limite (ex: le 25), on bloque tout
             if ($today->day >= $lockDay) {
                 throw ValidationException::withMessages([
-                    'activity_date' => ["Période clôturée : La saisie pour le mois en cours est verrouillée du {$lockDay} jusqu'à la fin du mois."]
+                    'activity_date' => ["Période clôturée : La saisie pour le mois en cours est verrouillée du {$lockDay} jusqu'à la fin du mois."],
                 ]);
             }
         }
@@ -326,40 +339,40 @@ class CreateUpdate extends Component
             // Cas A : L'activité appartient exactement au mois précédent (M-1) et on a dépassé le jour limite
             if ($carbonDate->format('Y-m') === $today->copy()->subMonth()->format('Y-m') && $today->day > $lockDay) {
                 throw ValidationException::withMessages([
-                    'activity_date' => ["Action impossible : La période du mois précédent est définitivement verrouillée depuis le {$lockDay} de ce mois."]
+                    'activity_date' => ["Action impossible : La période du mois précédent est définitivement verrouillée depuis le {$lockDay} de ce mois."],
                 ]);
             }
 
             // Cas B : L'activité appartient à un mois encore plus ancien (M-2, M-3...) -> Toujours bloqué
             if ($carbonDate->format('Y-m') < $today->copy()->subMonth()->format('Y-m')) {
                 throw ValidationException::withMessages([
-                    'activity_date' => ["Opération refusée : Impossible de modifier des données d'un mois clos historiquement."]
+                    'activity_date' => ["Opération refusée : Impossible de modifier des données d'un mois clos historiquement."],
                 ]);
             }
         }
 
         // 2. Restriction sur Jour verrouillé / Clôture mensuelle (Prioritaire pour économiser le serveur)
         if ($lockService->isDateLocked($carbonDate)) {
-            throw ValidationException::withMessages(['activity_date' => ["Cette journée correspond à une période verrouillée ou close."]]);
+            throw ValidationException::withMessages(['activity_date' => ['Cette journée correspond à une période verrouillée ou close.']]);
         }
 
         // 3. Saisie sur date future
-        if ($carbonDate->isFuture() && !$settingsService->get('timesheet_allow_future_logging')) {
-            throw ValidationException::withMessages(['activity_date' => ["Le système interdit la planification anticipée sur des dates futures."]]);
+        if ($carbonDate->isFuture() && ! $settingsService->get('timesheet_allow_future_logging')) {
+            throw ValidationException::withMessages(['activity_date' => ['Le système interdit la planification anticipée sur des dates futures.']]);
         }
 
         // 4. Saisie le week-end
         $allowWeekend = $settingsService->get('time_allow_weekend_logging');
-        if ($carbonDate->isWeekend() && !$allowWeekend) {
+        if ($carbonDate->isWeekend() && ! $allowWeekend) {
             throw ValidationException::withMessages(['activity_date' => ["La saisie d'activités durant le week-end est désactivée."]]);
         }
 
         // AJOUT 2 : Exécuter la validation des jours ouvrés UNIQUEMENT si ce n'est pas un week-end autorisé
-        if (!$carbonDate->isWeekend()) {
+        if (! $carbonDate->isWeekend()) {
             $validWorkingDates = $calendarService->getWorkingDatesArray($carbonDate->month, $carbonDate->year);
-            if (!in_array($this->activity_date, $validWorkingDates)) {
+            if (! in_array($this->activity_date, $validWorkingDates)) {
                 throw ValidationException::withMessages([
-                    'activity_date' => ["Erreur de calendrier : La date sélectionnée est invalide pour cette période."]
+                    'activity_date' => ['Erreur de calendrier : La date sélectionnée est invalide pour cette période.'],
                 ]);
             }
         }
@@ -373,14 +386,14 @@ class CreateUpdate extends Component
         // 6. VÉRIFICATION DU PLAFOND QUOTIDIEN GLOBAL (Cumul de toutes les activités de la journée)
         if ($this->exceedsDailyHoursCeiling($this->activity_date, $calculatedDuration, $maxHoursAllowed)) {
             throw ValidationException::withMessages([
-                'end_time' => ["Limite atteinte : Le cumul des heures pour cette journée dépasse le plafond maximal global autorisé de {$maxHoursAllowed}h par jour."]
+                'end_time' => ["Limite atteinte : Le cumul des heures pour cette journée dépasse le plafond maximal global autorisé de {$maxHoursAllowed}h par jour."],
             ]);
         }
 
         // 7. VÉRIFICATION DU CHEVAUCHEMENT HORAIRE (Requête SQL en dernier pour optimiser les performances)
         if ($this->hasTimeOverlap($this->activity_date, $this->start_time, $this->end_time)) {
             throw ValidationException::withMessages([
-                'start_time' => ["Conflit d'horaire : Vous avez déjà une activité enregistrée qui chevauche la tranche " . $this->start_time . " - " . $this->end_time . " pour cette journée."]
+                'start_time' => ["Conflit d'horaire : Vous avez déjà une activité enregistrée qui chevauche la tranche ".$this->start_time.' - '.$this->end_time.' pour cette journée.'],
             ]);
         }
 
@@ -424,8 +437,8 @@ class CreateUpdate extends Component
     {
         // Vérifier que les temps sont bien formatés
         if (
-            !preg_match('/^([01]\d|2[0-3]):([0-5]\d)$/', $startTime) ||
-            !preg_match('/^([01]\d|2[0-3]):([0-5]\d)$/', $endTime)
+            ! preg_match('/^([01]\d|2[0-3]):([0-5]\d)$/', $startTime) ||
+            ! preg_match('/^([01]\d|2[0-3]):([0-5]\d)$/', $endTime)
         ) {
             return true; // Format invalide = bloquer
         }
@@ -469,7 +482,7 @@ class CreateUpdate extends Component
      */
     protected function exceedsWeeklyHoursCeiling(string $date, float $newDuration, float $maxWeeklyHours, AppSettingsService $settingsService): bool
     {
-        $carbonDate = \Carbon\Carbon::parse($date)->startOfDay();
+        $carbonDate = Carbon::parse($date)->startOfDay();
 
         // Récupération du réglage : 0 = Dimanche, 1 = Lundi
         $firstDaySetting = (int) $settingsService->get('time_first_day_of_week', 1);
@@ -477,7 +490,7 @@ class CreateUpdate extends Component
         if ($firstDaySetting === 0) {
             // Si la semaine commence le DIMANCHE :
             // Si aujourd'hui est un dimanche, le début est aujourd'hui, sinon on recule au dimanche précédent
-            $startOfWeek = $carbonDate->dayOfWeek === \Carbon\Carbon::SUNDAY
+            $startOfWeek = $carbonDate->dayOfWeek === Carbon::SUNDAY
                 ? $carbonDate->copy()
                 : $carbonDate->copy()->modify('last sunday');
 
@@ -506,17 +519,17 @@ class CreateUpdate extends Component
     public function calculateMonthlyWorkingDays(CalendarBusinessService $calendarService)
     {
         // 1. Récupération de la date cible (date de l'activité ou date du jour par défaut)
-        $targetDate = \Carbon\Carbon::parse($this->activity_date ?: now());
+        $targetDate = Carbon::parse($this->activity_date ?: now());
 
         // 2. Récupération du libellé du mois en français (ex: "Juillet") et de l'année
         $dateDetails = $calendarService->getMonthAndYearInFrench($targetDate);
-        $this->monthLabel = $dateDetails['mois'] . ' ' . $dateDetails['annee'];
+        $this->monthLabel = $dateDetails['mois'].' '.$dateDetails['annee'];
 
         // 3. Calcul du nombre de jours ouvrés théoriques du mois (hors week-ends)
         $this->workingDaysCount = $calendarService->getWorkingDaysCount($targetDate->month, $targetDate->year);
 
         // 4. Calcul du nombre de jours uniques où l'utilisateur connecté a déjà enregistré des activités ce mois-ci
-        $this->userLoggedDaysCount = \App\Models\Activity::query()
+        $this->userLoggedDaysCount = Activity::query()
             ->where('user_id', $this->user_id)
             ->whereMonth('activity_date', $targetDate->month)
             ->whereYear('activity_date', $targetDate->year)

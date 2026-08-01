@@ -3,12 +3,12 @@
 namespace App\Livewire\Validates;
 
 use App\Models\MonthlyReport;
+use App\Models\Project;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Models\Project;
-use App\Models\User;
 
 #[Layout('layouts.app')]
 class SupervisedReports extends Component
@@ -16,8 +16,11 @@ class SupervisedReports extends Component
     use WithPagination;
 
     public $month = '';
+
     public $year = '';
+
     public $selected_user_id = '';
+
     public $selected_project_id = 'all';
 
     public function updatedMonth()
@@ -55,7 +58,7 @@ class SupervisedReports extends Component
                 'user',
                 'activities',
                 'media',
-                'validation'
+                'validation',
             ])
             ->whereHas('user', function ($query) use ($supervisor) {
                 $query->where('supervisor_id', $supervisor->id);
@@ -81,7 +84,7 @@ class SupervisedReports extends Component
 
         if ($this->selected_project_id != 'all') {
             $reports->where(function ($query) {
-                $query->whereJsonContains('project_ids', (int)$this->selected_project_id)
+                $query->whereJsonContains('project_ids', (int) $this->selected_project_id)
                     ->orWhereHas('activities', function ($activity) {
                         $activity->where('project_id', $this->selected_project_id);
                     });

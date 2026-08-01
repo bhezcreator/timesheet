@@ -14,12 +14,19 @@ class UniversalStatusNotification extends Notification implements ShouldQueue
     use Queueable;
 
     public Model $model;
+
     public $recipient;
+
     public string $title;
+
     public string $messageContent;
+
     public string $status;
+
     public ?string $comment;
+
     public string $routeUrl;
+
     public string $icon;
 
     /**
@@ -53,6 +60,7 @@ class UniversalStatusNotification extends Notification implements ShouldQueue
         if ($notifiable->hasEmptySettings()) {
             // Journaliser que les settings sont vides
             Log::info("Utilisateur {$notifiable->id} - Settings vides, notification envoyée par défaut");
+
             return ['mail', 'database'];
         }
 
@@ -62,6 +70,7 @@ class UniversalStatusNotification extends Notification implements ShouldQueue
         // Si le score est faible, on garde tous les canaux
         if ($score['score'] <= 3) {
             Log::info("Utilisateur {$notifiable->id} - Score de configuration faible ({$score['score']}/10), notification envoyée par défaut");
+
             return ['mail', 'database'];
         }
 
@@ -78,11 +87,12 @@ class UniversalStatusNotification extends Notification implements ShouldQueue
         // Si aucun canal n'est activé, on utilise les canaux par défaut
         if (empty($channels)) {
             Log::info("Utilisateur {$notifiable->id} - Aucun canal activé, notification envoyée par défaut");
+
             return ['mail', 'database'];
         }
 
         // Journaliser les canaux utilisés
-        Log::info("Utilisateur {$notifiable->id} - Notification envoyée via: " . implode(', ', $channels));
+        Log::info("Utilisateur {$notifiable->id} - Notification envoyée via: ".implode(', ', $channels));
 
         return $channels;
     }
@@ -90,7 +100,7 @@ class UniversalStatusNotification extends Notification implements ShouldQueue
     public function toMail($notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject("🔔 " . $this->title)
+            ->subject('🔔 '.$this->title)
             ->view('emails.universal-status', [
                 'title' => $this->title,
                 'notifiableName' => $notifiable->name,
@@ -104,14 +114,14 @@ class UniversalStatusNotification extends Notification implements ShouldQueue
     public function toArray($notifiable): array
     {
         return [
-            'model_id'   => $this->model->id,
+            'model_id' => $this->model->id,
             'model_type' => get_class($this->model),
-            'title'      => $this->title,
-            'message'    => $this->messageContent,
-            'status'     => $this->status,
-            'comment'    => $this->comment,
-            'route_url'  => $this->routeUrl,
-            'icon'       => $this->icon,
+            'title' => $this->title,
+            'message' => $this->messageContent,
+            'status' => $this->status,
+            'comment' => $this->comment,
+            'route_url' => $this->routeUrl,
+            'icon' => $this->icon,
         ];
     }
 }

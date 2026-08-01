@@ -22,7 +22,7 @@ class OnlineUsersService
         return Cache::remember(
             'online_users_count',
             now()->addMinutes($this->cacheDuration),
-            fn() => $this->countActiveSessions()
+            fn () => $this->countActiveSessions()
         );
     }
 
@@ -46,8 +46,9 @@ class OnlineUsersService
             return $query->count();
         } catch (\Exception $e) {
             Log::error('Erreur lors du comptage des sessions actives', [
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return 0;
         }
     }

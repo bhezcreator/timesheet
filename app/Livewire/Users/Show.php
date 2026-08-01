@@ -10,6 +10,7 @@ use Livewire\Component;
 class Show extends Component
 {
     public int $userId;
+
     public User $user;
 
     public function mount(int $userId)
@@ -22,7 +23,7 @@ class Show extends Component
             'subordinates',
             'projects',
             'subProjects',
-            'monthlyReports'
+            'monthlyReports',
         ])->findOrFail($userId);
     }
 

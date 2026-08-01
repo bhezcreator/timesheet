@@ -14,17 +14,23 @@ class BlockedDayIndex extends Component
 
     // Variables de formulaire sécurisées
     public string $date = '';
+
     public string $name = '';
+
     public string $type = 'Jour férié';
+
     public bool $is_active = true;
+
     public ?int $blockedDayId = null;
 
     // Gestion Modal
     public bool $showModal = false;
+
     public bool $showDeleteModal = false;
 
     // Variables de suppression
     public ?int $deleteId = null;
+
     public ?string $deleteName = null;
 
     // Filtre de recherche nettoyé
@@ -42,16 +48,16 @@ class BlockedDayIndex extends Component
     protected function rules()
     {
         return [
-            'date' => ['required', 'date', 'unique:blocked_days,date,' . $this->blockedDayId],
+            'date' => ['required', 'date', 'unique:blocked_days,date,'.$this->blockedDayId],
             'name' => [
                 'required',
                 'string',
                 'max:255',
-                "regex:/^[a-z0-9\-\._ a-z0-9àâäéèêëîïôöùûüç'&(),;.ÂÆÇÈÉÊËÎÏÔŒÙÛÜ]+$/i"
+                "regex:/^[a-z0-9\-\._ a-z0-9àâäéèêëîïôöùûüç'&(),;.ÂÆÇÈÉÊËÎÏÔŒÙÛÜ]+$/i",
             ],
             'type' => [
                 'required',
-                'in:Jour férié,Fête religieuse,Congé entreprise,Pont entreprise,Jour chômé,Événement interne,Urgence / Force majeure,Maintenance,Autre'
+                'in:Jour férié,Fête religieuse,Congé entreprise,Pont entreprise,Jour chômé,Événement interne,Urgence / Force majeure,Maintenance,Autre',
             ],
             'is_active' => ['required', 'boolean'],
         ];
@@ -67,14 +73,14 @@ class BlockedDayIndex extends Component
         }
 
         throw ValidationException::withMessages([
-            'permission' => ["Action non autorisée : Privilèges insuffisants pour exécuter cette opération."]
+            'permission' => ['Action non autorisée : Privilèges insuffisants pour exécuter cette opération.'],
         ]);
     }
 
     public function render()
     {
         // Nettoyage préventif des caractères spéciaux pour éviter les bugs SQL/XSS
-        $searchTerm = '%' . str_replace(['%', '_'], ['\%', '\_'], $this->search) . '%';
+        $searchTerm = '%'.str_replace(['%', '_'], ['\%', '\_'], $this->search).'%';
 
         $blockedDays = BlockedDay::query()
             ->when($this->search, function ($query) use ($searchTerm) {
@@ -96,7 +102,7 @@ class BlockedDayIndex extends Component
             'Événement interne',
             'Urgence / Force majeure',
             'Maintenance',
-            'Autre'
+            'Autre',
         ];
 
         return view('livewire.users.blocked-day-index', [
@@ -107,7 +113,7 @@ class BlockedDayIndex extends Component
 
     public function openModal()
     {
-        $this->checkPermissionOrFail("jour_bloque.creer");
+        $this->checkPermissionOrFail('jour_bloque.creer');
         $this->resetForm();
         $this->showModal = true;
         $this->showDeleteModal = false;
@@ -115,14 +121,14 @@ class BlockedDayIndex extends Component
 
     public function edit($id)
     {
-        $this->checkPermissionOrFail("jour_bloque.modifier");
+        $this->checkPermissionOrFail('jour_bloque.modifier');
 
         $blockedDay = BlockedDay::findOrFail($id);
         $this->blockedDayId = $blockedDay->id;
         $this->date = $blockedDay->date ? $blockedDay->date->format('Y-m-d') : '';
         $this->name = $blockedDay->name;
         $this->type = $blockedDay->type;
-        $this->is_active = (bool)$blockedDay->is_active;
+        $this->is_active = (bool) $blockedDay->is_active;
         $this->showModal = true;
         $this->showDeleteModal = false;
     }
@@ -132,7 +138,7 @@ class BlockedDayIndex extends Component
         $this->validate();
 
         if ($this->blockedDayId) {
-            $this->checkPermissionOrFail("jour_bloque.modifier");
+            $this->checkPermissionOrFail('jour_bloque.modifier');
 
             $blockedDay = BlockedDay::findOrFail($this->blockedDayId);
             $blockedDay->update([
@@ -144,7 +150,7 @@ class BlockedDayIndex extends Component
 
             session()->flash('success', 'Jour bloqué modifié avec succès.');
         } else {
-            $this->checkPermissionOrFail("jour_bloque.creer");
+            $this->checkPermissionOrFail('jour_bloque.creer');
 
             BlockedDay::create([
                 'date' => $this->date,
@@ -161,18 +167,18 @@ class BlockedDayIndex extends Component
 
     public function confirmDelete(int $id)
     {
-        $this->checkPermissionOrFail("jour_bloque.supprimer");
+        $this->checkPermissionOrFail('jour_bloque.supprimer');
 
         $blockedDay = BlockedDay::findOrFail($id);
         $this->deleteId = $blockedDay->id;
-        $this->deleteName = $blockedDay->name . ' (' . ($blockedDay->date ? $blockedDay->date->format('d/m/Y') : '') . ')';
+        $this->deleteName = $blockedDay->name.' ('.($blockedDay->date ? $blockedDay->date->format('d/m/Y') : '').')';
         $this->showDeleteModal = true;
         $this->showModal = false;
     }
 
     public function delete()
     {
-        $this->checkPermissionOrFail("jour_bloque.supprimer");
+        $this->checkPermissionOrFail('jour_bloque.supprimer');
 
         if ($this->deleteId) {
             $blockedDay = BlockedDay::findOrFail($this->deleteId);

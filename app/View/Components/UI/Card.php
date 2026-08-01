@@ -10,14 +10,12 @@ class Card extends Component
 {
     public string $padding;
 
-
     public function __construct(
         string $padding = 'md'
     ) {
 
         $this->padding = $padding;
     }
-
 
     public function render(): View|Closure|string
     {

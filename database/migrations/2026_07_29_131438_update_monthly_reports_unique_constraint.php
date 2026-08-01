@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -56,7 +56,7 @@ return new class extends Migration
             $indexes = Schema::getIndexes('monthly_reports');
             $indexExists = collect($indexes)->contains('name', 'monthly_reports_user_id_month_year_unique');
 
-            if (!$indexExists) {
+            if (! $indexExists) {
                 $table->unique(['user_id', 'month', 'year'], 'monthly_reports_user_id_month_year_unique');
             }
         });

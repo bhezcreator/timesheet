@@ -19,7 +19,7 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, HasRoles, LogsActivity;
+    use HasFactory, HasRoles, LogsActivity, Notifiable;
 
     /**
      * Get the attributes that should be cast.
@@ -46,7 +46,7 @@ class User extends Authenticatable
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
             ->useLogName('user')
-            ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
+            ->setDescriptionForEvent(fn (string $eventName) => match ($eventName) {
                 'created' => "Utilisateur '{$this->full_name}' créé",
                 'updated' => "Utilisateur '{$this->full_name}' modifié",
                 'deleted' => "Utilisateur '{$this->full_name}' supprimé",
@@ -92,7 +92,7 @@ class User extends Authenticatable
             ->withPivot([
                 'role',
                 'assigned_at',
-                'ended_at'
+                'ended_at',
             ])
             ->withTimestamps();
     }
@@ -222,7 +222,7 @@ class User extends Authenticatable
     /**
      * Activer l'utilisateur avec log
      */
-    public function activate(string $reason = null)
+    public function activate(?string $reason = null)
     {
         $this->is_active = true;
         $this->save();
@@ -233,7 +233,7 @@ class User extends Authenticatable
             ->withProperties([
                 'action' => 'activate',
                 'reason' => $reason,
-                'activated_at' => now()
+                'activated_at' => now(),
             ])
             ->log("Utilisateur '{$this->full_name}' activé");
 
@@ -243,7 +243,7 @@ class User extends Authenticatable
     /**
      * Désactiver l'utilisateur avec log
      */
-    public function deactivate(string $reason = null)
+    public function deactivate(?string $reason = null)
     {
         $this->is_active = false;
         $this->save();
@@ -254,7 +254,7 @@ class User extends Authenticatable
             ->withProperties([
                 'action' => 'deactivate',
                 'reason' => $reason,
-                'deactivated_at' => now()
+                'deactivated_at' => now(),
             ])
             ->log("Utilisateur '{$this->full_name}' désactivé");
 
@@ -264,7 +264,7 @@ class User extends Authenticatable
     /**
      * Changer le superviseur avec log
      */
-    public function changeSupervisor(?User $newSupervisor, string $reason = null)
+    public function changeSupervisor(?User $newSupervisor, ?string $reason = null)
     {
         $oldSupervisorId = $this->supervisor_id;
         $oldSupervisorName = $this->supervisor?->full_name;
@@ -280,7 +280,7 @@ class User extends Authenticatable
                 'new_supervisor_id' => $newSupervisor?->id,
                 'new_supervisor_name' => $newSupervisor?->full_name,
                 'reason' => $reason,
-                'changed_at' => now()
+                'changed_at' => now(),
             ])
             ->log("Superviseur de '{$this->full_name}' changé de '{$oldSupervisorName}' à '{$newSupervisor?->full_name}'");
 
@@ -299,7 +299,7 @@ class User extends Authenticatable
             ->withProperties([
                 'action' => 'assign_role',
                 'role' => is_string($role) ? $role : $role->name,
-                'assigned_at' => now()
+                'assigned_at' => now(),
             ])
             ->log("Rôle '{$role}' assigné à '{$this->full_name}'");
 
@@ -318,7 +318,7 @@ class User extends Authenticatable
             ->withProperties([
                 'action' => 'remove_role',
                 'role' => is_string($role) ? $role : $role->name,
-                'removed_at' => now()
+                'removed_at' => now(),
             ])
             ->log("Rôle '{$role}' retiré de '{$this->full_name}'");
 
@@ -328,7 +328,7 @@ class User extends Authenticatable
     /**
      * Ajouter un utilisateur à un projet avec log
      */
-    public function addToProject(Project $project, string $role = null)
+    public function addToProject(Project $project, ?string $role = null)
     {
         $this->projects()->attach($project, ['role' => $role, 'assigned_at' => now()]);
         activity()
@@ -339,7 +339,7 @@ class User extends Authenticatable
                 'project_id' => $project->id,
                 'project_name' => $project->name,
                 'role' => $role,
-                'assigned_at' => now()
+                'assigned_at' => now(),
             ])
             ->log("Utilisateur '{$this->full_name}' assigné au projet '{$project->name}'");
 
@@ -359,7 +359,7 @@ class User extends Authenticatable
                 'action' => 'remove_from_project',
                 'project_id' => $project->id,
                 'project_name' => $project->name,
-                'removed_at' => now()
+                'removed_at' => now(),
             ])
             ->log("Utilisateur '{$this->full_name}' retiré du projet '{$project->name}'");
 
@@ -369,7 +369,7 @@ class User extends Authenticatable
     /**
      * Mettre à jour les paramètres utilisateur avec log
      */
-    public function updateSettings(array $newSettings, string $reason = null)
+    public function updateSettings(array $newSettings, ?string $reason = null)
     {
         $oldSettings = $this->settings;
         $this->settings = array_merge($this->settings ?? [], $newSettings);
@@ -383,7 +383,7 @@ class User extends Authenticatable
                 'old_settings' => $oldSettings,
                 'new_settings' => $this->settings,
                 'reason' => $reason,
-                'changed_at' => now()
+                'changed_at' => now(),
             ])
             ->log("Paramètres de '{$this->full_name}' mis à jour");
 
@@ -400,7 +400,7 @@ class User extends Authenticatable
         $name = $this->name ?? '';
 
         if ($firstName && $lastName) {
-            return trim($firstName . ' ' . $lastName);
+            return trim($firstName.' '.$lastName);
         }
 
         if ($firstName) {
@@ -423,7 +423,7 @@ class User extends Authenticatable
         $lastName = $this->last_name ?? '';
 
         if ($firstName && $lastName) {
-            return trim($lastName . ' ' . $firstName);
+            return trim($lastName.' '.$firstName);
         }
 
         return $this->full_name;
@@ -438,7 +438,7 @@ class User extends Authenticatable
         $lastName = $this->last_name ?? '';
 
         if ($firstName && $lastName) {
-            return strtoupper($firstName[0] . $lastName[0]);
+            return strtoupper($firstName[0].$lastName[0]);
         }
 
         if ($firstName) {

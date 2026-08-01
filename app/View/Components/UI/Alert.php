@@ -8,11 +8,9 @@ use Illuminate\View\Component;
 
 class Alert extends Component
 {
-
     public string $type;
 
     public bool $dismissible;
-
 
     public function __construct(
         string $type = 'info',
@@ -22,7 +20,6 @@ class Alert extends Component
         $this->type = $type;
         $this->dismissible = $dismissible;
     }
-
 
     public function render(): View|Closure|string
     {

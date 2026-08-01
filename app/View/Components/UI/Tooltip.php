@@ -8,11 +8,9 @@ use Illuminate\View\Component;
 
 class Tooltip extends Component
 {
-
     public string $text;
 
     public string $position;
-
 
     public function __construct(
         string $text,
@@ -22,7 +20,6 @@ class Tooltip extends Component
         $this->text = $text;
         $this->position = $position;
     }
-
 
     public function render(): View|Closure|string
     {

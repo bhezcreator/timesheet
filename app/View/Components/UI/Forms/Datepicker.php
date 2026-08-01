@@ -8,7 +8,6 @@ use Illuminate\View\Component;
 
 class Datepicker extends Component
 {
-
     public function __construct(
 
         public ?string $name = null,
@@ -28,7 +27,6 @@ class Datepicker extends Component
         public ?string $helper = null,
 
     ) {}
-
 
     public function render(): View|Closure|string
     {

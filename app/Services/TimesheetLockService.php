@@ -18,9 +18,6 @@ class TimesheetLockService
 
     /**
      * Vérifie si une date spécifique est verrouillée pour la saisie des feuilles de temps.
-     *
-     * @param string|Carbon $date
-     * @return bool
      */
     public function isDateLocked(string|Carbon $date): bool
     {
@@ -59,7 +56,7 @@ class TimesheetLockService
         // Si la date appartient exactement au mois précédent (M-1) :
         // On récupère le jour limite défini dans vos configurations générales (par défaut : 5)
         $lockDaySetting = Setting::where('key', 'timesheet_lock_day_of_month')->value('value');
-        $lockDay = $lockDaySetting ? (int)$lockDaySetting : 5;
+        $lockDay = $lockDaySetting ? (int) $lockDaySetting : 5;
 
         // Si nous avons dépassé ce jour critique du mois actuel, le mois précédent est verrouillé
         if ($today->day > $lockDay) {

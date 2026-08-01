@@ -6,17 +6,13 @@ use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
 
-
 class ModalOne extends Component
 {
-
     public function __construct(
         public string $id,
         public string $title = '',
         public string $size = 'md'
     ) {}
-
-
 
     public function sizeClass()
     {
@@ -34,8 +30,6 @@ class ModalOne extends Component
             default => 'max-w-lg'
         };
     }
-
-
 
     public function render(): View|Closure|string
     {

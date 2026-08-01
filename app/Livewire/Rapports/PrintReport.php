@@ -2,17 +2,18 @@
 
 namespace App\Livewire\Rapports;
 
-use App\Models\MonthlyReport;
 use App\Models\Activity;
-use Livewire\Component;
-use Illuminate\Support\Facades\Auth;
+use App\Models\MonthlyReport;
 use Livewire\Attributes\Layout;
+use Livewire\Component;
 
 #[Layout('layouts.print')]
 class PrintReport extends Component
 {
     public $reportId;
+
     public $report;
+
     public $isMultiProject = false;
 
     public function mount($reportId)
@@ -37,7 +38,7 @@ class PrintReport extends Component
             ->whereMonth('activity_date', $this->report->month);
 
         // Si le rapport cible un projet unique, on applique le filtre strict
-        if (!$this->isMultiProject) {
+        if (! $this->isMultiProject) {
             $query->where('project_id', $this->report->project_ids);
         }
 
@@ -63,15 +64,15 @@ class PrintReport extends Component
                 $dayStr = $activity->activity_date->format('Y-m-d');
                 $pId = $activity->project_id;
 
-                if (!isset($matrix[$dayStr])) {
+                if (! isset($matrix[$dayStr])) {
                     $matrix[$dayStr] = [
                         'date_formatted' => $activity->activity_date->translatedFormat('d F Y'),
                         'projects' => [],
-                        'total_day' => 0
+                        'total_day' => 0,
                     ];
                 }
 
-                if (!isset($matrix[$dayStr]['projects'][$pId])) {
+                if (! isset($matrix[$dayStr]['projects'][$pId])) {
                     $matrix[$dayStr]['projects'][$pId] = 0;
                 }
 
@@ -84,7 +85,7 @@ class PrintReport extends Component
             'activities' => $activities,
             'matrix' => $matrix,
             'projectsList' => $projectsList,
-            'totalReportHours' => $activities->sum('duration')
+            'totalReportHours' => $activities->sum('duration'),
         ]); // Optionnel : utilise un layout épuré dédié à l'impression
     }
 }

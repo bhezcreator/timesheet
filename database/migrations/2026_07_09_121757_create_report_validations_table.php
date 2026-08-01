@@ -25,7 +25,7 @@ return new class extends Migration
 
             $table->enum('decision', [
                 'approuvé',
-                'rejeté'
+                'rejeté',
             ]);
 
             $table->text('comment')->nullable();

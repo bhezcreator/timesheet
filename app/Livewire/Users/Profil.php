@@ -18,15 +18,23 @@ class Profil extends Component
 
     // Champs du formulaire
     public string $num_order = '';
+
     public string $name = '';
+
     public string $first_name = '';
+
     public string $last_name = '';
+
     public string $job_title = '';
+
     public string $email = '';
+
     public string $password = '';
+
     public string $password_confirmation = '';
 
     public bool $notification_database = true;
+
     public bool $notification_email = false;
 
     // Fichier temporaire pour la photo
@@ -52,14 +60,14 @@ class Profil extends Component
     protected function rules(): array
     {
         return [
-            'num_order'  => ['nullable', 'string', 'max:50'],
-            'name'       => ['required', 'string', 'max:255'],
+            'num_order' => ['nullable', 'string', 'max:50'],
+            'name' => ['required', 'string', 'max:255'],
             'first_name' => ['required', 'string', 'max:255'],
-            'last_name'  => ['nullable', 'string', 'max:255'],
-            'job_title'  => ['nullable', 'string', 'max:255'],
-            'email'      => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($this->user->id)],
-            'password'   => ['nullable', 'string', 'min:8', 'confirmed'],
-            'photo'      => ['nullable', 'image', 'max:2048'], // Max 2MB
+            'last_name' => ['nullable', 'string', 'max:255'],
+            'job_title' => ['nullable', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($this->user->id)],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'photo' => ['nullable', 'image', 'max:2048'], // Max 2MB
         ];
     }
 
@@ -68,18 +76,18 @@ class Profil extends Component
         $this->validate();
 
         $data = [
-            'num_order'  => trim($this->num_order) ?: null,
-            'name'       => trim($this->name),
+            'num_order' => trim($this->num_order) ?: null,
+            'name' => trim($this->name),
             'first_name' => trim($this->first_name),
-            'last_name'  => trim($this->last_name) ?: null,
-            'job_title'  => trim($this->job_title) ?: null,
-            'email'      => trim($this->email),
+            'last_name' => trim($this->last_name) ?: null,
+            'job_title' => trim($this->job_title) ?: null,
+            'email' => trim($this->email),
             'settings' => [
                 'notifications' => [
                     'database' => $this->notification_database ?: false,
                     'email' => $this->notification_email ?: false,
-                ]
-            ]
+                ],
+            ],
         ];
 
         // Traitement de la photo si un nouveau fichier est chargé
@@ -89,7 +97,7 @@ class Profil extends Component
         }
 
         // Mise à jour du mot de passe uniquement s'il est renseigné
-        if (!empty($this->password)) {
+        if (! empty($this->password)) {
             $data['password'] = Hash::make($this->password);
         }
 

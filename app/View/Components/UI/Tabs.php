@@ -8,12 +8,9 @@ use Illuminate\View\Component;
 
 class Tabs extends Component
 {
-
     public array $tabs;
 
-
     public string $active;
-
 
     public function __construct(
         array $tabs = [],
@@ -24,7 +21,6 @@ class Tabs extends Component
 
         $this->active = $active ?: ($tabs[0]['key'] ?? '');
     }
-
 
     public function render(): View|Closure|string
     {

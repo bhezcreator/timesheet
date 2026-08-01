@@ -8,7 +8,6 @@ use Illuminate\View\Component;
 
 class Timepicker extends Component
 {
-
     public function __construct(
 
         public ?string $name = null,
@@ -28,7 +27,6 @@ class Timepicker extends Component
         public ?string $helper = null,
 
     ) {}
-
 
     public function render(): View|Closure|string
     {

@@ -14,6 +14,7 @@ class CalendarBusinessService
     public function getDayNameInFrench(string|Carbon $date): string
     {
         $carbonDate = $date instanceof Carbon ? $date : Carbon::parse($date);
+
         return strtolower($carbonDate->locale('fr')->dayName);
     }
 
@@ -24,9 +25,10 @@ class CalendarBusinessService
     public function getMonthAndYearInFrench(string|Carbon $date): array
     {
         $carbonDate = $date instanceof Carbon ? $date : Carbon::parse($date);
+
         return [
-            'mois'  => ucfirst($carbonDate->locale('fr')->monthName),
-            'annee' => $carbonDate->year
+            'mois' => ucfirst($carbonDate->locale('fr')->monthName),
+            'annee' => $carbonDate->year,
         ];
     }
 
@@ -47,7 +49,7 @@ class CalendarBusinessService
             'Septembre' => '09',
             'Octobre' => '10',
             'Novembre' => '11',
-            'Décembre' => '12'
+            'Décembre' => '12',
         ];
 
         return $months[ucfirst(trim($monthName))] ?? '01';
@@ -66,12 +68,13 @@ class CalendarBusinessService
 
         // On utilise l'assistant de filtrage de Carbon pour exclure le week-end d'un seul coup
         return (int) $startOfMonth->diffInDaysFiltered(function (Carbon $date) {
-            return !$date->isWeekend();
+            return ! $date->isWeekend();
         }, $endOfMonth) + 1; // +1 pour inclure le jour de fin inclusif
     }
 
     /**
      * Renvoie la liste brute de toutes les dates (Y-m-d) ouvrées d'un mois (hors week-ends).
+     *
      * @return array<string>
      */
     public function getWorkingDatesArray(string|int $month, int $year): array
@@ -86,7 +89,7 @@ class CalendarBusinessService
         $workingDates = [];
 
         foreach ($period as $date) {
-            if (!$date->isWeekend()) {
+            if (! $date->isWeekend()) {
                 $workingDates[] = $date->format('Y-m-d');
             }
         }

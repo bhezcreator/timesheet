@@ -15,7 +15,7 @@ class SubProject extends Model
         'project_id',
         'name',
         'description',
-        'status'
+        'status',
     ];
 
     /**
@@ -28,7 +28,7 @@ class SubProject extends Model
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
             ->useLogName('sub_project')
-            ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
+            ->setDescriptionForEvent(fn (string $eventName) => match ($eventName) {
                 'created' => "Sous-projet '{$this->name}' créé",
                 'updated' => "Sous-projet '{$this->name}' modifié",
                 'deleted' => "Sous-projet '{$this->name}' supprimé",
@@ -107,7 +107,6 @@ class SubProject extends Model
         return $query->where('status', 'brouillon');
     }
 
-
     /**
      * Scope pour les sous-projets annulés
      */
@@ -159,7 +158,7 @@ class SubProject extends Model
     /**
      * Changer le statut du sous-projet avec log personnalisé
      */
-    public function changeStatus(string $newStatus, string $reason = null)
+    public function changeStatus(string $newStatus, ?string $reason = null)
     {
         $oldStatus = $this->status;
         $this->status = $newStatus;
@@ -174,7 +173,7 @@ class SubProject extends Model
                 'reason' => $reason,
                 'project_id' => $this->project_id,
                 'project_name' => $this->project?->name,
-                'changed_at' => now()
+                'changed_at' => now(),
             ])
             ->log("Statut du sous-projet '{$this->name}' changé de {$oldStatus} à {$newStatus}");
 
@@ -184,7 +183,7 @@ class SubProject extends Model
     /**
      * Marquer le sous-projet comme terminé avec log
      */
-    public function complete(string $reason = null)
+    public function complete(?string $reason = null)
     {
         return $this->changeStatus('completed', $reason);
     }
@@ -192,7 +191,7 @@ class SubProject extends Model
     /**
      * Marquer le sous-projet comme en pause avec log
      */
-    public function pause(string $reason = null)
+    public function pause(?string $reason = null)
     {
         return $this->changeStatus('on_hold', $reason);
     }
@@ -200,7 +199,7 @@ class SubProject extends Model
     /**
      * Réactiver le sous-projet avec log
      */
-    public function reactivate(string $reason = null)
+    public function reactivate(?string $reason = null)
     {
         return $this->changeStatus('active', $reason);
     }
@@ -208,7 +207,7 @@ class SubProject extends Model
     /**
      * Annuler le sous-projet avec log
      */
-    public function cancel(string $reason = null)
+    public function cancel(?string $reason = null)
     {
         return $this->changeStatus('cancelled', $reason);
     }
@@ -216,7 +215,7 @@ class SubProject extends Model
     /**
      * Changer le projet parent avec log personnalisé
      */
-    public function changeProject(Project $newProject, string $reason = null)
+    public function changeProject(Project $newProject, ?string $reason = null)
     {
         $oldProjectId = $this->project_id;
         $oldProjectName = $this->project?->name;
@@ -232,7 +231,7 @@ class SubProject extends Model
                 'new_project_id' => $newProject->id,
                 'new_project_name' => $newProject->name,
                 'reason' => $reason,
-                'changed_at' => now()
+                'changed_at' => now(),
             ])
             ->log("Sous-projet '{$this->name}' déplacé du projet '{$oldProjectName}' vers '{$newProject->name}'");
 
@@ -242,7 +241,7 @@ class SubProject extends Model
     /**
      * Ajouter un utilisateur au sous-projet avec log
      */
-    public function assignUser(User $user, string $role = null)
+    public function assignUser(User $user, ?string $role = null)
     {
         $this->users()->attach($user);
 
@@ -254,7 +253,7 @@ class SubProject extends Model
                 'user_name' => $user->name,
                 'user_email' => $user->email,
                 'role' => $role,
-                'action' => 'assign_user'
+                'action' => 'assign_user',
             ])
             ->log("Utilisateur '{$user->name}' assigné au sous-projet '{$this->name}'");
 
@@ -275,7 +274,7 @@ class SubProject extends Model
                 'user_id' => $user->id,
                 'user_name' => $user->name,
                 'user_email' => $user->email,
-                'action' => 'remove_user'
+                'action' => 'remove_user',
             ])
             ->log("Utilisateur '{$user->name}' retiré du sous-projet '{$this->name}'");
 
@@ -304,6 +303,7 @@ class SubProject extends Model
     public function getFullNameAttribute(): string
     {
         $projectName = $this->project?->name ?? 'Projet inconnu';
+
         return "{$projectName} - {$this->name}";
     }
 

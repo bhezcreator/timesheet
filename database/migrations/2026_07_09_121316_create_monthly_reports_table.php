@@ -27,7 +27,7 @@ return new class extends Migration
                 'brouillon',
                 'soumis',
                 'approuvé',
-                'rejeté'
+                'rejeté',
             ])->default('brouillon');
 
             $table->timestamp('submitted_at')->nullable();
@@ -37,7 +37,7 @@ return new class extends Migration
             $table->unique([
                 'user_id',
                 'month',
-                'year'
+                'year',
             ]);
         });
     }

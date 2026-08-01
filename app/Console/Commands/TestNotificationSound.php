@@ -2,10 +2,10 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Models\User;
-use App\Models\MonthlyReport;
 use App\Events\UniversalModelStatusChanged;
+use App\Models\MonthlyReport;
+use App\Models\User;
+use Illuminate\Console\Command;
 
 class TestNotificationSound extends Command
 {
@@ -27,8 +27,9 @@ class TestNotificationSound extends Command
         $userId = $this->argument('user_id');
         $user = User::find($userId);
 
-        if (!$user) {
+        if (! $user) {
             $this->error("Utilisateur introuvable avec l'ID : {$userId}");
+
             return Command::FAILURE;
         }
 
@@ -41,15 +42,16 @@ class TestNotificationSound extends Command
         event(new UniversalModelStatusChanged(
             model: $report,
             recipient: $user,
-            title: "Test de Signal Audio",
+            title: 'Test de Signal Audio',
             messageContent: "Félicitations, votre système d'alerte en temps réel avec Pusher fonctionne parfaitement !",
-            status: "approuvé",
-            comment: "Test réussi avec succès.",
-            routeUrl: "#",
-            icon: "las la-volume-up text-indigo-600 animate-bounce"
+            status: 'approuvé',
+            comment: 'Test réussi avec succès.',
+            routeUrl: '#',
+            icon: 'las la-volume-up text-indigo-600 animate-bounce'
         ));
 
-        $this->info("Événement diffusé avec succès ! Vérifiez votre navigateur.");
+        $this->info('Événement diffusé avec succès ! Vérifiez votre navigateur.');
+
         return Command::SUCCESS;
     }
 }

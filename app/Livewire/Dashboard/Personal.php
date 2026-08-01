@@ -5,21 +5,27 @@ namespace App\Livewire\Dashboard;
 use App\Models\Activity;
 use App\Models\MonthlyReport;
 use App\Models\User;
+use App\Services\OnlineUsersService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
-use App\Services\OnlineUsersService;
 
 class Personal extends Component
 {
     protected OnlineUsersService $onlineUsersService;
 
     public $totalUsers = 0;
+
     public $todayActivities = 0;
+
     public $monthActivities = 0;
+
     public $totalHours = 0;
+
     public $submittedReports = 0;
+
     public $pendingReports = 0;
+
     public $user = null;
 
     public function mount()
@@ -76,7 +82,7 @@ class Personal extends Component
 
     private function getOnlineUsers(): int
     {
-        if (!$this->user || $this->user->getRoleNames()->first() !== 'Admin') {
+        if (! $this->user || $this->user->getRoleNames()->first() !== 'Admin') {
             return 0;
         }
 

@@ -8,7 +8,6 @@ use Illuminate\View\Component;
 
 class Radio extends Component
 {
-
     public function __construct(
 
         public ?string $name = null,
@@ -24,7 +23,6 @@ class Radio extends Component
         public bool $disabled = false,
 
     ) {}
-
 
     public function render(): View|Closure|string
     {

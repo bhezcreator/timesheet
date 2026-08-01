@@ -2,10 +2,10 @@
 
 namespace App\Livewire\Projects;
 
-use Illuminate\Support\Facades\DB;
 use App\Models\Project;
 use App\Models\SubProject;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
@@ -19,6 +19,7 @@ class AttributesProject extends Component
 
     // Utilisateur cible
     public int $userId;
+
     public User $user;
 
     // État du bouton de sauvegarde (True = Masqué/Désactivé, False = Visible/Actif)
@@ -26,6 +27,7 @@ class AttributesProject extends Component
 
     // Tableaux de sélection réactifs [ID => true/false]
     public array $selectedProjects = [];
+
     public array $selectedSubProjects = [];
 
     // Rôles spécifiques par projet [project_id => 'responsable'|'superviseur'|'personnel']
@@ -108,7 +110,7 @@ class AttributesProject extends Component
     {
         $isActive = $this->selectedProjects[$projectId] ?? false;
 
-        if (!$isActive) {
+        if (! $isActive) {
             // Si on décoche le projet, on décoche obligatoirement tous ses sous-projets
             $subProjectIds = SubProject::where('project_id', $projectId)->pluck('id')->toArray();
             foreach ($subProjectIds as $subId) {
@@ -117,7 +119,7 @@ class AttributesProject extends Component
             unset($this->projectRoles[$projectId]);
         } else {
             // Rôle par défaut à l'activation
-            if (!isset($this->projectRoles[$projectId])) {
+            if (! isset($this->projectRoles[$projectId])) {
                 $this->projectRoles[$projectId] = 'personnel';
             }
         }
@@ -136,7 +138,7 @@ class AttributesProject extends Component
         if ($isSubActive) {
             // Règle métier : Forcer l'activation du parent si un sous-projet est choisi
             $this->selectedProjects[$projectId] = true;
-            if (!isset($this->projectRoles[$projectId])) {
+            if (! isset($this->projectRoles[$projectId])) {
                 $this->projectRoles[$projectId] = 'personnel';
             }
         }
@@ -152,13 +154,13 @@ class AttributesProject extends Component
         }
 
         throw ValidationException::withMessages([
-            'permission' => ["Action non autorisée : Privilèges insuffisants pour gérer les affectations."]
+            'permission' => ['Action non autorisée : Privilèges insuffisants pour gérer les affectations.'],
         ]);
     }
 
     public function save()
     {
-        $this->checkPermissionOrFail("projets.attribuer");
+        $this->checkPermissionOrFail('projets.attribuer');
 
         // 1. Filtrer pour ne garder que les projets réellement cochés à True
         $activeProjects = array_filter($this->selectedProjects);
@@ -169,16 +171,16 @@ class AttributesProject extends Component
             $role = $this->projectRoles[$projectId] ?? 'personnel';
 
             // Sécurité : Validation de l'énumération par rapport à votre schéma SQL
-            if (!in_array($role, ['responsable', 'superviseur', 'personnel'])) {
+            if (! in_array($role, ['responsable', 'superviseur', 'personnel'])) {
                 throw ValidationException::withMessages([
-                    "projectRoles.{$projectId}" => ["Le rôle sélectionné pour ce projet est invalide."]
+                    "projectRoles.{$projectId}" => ['Le rôle sélectionné pour ce projet est invalide.'],
                 ]);
             }
 
             $projectSyncData[$projectId] = [
-                'role'        => $role,
+                'role' => $role,
                 'assigned_at' => now()->format('Y-m-d'),
-                'updated_at'  => now(),
+                'updated_at' => now(),
             ];
         }
 
@@ -202,7 +204,7 @@ class AttributesProject extends Component
 
     public function render()
     {
-        $searchTerm = '%' . str_replace(['%', '_'], ['\%', '\_'], $this->search) . '%';
+        $searchTerm = '%'.str_replace(['%', '_'], ['\%', '\_'], $this->search).'%';
 
         // Récupérer les projets filtrés avec leurs sous-projets (Eager Loading)
         $projects = Project::query()

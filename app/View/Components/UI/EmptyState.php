@@ -8,13 +8,11 @@ use Illuminate\View\Component;
 
 class EmptyState extends Component
 {
-
     public string $icon;
 
     public string $title;
 
     public string $description;
-
 
     public function __construct(
         string $title = 'Aucune donnée disponible',
@@ -26,7 +24,6 @@ class EmptyState extends Component
         $this->description = $description;
         $this->icon = $icon;
     }
-
 
     public function render(): View|Closure|string
     {

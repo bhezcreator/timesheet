@@ -4,8 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Activity extends Model
 {
@@ -43,7 +43,7 @@ class Activity extends Model
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
             ->useLogName('activity')
-            ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
+            ->setDescriptionForEvent(fn (string $eventName) => match ($eventName) {
                 'created' => 'Nouvelle activité créée',
                 'updated' => 'Activité modifiée',
                 'deleted' => 'Activité supprimée',

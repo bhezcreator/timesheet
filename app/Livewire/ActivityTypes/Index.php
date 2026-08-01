@@ -14,17 +14,23 @@ class Index extends Component
 
     // Variables de formulaire sécurisées
     public string $name = '';
+
     public ?string $description = null;
+
     public string $color = '#3B82F6';
+
     public bool $is_active = true;
+
     public ?int $activityTypeId = null;
 
     // Gestion Modal
     public bool $showModal = false;
+
     public bool $showDeleteModal = false;
 
     // Variables de suppression
     public ?int $deleteId = null;
+
     public ?string $deleteName = null;
 
     // Filtre de recherche nettoyé
@@ -46,8 +52,8 @@ class Index extends Component
                 'required',
                 'string',
                 'max:255',
-                'unique:activity_types,name,' . $this->activityTypeId,
-                "regex:/^[a-z0-9\-\._ a-z0-9àâäéèêëîïôöùûüç'&(),;.ÂÆÇÈÉÊËÎÏÔŒÙÛÜ]+$/i"
+                'unique:activity_types,name,'.$this->activityTypeId,
+                "regex:/^[a-z0-9\-\._ a-z0-9àâäéèêëîïôöùûüç'&(),;.ÂÆÇÈÉÊËÎÏÔŒÙÛÜ]+$/i",
             ],
             'description' => ['nullable', 'string', 'max:500'],
             'color' => ['required', 'string', 'regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/'],
@@ -65,14 +71,14 @@ class Index extends Component
         }
 
         throw ValidationException::withMessages([
-            'permission' => ["Action non autorisée : Privilèges insuffisants pour exécuter cette opération."]
+            'permission' => ['Action non autorisée : Privilèges insuffisants pour exécuter cette opération.'],
         ]);
     }
 
     public function render()
     {
         // Nettoyage préventif des caractères spéciaux pour éviter les bugs SQL/XSS
-        $searchTerm = '%' . str_replace(['%', '_'], ['\%', '\_'], $this->search) . '%';
+        $searchTerm = '%'.str_replace(['%', '_'], ['\%', '\_'], $this->search).'%';
 
         $activityTypes = ActivityType::query()
             ->withCount('activities')
@@ -92,7 +98,7 @@ class Index extends Component
 
     public function openModal()
     {
-        $this->checkPermissionOrFail("types_activites.creer");
+        $this->checkPermissionOrFail('types_activites.creer');
         $this->resetForm();
         $this->showModal = true;
         $this->showDeleteModal = false;
@@ -100,7 +106,7 @@ class Index extends Component
 
     public function edit($id)
     {
-        $this->checkPermissionOrFail("types_activites.modifier");
+        $this->checkPermissionOrFail('types_activites.modifier');
 
         $type = ActivityType::findOrFail($id);
         $this->activityTypeId = $type->id;
@@ -117,7 +123,7 @@ class Index extends Component
         $this->validate();
 
         if ($this->activityTypeId) {
-            $this->checkPermissionOrFail("types_activites.modifier");
+            $this->checkPermissionOrFail('types_activites.modifier');
 
             $type = ActivityType::findOrFail($this->activityTypeId);
             $type->update([
@@ -129,7 +135,7 @@ class Index extends Component
 
             session()->flash('success', 'Type d\'activité modifié avec succès.');
         } else {
-            $this->checkPermissionOrFail("types_activites.creer");
+            $this->checkPermissionOrFail('types_activites.creer');
 
             ActivityType::create([
                 'name' => trim($this->name),
@@ -146,14 +152,14 @@ class Index extends Component
 
     public function confirmDelete(int $id)
     {
-        $this->checkPermissionOrFail("types_activites.supprimer");
+        $this->checkPermissionOrFail('types_activites.supprimer');
 
         $type = ActivityType::findOrFail($id);
 
         // Sécurité additionnelle : empêcher la suppression si des activités l'utilisent encore
         if ($type->activities()->exists()) {
             throw ValidationException::withMessages([
-                'activity_type' => ["Action impossible : Ce type est associé à des activités existantes."]
+                'activity_type' => ['Action impossible : Ce type est associé à des activités existantes.'],
             ]);
         }
 
@@ -165,7 +171,7 @@ class Index extends Component
 
     public function delete()
     {
-        $this->checkPermissionOrFail("types_activites.supprimer");
+        $this->checkPermissionOrFail('types_activites.supprimer');
 
         if ($this->deleteId) {
             $type = ActivityType::findOrFail($this->deleteId);

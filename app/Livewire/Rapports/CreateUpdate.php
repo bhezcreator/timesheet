@@ -4,7 +4,6 @@ namespace App\Livewire\Rapports;
 
 use App\Events\UniversalModelStatusChanged;
 use App\Models\Activity;
-
 use App\Models\MonthlyReport;
 use App\Models\Setting;
 use App\Models\User;
@@ -23,16 +22,23 @@ use Livewire\WithFileUploads;
 class CreateUpdate extends Component
 {
     use WithFileUploads;
+
     // ID du rapport (null si création)
     public $ID_report = null;
 
     // Propriétés du formulaire
     public $month;
+
     public $year;
+
     public $report_date;
+
     public $objectives;
+
     public $achievements;
+
     public $next_actions;
+
     public $status = 'brouillon';
 
     // Filtrage des activités
@@ -40,17 +46,21 @@ class CreateUpdate extends Component
 
     // Données de configuration (Settings)
     public $reportFrequency = 'month'; // 'month' ou 'week'
+
     public $calculateOvertime = false;
+
     public $standardHoursPerMonth = 160;
 
     // Données calculées pour l'affichage
     public $totalHours = 0;
+
     public $overtimeHours = 0;
 
     public int $user_id;
 
     // Propriétés pour la gestion des fichiers
     public $files = []; // Stocke les nouveaux fichiers téléversés
+
     public $existingFiles = []; // Liste des fichiers déjà en BDD (Mode Édition)
 
     // protected function rules()
@@ -107,15 +117,15 @@ class CreateUpdate extends Component
                         'text/csv',
                         'image/jpeg',
                         'image/png',
-                        'image/webp'
+                        'image/webp',
                     ];
 
-                    if (!in_array($mimeType, $allowedMimes)) {
+                    if (! in_array($mimeType, $allowedMimes)) {
                         $fail("Le fichier {$value->getClientOriginalName()} n'est pas valide.");
                     }
 
                     // 3. Vérification de la signature du fichier
-                    if (!$this->validateFileSignature($value)) {
+                    if (! $this->validateFileSignature($value)) {
                         $fail("Le fichier {$value->getClientOriginalName()} semble corrompu.");
                     }
                 },
@@ -168,7 +178,7 @@ class CreateUpdate extends Component
 
     public function mount($reportId = null)
     {
-        $this->checkPermissionOrFail("rapports.voir");
+        $this->checkPermissionOrFail('rapports.voir');
 
         $this->ID_report = $reportId ? (int) $reportId : null;
         $this->user_id = Auth::id();
@@ -204,7 +214,7 @@ class CreateUpdate extends Component
                 'id' => $media->id,
                 'name' => $media->file_name,
                 'size' => $media->human_readable_size,
-                'url' => $media->getUrl()
+                'url' => $media->getUrl(),
             ];
         })->toArray();
     }
@@ -225,11 +235,11 @@ class CreateUpdate extends Component
     public function deleteAttachment($mediaId)
     {
         // 1. Vérification de permission
-        $this->checkPermissionOrFail("rapports.modifier");
+        $this->checkPermissionOrFail('rapports.modifier');
 
-        if (!$this->ID_report) {
+        if (! $this->ID_report) {
             throw ValidationException::withMessages([
-                'permission' => ["Aucun rapport associé."]
+                'permission' => ['Aucun rapport associé.'],
             ]);
         }
 
@@ -239,15 +249,15 @@ class CreateUpdate extends Component
         // 3. Vérification du statut (ne pas permettre sur rapport soumis)
         if ($report->status === 'soumis') {
             throw ValidationException::withMessages([
-                'permission' => ["Impossible de modifier un rapport soumis."]
+                'permission' => ['Impossible de modifier un rapport soumis.'],
             ]);
         }
 
         // 4. Récupération et suppression sécurisée du média
         $media = $report->media()->find($mediaId);
-        if (!$media) {
+        if (! $media) {
             throw ValidationException::withMessages([
-                'permission' => ["Fichier non trouvé ou non autorisé."]
+                'permission' => ['Fichier non trouvé ou non autorisé.'],
             ]);
         }
 
@@ -257,7 +267,7 @@ class CreateUpdate extends Component
             ->causedBy(Auth::user())
             ->withProperties([
                 'file_name' => $media->file_name,
-                'file_id' => $media->id
+                'file_id' => $media->id,
             ])
             ->log('Fichier supprimé');
 
@@ -331,7 +341,7 @@ class CreateUpdate extends Component
 
         // 3. Nettoyage et validation de la sélection
         $selectedProject = $this->selected_project_id;
-        if ($selectedProject !== 'all' && !in_array($selectedProject, $assignedProjectIds)) {
+        if ($selectedProject !== 'all' && ! in_array($selectedProject, $assignedProjectIds)) {
             // Sécurité : Projet non assigné -> retourner une collection vide
             return collect();
         }
@@ -344,7 +354,7 @@ class CreateUpdate extends Component
         // 5. Application du filtre de projet de manière sécurisée
         if ($selectedProject !== 'all') {
             $query->where('project_id', (int) $selectedProject);
-        } elseif (!empty($assignedProjectIds)) {
+        } elseif (! empty($assignedProjectIds)) {
             $query->whereIn('project_id', $assignedProjectIds);
         } else {
             // Aucun projet assigné -> retour vide
@@ -471,7 +481,7 @@ class CreateUpdate extends Component
             $this->validate();
 
             // 4. Vérification des contraintes
-            if (!$this->ID_report) {
+            if (! $this->ID_report) {
                 $this->checkUniqueReportConstraint();
             }
 
@@ -504,26 +514,27 @@ class CreateUpdate extends Component
             Log::error('Erreur sauvegarde rapport', [
                 'user_id' => $this->user_id,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $this->addError('permission', $e->getMessage());
+
             return null;
         }
     }
 
     protected function checkRateLimit(): void
     {
-        $key = 'report_save_' . $this->user_id;
+        $key = 'report_save_'.$this->user_id;
         if (RateLimiter::tooManyAttempts($key, 10)) {
-            throw new \Exception("Trop de tentatives. Veuillez attendre 5 minutes.");
+            throw new \Exception('Trop de tentatives. Veuillez attendre 5 minutes.');
         }
         RateLimiter::hit($key, 300);
     }
 
     protected function validatePermissions($submit): void
     {
-        $permission = $this->ID_report ? "rapports.modifier" : "rapports.creer";
+        $permission = $this->ID_report ? 'rapports.modifier' : 'rapports.creer';
         $this->checkPermissionOrFail($permission);
     }
 
@@ -547,11 +558,12 @@ class CreateUpdate extends Component
     {
         // 1. Vérification des destinataires
         $supervisor = $report->user->supervisor;
-        if (!$supervisor) {
+        if (! $supervisor) {
             Log::warning('Aucun superviseur trouvé pour le rapport', [
                 'report_id' => $report->id,
-                'user_id' => $report->user_id
+                'user_id' => $report->user_id,
             ]);
+
             return;
         }
 
@@ -559,15 +571,16 @@ class CreateUpdate extends Component
         if ($report->status !== 'soumis') {
             Log::warning('Tentative de notification pour rapport non soumis', [
                 'report_id' => $report->id,
-                'status' => $report->status
+                'status' => $report->status,
             ]);
+
             return;
         }
 
         // 3. Nettoyage des données pour l'événement
-        $title = "Soumission du rapport : " . e($report->full_title);
-        $message = "Le collaborateur " . e($report->user->name . ' ' . $report->user->first_name) .
-            " vient de soumettre son rapport.";
+        $title = 'Soumission du rapport : '.e($report->full_title);
+        $message = 'Le collaborateur '.e($report->user->name.' '.$report->user->first_name).
+            ' vient de soumettre son rapport.';
 
         // 4. Envoi avec rate limiting
         try {
@@ -584,12 +597,12 @@ class CreateUpdate extends Component
 
             Log::info('Notification de soumission envoyée', [
                 'report_id' => $report->id,
-                'supervisor_id' => $supervisor->id
+                'supervisor_id' => $supervisor->id,
             ]);
         } catch (\Exception $e) {
             Log::error('Erreur lors de l\'envoi de la notification', [
                 'report_id' => $report->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
             // Ne pas bloquer l'opération si la notification échoue
         }
@@ -597,6 +610,7 @@ class CreateUpdate extends Component
 
     /**
      * Vérifie la contrainte d'unicité : un seul rapport par projet et par mois
+     *
      * @throws \Exception
      */
     // private function checkUniqueReportConstraint()
@@ -624,7 +638,7 @@ class CreateUpdate extends Component
         $year = (int) $this->year;
 
         if ($month < 1 || $month > 12 || $year < 2020) {
-            throw new \Exception("Période invalide.");
+            throw new \Exception('Période invalide.');
         }
 
         // 2. Détermination sécurisée de la valeur projet
@@ -702,7 +716,7 @@ class CreateUpdate extends Component
         }
 
         throw ValidationException::withMessages([
-            'permission' => ["Action non autorisée : Privilèges insuffisants pour exécuter cette opération."]
+            'permission' => ['Action non autorisée : Privilèges insuffisants pour exécuter cette opération.'],
         ]);
     }
 }

@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Project;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
@@ -46,7 +45,7 @@ class MonthlyReport extends Model implements HasMedia
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
             ->useLogName('monthly_report')
-            ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
+            ->setDescriptionForEvent(fn (string $eventName) => match ($eventName) {
                 'created' => 'Nouveau rapport mensuel créé',
                 'updated' => 'Rapport mensuel modifié',
                 'submitted' => 'Rapport mensuel soumis',
@@ -116,26 +115,26 @@ class MonthlyReport extends Model implements HasMedia
      * Acesseur pour générer le titre dynamique du rapport
      * Version 100% étanche pour éviter les crashs de HigherOrderTapProxy
      */
-    protected function fullTitle(): \Illuminate\Database\Eloquent\Casts\Attribute
+    protected function fullTitle(): Attribute
     {
-        return \Illuminate\Database\Eloquent\Casts\Attribute::make(
+        return Attribute::make(
             get: function () {
-                if (!isset($this->attributes['month']) || !isset($this->attributes['year'])) {
+                if (! isset($this->attributes['month']) || ! isset($this->attributes['year'])) {
                     return "Rapport d'activité";
                 }
 
-                $monthName = \Carbon\Carbon::createFromDate(
+                $monthName = Carbon::createFromDate(
                     (int) $this->attributes['year'],
                     (int) $this->attributes['month'],
                     1
                 )->translatedFormat('F');
 
-                $baseTitle = "Rapport du mois de " . ucfirst($monthName) . " {$this->attributes['year']}";
+                $baseTitle = 'Rapport du mois de '.ucfirst($monthName)." {$this->attributes['year']}";
                 $projectField = $this->attributes['project_ids'] ?? '';
 
                 // Rapport "all"
                 if (empty($projectField) || $projectField === 'all' || $projectField === '""' || $projectField === '[]') {
-                    return $baseTitle . " (tous les projets)";
+                    return $baseTitle.' (tous les projets)';
                 }
 
                 if ($projectField) {
@@ -143,11 +142,11 @@ class MonthlyReport extends Model implements HasMedia
                     // Rapport projet spécifique
                     $project = Project::where('id', $projectId)->first();
                     if ($project) {
-                        return $baseTitle . " concernant le projet : {$project->name}";
+                        return $baseTitle." concernant le projet : {$project->name}";
                     }
                 }
 
-                return $baseTitle . " (projet : {$projectField})";
+                return $baseTitle." (projet : {$projectField})";
             }
         );
     }
@@ -177,7 +176,7 @@ class MonthlyReport extends Model implements HasMedia
         if (is_string($projectField) && str_starts_with($projectField, '[')) {
             try {
                 $decoded = json_decode($projectField, true);
-                if (is_array($decoded) && !empty($decoded)) {
+                if (is_array($decoded) && ! empty($decoded)) {
                     // Si c'est un tableau avec un seul élément
                     if (count($decoded) === 1 && is_numeric($decoded[0])) {
                         return (int) $decoded[0];
@@ -213,7 +212,7 @@ class MonthlyReport extends Model implements HasMedia
         // Dernier recours : essayer de forcer en int
         if (is_string($projectField)) {
             $cleaned = preg_replace('/[^0-9]/', '', $projectField);
-            if (!empty($cleaned)) {
+            if (! empty($cleaned)) {
                 return (int) $cleaned;
             }
         }
@@ -324,7 +323,7 @@ class MonthlyReport extends Model implements HasMedia
                 'submitted_at' => now(),
                 'month' => $this->month,
                 'year' => $this->year,
-                'project_ids' => $this->project_ids
+                'project_ids' => $this->project_ids,
             ])
             ->log('Rapport mensuel soumis');
 
@@ -346,7 +345,7 @@ class MonthlyReport extends Model implements HasMedia
             ->withProperties([
                 'validator_id' => $validatorId,
                 'comment' => $comment,
-                'validated_at' => now()
+                'validated_at' => now(),
             ])
             ->log('Rapport mensuel validé');
 
@@ -368,7 +367,7 @@ class MonthlyReport extends Model implements HasMedia
             ->withProperties([
                 'validator_id' => $validatorId,
                 'reason' => $reason,
-                'rejected_at' => now()
+                'rejected_at' => now(),
             ])
             ->log('Rapport mensuel rejeté');
 

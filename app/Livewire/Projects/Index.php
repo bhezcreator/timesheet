@@ -20,21 +20,29 @@ class Index extends Component
 
     // Champs de formulaire indexés sur le modèle Project
     public string $code = '';
+
     public string $name = '';
+
     public string $description = '';
+
     public ?int $manager_id = null;
+
     public string $start_date = '';
+
     public string $end_date = '';
+
     public string $status = 'brouillon';
 
     public ?int $projectId = null;
 
     // Gestion Modal
     public bool $showModal = false;
+
     public bool $showDeleteModal = false;
 
     // Variables de suppression
     public ?int $deleteId = null;
+
     public ?string $deleteName = null;
 
     // Recherche réactive
@@ -69,7 +77,7 @@ class Index extends Component
                     }
                 },
                 'regex:/^[a-z0-9\-\._]+$/i',
-                'not_in:' . implode(',', ['admin', 'test', 'demo']), // Mots interdits
+                'not_in:'.implode(',', ['admin', 'test', 'demo']), // Mots interdits
             ],
             // ... autres règles
         ];
@@ -82,6 +90,7 @@ class Index extends Component
         $code = trim($code);
         $code = strtoupper($code); // Forcer en majuscules
         $code = preg_replace('/[^A-Z0-9\-\._]/', '', $code);
+
         return $code;
     }
 
@@ -92,7 +101,7 @@ class Index extends Component
         }
 
         throw ValidationException::withMessages([
-            'permission' => ["Action non autorisée : Privilèges insuffisants pour exécuter cette opération."]
+            'permission' => ['Action non autorisée : Privilèges insuffisants pour exécuter cette opération.'],
         ]);
     }
 
@@ -124,7 +133,7 @@ class Index extends Component
     {
         // 1. Validation des paramètres de pagination
         $page = request()->get('page', 1);
-        if (!is_numeric($page) || $page < 1) {
+        if (! is_numeric($page) || $page < 1) {
             $page = 1;
         }
 
@@ -133,7 +142,7 @@ class Index extends Component
 
         $projects = Project::query()
             ->with(['manager', 'subProjects', 'users'])
-            ->when(!empty($this->search), function ($query) {
+            ->when(! empty($this->search), function ($query) {
                 $this->applySearchFilter($query);
             })
             ->latest()
@@ -158,9 +167,9 @@ class Index extends Component
         $search = preg_replace('/[^\p{L}\p{N}\s\-_]/u', '', $search);
 
         $query->where(function ($q) use ($search) {
-            $q->where('name', 'LIKE', '%' . $search . '%')
-                ->orWhere('code', 'LIKE', '%' . $search . '%')
-                ->orWhere('status', 'LIKE', '%' . $search . '%');
+            $q->where('name', 'LIKE', '%'.$search.'%')
+                ->orWhere('code', 'LIKE', '%'.$search.'%')
+                ->orWhere('status', 'LIKE', '%'.$search.'%');
         });
     }
 
@@ -182,7 +191,7 @@ class Index extends Component
 
     public function openModal()
     {
-        $this->checkPermissionOrFail("projets.creer");
+        $this->checkPermissionOrFail('projets.creer');
         $this->resetForm();
         $this->showModal = true;
         $this->showDeleteModal = false;
@@ -190,7 +199,7 @@ class Index extends Component
 
     public function edit($id)
     {
-        $this->checkPermissionOrFail("projets.modifier");
+        $this->checkPermissionOrFail('projets.modifier');
 
         // 1. Récupération avec vérification d'accès
         $project = Project::findOrFail($id);
@@ -212,7 +221,7 @@ class Index extends Component
     public function save()
     {
         if ($this->projectId) {
-            $this->checkPermissionOrFail("projets.modifier");
+            $this->checkPermissionOrFail('projets.modifier');
 
             // 2. Vérification d'accès avant modification
             $project = Project::findOrFail($this->projectId);
@@ -226,28 +235,28 @@ class Index extends Component
             $project = Project::findOrFail($this->projectId);
 
             $project->update([
-                'code'        => trim($this->code),
-                'name'        => trim($this->name),
+                'code' => trim($this->code),
+                'name' => trim($this->name),
                 'description' => trim($this->description) ?: null,
-                'manager_id'  => $this->manager_id,
-                'start_date'  => $this->start_date,
-                'end_date'    => $this->end_date,
-                'status'      => $this->status,
+                'manager_id' => $this->manager_id,
+                'start_date' => $this->start_date,
+                'end_date' => $this->end_date,
+                'status' => $this->status,
             ]);
 
             session()->flash('success', 'Projet mis à jour avec succès.');
         } else {
-            $this->checkPermissionOrFail("projets.creer");
+            $this->checkPermissionOrFail('projets.creer');
             $this->validate();
 
             Project::create([
-                'code'        => trim($this->code),
-                'name'        => trim($this->name),
+                'code' => trim($this->code),
+                'name' => trim($this->name),
                 'description' => trim($this->description) ?: null,
-                'manager_id'  => $this->manager_id,
-                'start_date'  => $this->start_date,
-                'end_date'    => $this->end_date,
-                'status'      => $this->status,
+                'manager_id' => $this->manager_id,
+                'start_date' => $this->start_date,
+                'end_date' => $this->end_date,
+                'status' => $this->status,
             ]);
 
             session()->flash('success', 'Projet créé avec succès.');
@@ -280,12 +289,12 @@ class Index extends Component
 
     public function confirmDelete(int $id)
     {
-        $this->checkPermissionOrFail("projets.supprimer");
+        $this->checkPermissionOrFail('projets.supprimer');
 
         // Validation supplémentaire pour la suppression
-        if (!Gate::allows('projets.supprimer', Project::find($id))) {
+        if (! Gate::allows('projets.supprimer', Project::find($id))) {
             throw ValidationException::withMessages([
-                'permission' => ["Vous n'avez pas les droits pour supprimer ce projet."]
+                'permission' => ["Vous n'avez pas les droits pour supprimer ce projet."],
             ]);
         }
 
@@ -298,11 +307,11 @@ class Index extends Component
 
     public function delete()
     {
-        $this->checkPermissionOrFail("projets.supprimer");
+        $this->checkPermissionOrFail('projets.supprimer');
 
-        if (!$this->deleteId) {
+        if (! $this->deleteId) {
             throw ValidationException::withMessages([
-                'permission' => ["Aucun projet sélectionné."]
+                'permission' => ['Aucun projet sélectionné.'],
             ]);
         }
 
@@ -322,12 +331,13 @@ class Index extends Component
         }
 
         // 3. Si des dépendances existent, demander confirmation
-        if (!empty($dependencies)) {
-            session()->flash('warning', "Ce projet est lié à " . implode(' et ', $dependencies) .
-                ". La suppression est irréversible.");
+        if (! empty($dependencies)) {
+            session()->flash('warning', 'Ce projet est lié à '.implode(' et ', $dependencies).
+                '. La suppression est irréversible.');
 
             // 4. Demander confirmation supplémentaire
             $this->dispatch('confirm-delete-with-dependencies');
+
             return;
         }
 
@@ -340,7 +350,7 @@ class Index extends Component
                 ->withProperties([
                     'code' => $project->code,
                     'name' => $project->name,
-                    'deleted_at' => now()
+                    'deleted_at' => now(),
                 ])
                 ->log('Projet supprimé');
 
@@ -350,7 +360,6 @@ class Index extends Component
         session()->flash('success', 'Le projet a été supprimé définitivement.');
         $this->closeDeleteModal();
     }
-
 
     protected function validateAccess(Project $project): void
     {
@@ -364,14 +373,14 @@ class Index extends Component
         // 4. Vérification du rôle
         if ($project->manager_id !== $userId) {
             throw ValidationException::withMessages([
-                'permission' => ["Vous n'êtes pas le responsable de ce projet."]
+                'permission' => ["Vous n'êtes pas le responsable de ce projet."],
             ]);
         }
 
         // 5. Vérification des droits d'équipe
-        if (!Gate::allows('projets.modifier', $project)) {
+        if (! Gate::allows('projets.modifier', $project)) {
             throw ValidationException::withMessages([
-                'permission' => ["Vous n'avez pas les droits sur ce projet."]
+                'permission' => ["Vous n'avez pas les droits sur ce projet."],
             ]);
         }
     }

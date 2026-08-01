@@ -5,21 +5,29 @@ namespace App\Livewire;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Spatie\Activitylog\Models\Activity;
-use Illuminate\Support\Facades\DB;
 
 class ActivityLogs extends Component
 {
     use WithPagination;
 
     public $search = '';
+
     public $logName = '';
+
     public $event = '';
+
     public $dateFrom = '';
+
     public $dateTo = '';
+
     public $perPage = 15;
+
     public $sortField = 'created_at';
+
     public $sortDirection = 'desc';
+
     public $selectedLog = null;
+
     public $showDetailsModal = false;
 
     protected $queryString = [
@@ -140,7 +148,8 @@ class ActivityLogs extends Component
     {
         $query = Activity::with(['causer', 'subject'])
             ->when($this->search, function ($query) {
-                $search = '%' . $this->search . '%';
+                $search = '%'.$this->search.'%';
+
                 return $query->where(function ($q) use ($search) {
                     $q->where('description', 'like', $search)
                         ->orWhere('log_name', 'like', $search)
@@ -210,6 +219,7 @@ class ActivityLogs extends Component
             return 'N/A';
         }
         $parts = explode('\\', $type);
+
         return end($parts);
     }
 

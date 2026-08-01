@@ -4,9 +4,9 @@ namespace App\Livewire;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Livewire\Attributes\Layout;
 
 #[Layout('layouts.app')]
 class NotificationsIndex extends Component
@@ -14,9 +14,13 @@ class NotificationsIndex extends Component
     use WithPagination;
 
     public $user;
+
     public $filter = 'all'; // all, unread, read
+
     public $perPage = 5;
+
     public $search = '';
+
     public $notificationCount = 0;
 
     protected $queryString = [
@@ -48,10 +52,10 @@ class NotificationsIndex extends Component
         }
 
         // Recherche
-        if (!empty($this->search)) {
+        if (! empty($this->search)) {
             $query->where(function ($q) {
-                $q->where('data->title', 'LIKE', '%' . $this->search . '%')
-                    ->orWhere('data->message', 'LIKE', '%' . $this->search . '%');
+                $q->where('data->title', 'LIKE', '%'.$this->search.'%')
+                    ->orWhere('data->message', 'LIKE', '%'.$this->search.'%');
             });
         }
 
@@ -76,7 +80,7 @@ class NotificationsIndex extends Component
 
             // Redirection avec JavaScript
             $this->js("setTimeout(() => {
-                window.location.href = '" . ($notification->data['route_url'] ?? '#') . "';
+                window.location.href = '".($notification->data['route_url'] ?? '#')."';
             }, 300)");
         }
     }

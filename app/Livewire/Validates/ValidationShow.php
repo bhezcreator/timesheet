@@ -18,6 +18,7 @@ class ValidationShow extends Component
 
     // Propriétés pour le formulaire de validation
     public $decision = '';
+
     public $comment = '';
 
     protected $rules = [
@@ -56,7 +57,7 @@ class ValidationShow extends Component
 
             // 2. Mise à jour du statut du rapport global
             $this->report->update([
-                'status' => $targetStatus
+                'status' => $targetStatus,
             ]);
 
             // 3. Préparation des données pour les activités
@@ -75,8 +76,8 @@ class ValidationShow extends Component
         event(new UniversalModelStatusChanged(
             model: $this->report,
             recipient: $this->report->user, // L'agent recevra la notification
-            title: "Mise à jour : " . $this->report->full_title,
-            messageContent: "Votre rapport mensuel a été traité par le superviseur.",
+            title: 'Mise à jour : '.$this->report->full_title,
+            messageContent: 'Votre rapport mensuel a été traité par le superviseur.',
             status: $this->decision === 'Validé' ? 'approuvé' : 'rejeté',
             comment: $this->comment,
             routeUrl: $this->decision === 'Validé' ? route('rapports.index') : route('rapports.update', $this->report->id),
@@ -91,8 +92,8 @@ class ValidationShow extends Component
                 event(new UniversalModelStatusChanged(
                     model: $this->report,
                     recipient: $user, // L'agent recevra la notification
-                    title: "Validation du : " . $this->report->full_title,
-                    messageContent: "Le rapport mensuel du colaborateur " . $this->report->user->name . ' ' . $this->report->user->first_name . " a été approuvé par son superviseur.",
+                    title: 'Validation du : '.$this->report->full_title,
+                    messageContent: 'Le rapport mensuel du colaborateur '.$this->report->user->name.' '.$this->report->user->first_name.' a été approuvé par son superviseur.',
                     status: 'approuvé',
                     comment: '',
                     routeUrl: route('rapports.print', ['reportId' => $this->report->id]),
@@ -100,14 +101,14 @@ class ValidationShow extends Component
                 ));
             }
 
-            if (!empty($this->report->user->supervisor)) {
+            if (! empty($this->report->user->supervisor)) {
                 $supervise = $this->report->user->supervisor;
 
                 event(new UniversalModelStatusChanged(
                     model: $this->report,
                     recipient: $supervise,
-                    title: "Validation du : " . $this->report->full_title,
-                    messageContent: "Le rapport mensuel du colaborateur " . $this->report->user->name . ' ' . $this->report->user->first_name . " a été approuvé avec succès.",
+                    title: 'Validation du : '.$this->report->full_title,
+                    messageContent: 'Le rapport mensuel du colaborateur '.$this->report->user->name.' '.$this->report->user->first_name.' a été approuvé avec succès.',
                     status: 'approuvé',
                     comment: '',
                     routeUrl: route('rapports.print', ['reportId' => $this->report->id]),
@@ -118,6 +119,7 @@ class ValidationShow extends Component
 
         // 5. Notification Flash de succès & Redirection
         session()->flash('message', 'Le traitement du rapport a été sécurisé et enregistré avec succès.');
+
         return redirect()->route('validations.supervisor');
     }
 

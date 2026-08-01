@@ -61,7 +61,7 @@ return new class extends Migration
                 'brouillon',
                 'soumis',
                 'approuvé',
-                'rejeté'
+                'rejeté',
             ])->default('brouillon');
 
             $table->text('rejection_reason')->nullable();

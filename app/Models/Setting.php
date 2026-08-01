@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 class Setting extends Model
@@ -13,7 +14,7 @@ class Setting extends Model
 
     protected $fillable = [
         'key',
-        'value'
+        'value',
     ];
 
     /**
@@ -26,7 +27,7 @@ class Setting extends Model
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
             ->useLogName('setting')
-            ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
+            ->setDescriptionForEvent(fn (string $eventName) => match ($eventName) {
                 'created' => "Paramètre '{$this->key}' créé",
                 'updated' => "Paramètre '{$this->key}' modifié",
                 'deleted' => "Paramètre '{$this->key}' supprimé",
@@ -40,7 +41,7 @@ class Setting extends Model
      */
     public function activityLogs()
     {
-        return $this->morphMany(\Spatie\Activitylog\Models\Activity::class, 'subject');
+        return $this->morphMany(Activity::class, 'subject');
     }
 
     /**
@@ -48,7 +49,7 @@ class Setting extends Model
      */
     public function latestActivityLog()
     {
-        return $this->morphOne(\Spatie\Activitylog\Models\Activity::class, 'subject')->latest('created_at');
+        return $this->morphOne(Activity::class, 'subject')->latest('created_at');
     }
 
     /**
@@ -57,13 +58,14 @@ class Setting extends Model
     public static function getValue(string $key, $default = null)
     {
         $setting = static::where('key', $key)->first();
+
         return $setting ? $setting->value : $default;
     }
 
     /**
      * Définit la valeur d'un paramètre avec log automatique
      */
-    public static function setValue(string $key, $value, string $description = null)
+    public static function setValue(string $key, $value, ?string $description = null)
     {
         $setting = static::updateOrCreate(
             ['key' => $key],
@@ -78,7 +80,7 @@ class Setting extends Model
                 ->withProperties([
                     'key' => $key,
                     'value' => $value,
-                    'action' => 'set_value'
+                    'action' => 'set_value',
                 ])
                 ->log($description);
         }
@@ -109,7 +111,7 @@ class Setting extends Model
     {
         $setting = static::where('key', $key)->first();
 
-        if (!$setting) {
+        if (! $setting) {
             return false;
         }
 
@@ -120,7 +122,7 @@ class Setting extends Model
             ->withProperties([
                 'key' => $key,
                 'value' => $setting->value,
-                'action' => 'remove'
+                'action' => 'remove',
             ])
             ->log("Paramètre '{$key}' supprimé");
 
@@ -140,7 +142,7 @@ class Setting extends Model
      */
     public static function getByPrefix(string $prefix): array
     {
-        return static::where('key', 'like', $prefix . '.%')
+        return static::where('key', 'like', $prefix.'.%')
             ->pluck('value', 'key')
             ->toArray();
     }
@@ -159,7 +161,7 @@ class Setting extends Model
             ->causedBy(Auth::user())
             ->withProperties([
                 'settings' => $settings,
-                'count' => count($settings)
+                'count' => count($settings),
             ])
             ->log('Paramètres mis à jour en masse');
     }
@@ -169,7 +171,7 @@ class Setting extends Model
      */
     public function scopeStartsWith($query, string $prefix)
     {
-        return $query->where('key', 'like', $prefix . '%');
+        return $query->where('key', 'like', $prefix.'%');
     }
 
     /**
@@ -206,6 +208,7 @@ class Setting extends Model
         }
 
         $decoded = json_decode($this->value, true);
+
         return is_array($decoded) ? $decoded : [];
     }
 

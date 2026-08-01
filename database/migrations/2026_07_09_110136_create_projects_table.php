@@ -27,7 +27,7 @@ return new class extends Migration
                 'brouillon',
                 'active',
                 'complete',
-                'annuler'
+                'annuler',
             ])->default('active');
             $table->timestamps();
         });

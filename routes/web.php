@@ -3,15 +3,12 @@
 use App\Livewire\Activities\CreateUpdate as ActivitiesCreateUpdate;
 use App\Livewire\Activities\Index as ActivitiesIndex;
 use App\Livewire\Activities\TimesheetCalendar as ActivitiesTimesheetCalendar;
-
+use App\Livewire\ActivityLogs;
 use App\Livewire\NotificationsIndex;
 use App\Livewire\Permissions\Index as PermissionIndex;
 use App\Livewire\Projects\AttributesProject;
-
 use App\Livewire\Projects\Index as ProjectsIndex;
-
 use App\Livewire\Projects\Show as ProjectsShow;
-
 use App\Livewire\Projects\SubProjectManager;
 use App\Livewire\Rapports\CreateUpdate as RapportsCreateUpdate;
 use App\Livewire\Rapports\PrintReport;
@@ -23,15 +20,9 @@ use App\Livewire\Users\Index as UsersIndex;
 use App\Livewire\Users\SettingsTabs;
 use App\Livewire\Users\Show as UsersShow;
 use App\Livewire\Validates\SupervisedReports;
-
-
 use App\Livewire\Validates\ValidationShow;
-use App\Models\MonthlyReport;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
 // Dans routes/web.php
-use App\Livewire\ActivityLogs;
-
+use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome');
 
@@ -119,4 +110,4 @@ Route::middleware(['auth'])
             ->name('settings');
     });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

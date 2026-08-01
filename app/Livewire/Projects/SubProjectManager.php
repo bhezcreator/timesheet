@@ -4,7 +4,6 @@ namespace App\Livewire\Projects;
 
 use App\Models\Project;
 use App\Models\SubProject;
-use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
@@ -18,21 +17,26 @@ class SubProjectManager extends Component
 
     // Projet parent
     public int $projectId;
+
     public Project $project;
 
     // Champs du formulaire indexés sur le modèle SubProject
     public string $name = '';
+
     public string $description = '';
+
     public string $status = 'brouillon';
 
     public ?int $subProjectId = null;
 
     // Gestion Modal
     public bool $showModal = false;
+
     public bool $showDeleteModal = false;
 
     // Variables de suppression
     public ?int $deleteId = null;
+
     public ?string $deleteName = null;
 
     // Recherche réactive
@@ -56,9 +60,9 @@ class SubProjectManager extends Component
     protected function rules(): array
     {
         return [
-            'name'          => ['required', 'string', 'max:255'],
-            'description'   => ['nullable', 'string', 'max:1000'],
-            'status'        => ['required', 'string', 'in:brouillon,actif,annuler'],
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'status' => ['required', 'string', 'in:brouillon,actif,annuler'],
         ];
     }
 
@@ -69,13 +73,13 @@ class SubProjectManager extends Component
         }
 
         throw ValidationException::withMessages([
-            'permission' => ["Action non autorisée : Privilèges insuffisants pour exécuter cette opération."]
+            'permission' => ['Action non autorisée : Privilèges insuffisants pour exécuter cette opération.'],
         ]);
     }
 
     public function render()
     {
-        $searchTerm = '%' . str_replace(['%', '_'], ['\%', '\_'], $this->search) . '%';
+        $searchTerm = '%'.str_replace(['%', '_'], ['\%', '\_'], $this->search).'%';
 
         $subProjects = SubProject::query()
             ->with('users')
@@ -94,7 +98,7 @@ class SubProjectManager extends Component
 
     public function openModal()
     {
-        $this->checkPermissionOrFail("projets.creer");
+        $this->checkPermissionOrFail('projets.creer');
         $this->resetForm();
         $this->showModal = true;
         $this->showDeleteModal = false;
@@ -102,7 +106,7 @@ class SubProjectManager extends Component
 
     public function edit($id)
     {
-        $this->checkPermissionOrFail("projets.modifier");
+        $this->checkPermissionOrFail('projets.modifier');
 
         $subProject = SubProject::where('project_id', $this->projectId)->findOrFail($id);
 
@@ -118,27 +122,27 @@ class SubProjectManager extends Component
     public function save()
     {
         if ($this->subProjectId) {
-            $this->checkPermissionOrFail("projets.modifier");
+            $this->checkPermissionOrFail('projets.modifier');
             $this->validate();
 
             $subProject = SubProject::where('project_id', $this->projectId)->findOrFail($this->subProjectId);
 
             $subProject->update([
-                'name'        => trim($this->name),
+                'name' => trim($this->name),
                 'description' => trim($this->description) ?: null,
-                'status'      => $this->status,
+                'status' => $this->status,
             ]);
 
             session()->flash('success', 'Sous-projet mis à jour avec succès.');
         } else {
-            $this->checkPermissionOrFail("projets.creer");
+            $this->checkPermissionOrFail('projets.creer');
             $this->validate();
 
             SubProject::create([
-                'project_id'  => $this->projectId,
-                'name'        => trim($this->name),
+                'project_id' => $this->projectId,
+                'name' => trim($this->name),
                 'description' => trim($this->description) ?: null,
-                'status'      => $this->status,
+                'status' => $this->status,
             ]);
 
             session()->flash('success', 'Sous-projet créé avec succès.');
@@ -149,7 +153,7 @@ class SubProjectManager extends Component
 
     public function confirmDelete(int $id)
     {
-        $this->checkPermissionOrFail("projets.supprimer");
+        $this->checkPermissionOrFail('projets.supprimer');
 
         $subProject = SubProject::where('project_id', $this->projectId)->findOrFail($id);
         $this->deleteId = $subProject->id;
@@ -160,7 +164,7 @@ class SubProjectManager extends Component
 
     public function delete()
     {
-        $this->checkPermissionOrFail("projets.supprimer");
+        $this->checkPermissionOrFail('projets.supprimer');
 
         if ($this->deleteId) {
             $subProject = SubProject::where('project_id', $this->projectId)->findOrFail($this->deleteId);

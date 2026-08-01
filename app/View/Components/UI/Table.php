@@ -8,9 +8,7 @@ use Illuminate\View\Component;
 
 class Table extends Component
 {
-
     public array $columns;
-
 
     public function __construct(
         array $columns = []
@@ -18,7 +16,6 @@ class Table extends Component
 
         $this->columns = $columns;
     }
-
 
     public function render(): View|Closure|string
     {

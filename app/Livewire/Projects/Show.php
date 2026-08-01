@@ -36,7 +36,7 @@ class Show extends Component
                 'subProjects' => function ($query) {
                     $query->withCount('activities');
                 },
-                'activities'
+                'activities',
             ])
             ->withCount(['subProjects', 'activities', 'users'])
             ->findOrFail($this->projectId);
@@ -82,7 +82,7 @@ class Show extends Component
         }
 
         throw ValidationException::withMessages([
-            'permission' => ["Action non autorisée : Privilèges insuffisants pour consulter ce projet."]
+            'permission' => ['Action non autorisée : Privilèges insuffisants pour consulter ce projet.'],
         ]);
     }
 

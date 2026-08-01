@@ -8,13 +8,11 @@ use Illuminate\View\Component;
 
 class ProgressBar extends Component
 {
-
     public int|float $value;
 
     public string $color;
 
     public string $size;
-
 
     public function __construct(
         int|float $value = 0,
@@ -28,7 +26,6 @@ class ProgressBar extends Component
 
         $this->size = $size;
     }
-
 
     public function render(): View|Closure|string
     {

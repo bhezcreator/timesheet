@@ -2,8 +2,6 @@
 
 namespace App\Livewire\Roles;
 
-use App\Models\User;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
@@ -19,15 +17,19 @@ class Index extends Component
 
     // Variables de formulaire
     public string $name = '';
+
     public array $selectedPermissions = [];
+
     public ?int $roleId = null;
 
     // Gestion des Modales
     public bool $showModal = false;
+
     public bool $showDeleteModal = false;
 
     // Variables de suppression
     public ?int $deleteId = null;
+
     public ?string $deleteName = null;
 
     // Filtre de recherche
@@ -50,14 +52,14 @@ class Index extends Component
         }
 
         throw ValidationException::withMessages([
-            'permission' => ["Action non autorisée : Privilèges insuffisants pour exécuter cette opération."]
+            'permission' => ['Action non autorisée : Privilèges insuffisants pour exécuter cette opération.'],
         ]);
     }
 
     // Rendu principal
     public function render()
     {
-        $searchTerm = '%' . str_replace(['%', '_'], ['\%', '\_'], $this->search) . '%';
+        $searchTerm = '%'.str_replace(['%', '_'], ['\%', '\_'], $this->search).'%';
 
         $roles = Role::query()
             ->with('permissions')
@@ -71,14 +73,14 @@ class Index extends Component
 
         return view('livewire.roles.index', [
             'roles' => $roles,
-            'allPermissions' => $allPermissions
+            'allPermissions' => $allPermissions,
         ]);
     }
 
     // Ouvrir la modale de création
     public function openModal()
     {
-        $this->checkPermissionOrFail("roles.creer");
+        $this->checkPermissionOrFail('roles.creer');
         $this->resetForm();
         $this->showModal = true;
         $this->showDeleteModal = false;
@@ -87,12 +89,12 @@ class Index extends Component
     // Ouvrir la modale d'édition
     public function edit($id)
     {
-        $this->checkPermissionOrFail("roles.modifier");
+        $this->checkPermissionOrFail('roles.modifier');
 
         $role = Role::findOrFail($id);
         $this->roleId = $role->id;
         $this->name = $role->name;
-        $this->selectedPermissions = $role->permissions->pluck('id')->map(fn($id) => (string)$id)->toArray();
+        $this->selectedPermissions = $role->permissions->pluck('id')->map(fn ($id) => (string) $id)->toArray();
         $this->showModal = true;
         $this->showDeleteModal = false;
     }
@@ -101,9 +103,9 @@ class Index extends Component
     public function save()
     {
         if ($this->roleId) {
-            $this->checkPermissionOrFail("roles.modifier");
+            $this->checkPermissionOrFail('roles.modifier');
             $this->validate([
-                'name' => ['required', 'string', 'max:255', 'unique:roles,name,' . $this->roleId]
+                'name' => ['required', 'string', 'max:255', 'unique:roles,name,'.$this->roleId],
             ]);
 
             $role = Role::findOrFail($this->roleId);
@@ -114,12 +116,12 @@ class Index extends Component
 
             session()->flash('success', 'Rôle modifié et permissions synchronisées avec succès.');
         } else {
-            $this->checkPermissionOrFail("roles.creer");
+            $this->checkPermissionOrFail('roles.creer');
             $this->validate();
 
             $role = Role::create([
                 'name' => trim($this->name),
-                'guard_name' => 'web'
+                'guard_name' => 'web',
             ]);
 
             $permissionNames = Permission::whereIn('id', $this->selectedPermissions)->pluck('name')->toArray();
@@ -134,12 +136,12 @@ class Index extends Component
     // Confirmer la suppression
     public function confirmDelete(int $id)
     {
-        $this->checkPermissionOrFail("roles.supprimer");
+        $this->checkPermissionOrFail('roles.supprimer');
 
         $role = Role::findOrFail($id);
         if ($role->name === 'Admin') {
             throw ValidationException::withMessages([
-                'role' => ["Action impossible : Le rôle de sécurité [super-admin] ne peut pas être supprimé."]
+                'role' => ['Action impossible : Le rôle de sécurité [super-admin] ne peut pas être supprimé.'],
             ]);
         }
 
@@ -152,7 +154,7 @@ class Index extends Component
     // Exécuter la suppression
     public function delete()
     {
-        $this->checkPermissionOrFail("roles.supprimer");
+        $this->checkPermissionOrFail('roles.supprimer');
 
         if ($this->deleteId) {
             $role = Role::findOrFail($this->deleteId);

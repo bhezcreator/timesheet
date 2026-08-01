@@ -20,9 +20,8 @@ class AppSettingsService
     /**
      * Récupère la valeur d'un paramètre système avec conversion automatique du type de donnée.
      *
-     * @param string $key La clé du paramètre (ex: 'overtime_enabled')
-     * @param mixed $default Valeur de retour par défaut si la clé n'existe pas en BDD
-     * @return mixed
+     * @param  string  $key  La clé du paramètre (ex: 'overtime_enabled')
+     * @param  mixed  $default  Valeur de retour par défaut si la clé n'existe pas en BDD
      */
     public function get(string $key, mixed $default = null): mixed
     {
@@ -32,7 +31,7 @@ class AppSettingsService
         });
 
         // Si la clé n'existe pas, retourner la valeur par défaut spécifiée
-        if (!array_key_exists($key, $settings)) {
+        if (! array_key_exists($key, $settings)) {
             return $default;
         }
 
@@ -44,7 +43,7 @@ class AppSettingsService
         }
 
         if (is_numeric($value)) {
-            return (strpos($value, '.') !== false) ? (float)$value : (int)$value;
+            return (strpos($value, '.') !== false) ? (float) $value : (int) $value;
         }
 
         return $value;
@@ -52,8 +51,6 @@ class AppSettingsService
 
     /**
      * Vide le cache des paramètres (À appeler impérativement lors de la modification des réglages).
-     *
-     * @return void
      */
     public function clearCache(): void
     {

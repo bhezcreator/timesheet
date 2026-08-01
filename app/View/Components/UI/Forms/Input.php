@@ -9,9 +9,13 @@ use Illuminate\View\Component;
 class Input extends Component
 {
     public string $type;
+
     public ?string $label;
+
     public ?string $name;
+
     public ?string $placeholder;
+
     public bool $required; // Déclaration de la nouvelle propriété booléenne
 
     public function __construct(

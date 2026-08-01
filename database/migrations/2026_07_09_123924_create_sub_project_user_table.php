@@ -25,7 +25,7 @@ return new class extends Migration
 
             $table->primary([
                 'sub_project_id',
-                'user_id'
+                'user_id',
             ]);
         });
     }

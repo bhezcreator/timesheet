@@ -14,10 +14,15 @@ use Livewire\Component;
 class Supervisor extends Component
 {
     public $user;
+
     public $teamMembers = [];
+
     public $pendingReports = 0;
+
     public $totalReports = 0;
+
     public $validationRate = 0;
+
     public $teamStats = [
         'total_activities' => 0,
         'total_hours' => 0,
@@ -26,8 +31,11 @@ class Supervisor extends Component
         'rejected_reports' => 0,
         'pending_reports' => 0,
     ];
+
     public $recentActivities = [];
+
     public $reportsByStatus = [];
+
     public $topPerformers = [];
 
     public function mount()
@@ -35,9 +43,9 @@ class Supervisor extends Component
         $this->user = User::find(Auth::id());
 
         // Vérifier les permissions
-        if (!$this->user->can('validations.voir')) {
+        if (! $this->user->can('validations.voir')) {
             throw ValidationException::withMessages([
-                'permission' => ["Action non autorisée : Vous n'avez pas les permissions nécessaires.."]
+                'permission' => ["Action non autorisée : Vous n'avez pas les permissions nécessaires.."],
             ]);
         }
 
@@ -93,14 +101,14 @@ class Supervisor extends Component
         $teamIds = array_column($this->teamMembers, 'id');
 
         $this->pendingReports = MonthlyReport::where('status', 'soumis')
-            ->when(!empty($teamIds), function ($query) use ($teamIds) {
+            ->when(! empty($teamIds), function ($query) use ($teamIds) {
                 return $query->whereIn('user_id', $teamIds);
             })
             ->count();
 
         // Total des rapports soumis
         $this->totalReports = MonthlyReport::whereIn('status', ['soumis', 'approuvé', 'rejeté'])
-            ->when(!empty($teamIds), function ($query) use ($teamIds) {
+            ->when(! empty($teamIds), function ($query) use ($teamIds) {
                 return $query->whereIn('user_id', $teamIds);
             })
             ->count();
@@ -154,6 +162,7 @@ class Supervisor extends Component
 
         if (empty($teamIds)) {
             $this->validationRate = 0;
+
             return;
         }
 
@@ -177,6 +186,7 @@ class Supervisor extends Component
 
         if (empty($teamIds)) {
             $this->recentActivities = [];
+
             return;
         }
 
@@ -215,6 +225,7 @@ class Supervisor extends Component
                 'approuvé' => 0,
                 'rejeté' => 0,
             ];
+
             return;
         }
 
@@ -241,6 +252,7 @@ class Supervisor extends Component
 
         if (empty($teamIds)) {
             $this->topPerformers = [];
+
             return;
         }
 
@@ -282,8 +294,9 @@ class Supervisor extends Component
 
         // Vérifier que le rapport appartient bien à un membre de l'équipe
         $teamIds = array_column($this->teamMembers, 'id');
-        if (!in_array($report->user_id, $teamIds)) {
+        if (! in_array($report->user_id, $teamIds)) {
             session()->flash('error', 'Vous n\'êtes pas autorisé à valider ce rapport.');
+
             return;
         }
 
@@ -306,8 +319,9 @@ class Supervisor extends Component
 
         // Vérifier que le rapport appartient bien à un membre de l'équipe
         $teamIds = array_column($this->teamMembers, 'id');
-        if (!in_array($report->user_id, $teamIds)) {
+        if (! in_array($report->user_id, $teamIds)) {
             session()->flash('error', 'Vous n\'êtes pas autorisé à valider ce rapport.');
+
             return;
         }
 

@@ -15,11 +15,11 @@ class SettingsTabs extends Component
 
     // Liste des onglets disponibles
     public array $tabs = [
-        'profile'  => ['label' => 'Profil', 'icon' => 'la-user-tie'],
+        'profile' => ['label' => 'Profil', 'icon' => 'la-user-tie'],
         'signature' => ['label' => 'Signature', 'icon' => 'la-signature'],
-        'type'  => ['label' => 'Type activités', 'icon' => 'la-tags'],
-        'blockedDay'  => ['label' => 'Jours verrouillés', 'icon' => 'la-calendar-times'],
-        'general'  => ['label' => 'Paramètres généraux', 'icon' => 'la-sliders-h'],
+        'type' => ['label' => 'Type activités', 'icon' => 'la-tags'],
+        'blockedDay' => ['label' => 'Jours verrouillés', 'icon' => 'la-calendar-times'],
+        'general' => ['label' => 'Paramètres généraux', 'icon' => 'la-sliders-h'],
         'logs' => ['label' => 'Journal d\'activité', 'icon' => 'la-history'],
     ];
 

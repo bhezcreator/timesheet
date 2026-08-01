@@ -5,19 +5,22 @@ namespace App\Livewire\Activities;
 use App\Models\Activity;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Livewire\Component;
 use Livewire\Attributes\Layout;
+use Livewire\Component;
 
 #[Layout('layouts.app')]
 class TimesheetCalendar extends Component
 {
     // Propriétés de navigation
     public $viewMode = 'month'; // 'year', 'month', 'week'
+
     public $currentDate;
 
     // Propriétés pour les modales
     public $selectedActivity = null;
+
     public $deleteId = null;
+
     public $deleteName = '';
 
     public function mount()
@@ -33,18 +36,26 @@ class TimesheetCalendar extends Component
     public function next()
     {
         $date = Carbon::parse($this->currentDate);
-        if ($this->viewMode === 'year') $date->addYear();
-        elseif ($this->viewMode === 'month') $date->addMonth();
-        elseif ($this->viewMode === 'week') $date->addWeek();
+        if ($this->viewMode === 'year') {
+            $date->addYear();
+        } elseif ($this->viewMode === 'month') {
+            $date->addMonth();
+        } elseif ($this->viewMode === 'week') {
+            $date->addWeek();
+        }
         $this->currentDate = $date->format('Y-m-d');
     }
 
     public function previous()
     {
         $date = Carbon::parse($this->currentDate);
-        if ($this->viewMode === 'year') $date->subYear();
-        elseif ($this->viewMode === 'month') $date->subMonth();
-        elseif ($this->viewMode === 'week') $date->subWeek();
+        if ($this->viewMode === 'year') {
+            $date->subYear();
+        } elseif ($this->viewMode === 'month') {
+            $date->subMonth();
+        } elseif ($this->viewMode === 'week') {
+            $date->subWeek();
+        }
         $this->currentDate = $date->format('Y-m-d');
     }
 
@@ -109,21 +120,26 @@ class TimesheetCalendar extends Component
         } else { // week
             $query->whereBetween('activity_date', [
                 $date->copy()->startOfWeek(),
-                $date->copy()->endOfWeek()
+                $date->copy()->endOfWeek(),
             ]);
         }
 
         return $query->orderBy('activity_date')
             ->orderBy('start_time')
             ->get()
-            ->groupBy(fn($item) => $item->activity_date->format('Y-m-d'));
+            ->groupBy(fn ($item) => $item->activity_date->format('Y-m-d'));
     }
 
     private function getNavigationTitle(Carbon $date)
     {
-        if ($this->viewMode === 'year') return $date->translatedFormat('Y');
-        if ($this->viewMode === 'month') return $date->translatedFormat('F Y');
-        return 'Semaine ' . $date->weekOfYear . ' - ' . $date->translatedFormat('Y');
+        if ($this->viewMode === 'year') {
+            return $date->translatedFormat('Y');
+        }
+        if ($this->viewMode === 'month') {
+            return $date->translatedFormat('F Y');
+        }
+
+        return 'Semaine '.$date->weekOfYear.' - '.$date->translatedFormat('Y');
     }
 
     private function buildCalendarData(Carbon $date)
@@ -135,7 +151,7 @@ class TimesheetCalendar extends Component
             $start = $date->copy()->startOfWeek();
             $end = $date->copy()->endOfWeek();
         } else { // Mode Année (Retourne la liste des mois)
-            return collect(range(1, 12))->map(fn($m) => Carbon::create($date->year, $m, 1));
+            return collect(range(1, 12))->map(fn ($m) => Carbon::create($date->year, $m, 1));
         }
 
         $days = [];
@@ -143,6 +159,7 @@ class TimesheetCalendar extends Component
             $days[] = $start->copy();
             $start->addDay();
         }
+
         return $days;
     }
 }

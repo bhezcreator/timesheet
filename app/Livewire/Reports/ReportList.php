@@ -4,9 +4,6 @@ namespace App\Livewire\Reports;
 
 use App\Models\MonthlyReport;
 use App\Models\User;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -17,16 +14,24 @@ class ReportList extends Component
     use WithPagination;
 
     public $status = '';
+
     public $month = '';
+
     public $year = '';
+
     public $search = '';
+
     public $perPage = 15;
+
     public $userFilter = '';
 
     // Statistiques
     public $totalSoumis = 0;
+
     public $totalApprouves = 0;
+
     public $totalRejetes = 0;
+
     public $totalBrouillons = 0;
 
     // Pour l'impression
@@ -104,10 +109,10 @@ class ReportList extends Component
         if ($this->search) {
             $query->where(function ($q) {
                 $q->whereHas('user', function ($subQuery) {
-                    $subQuery->where('name', 'like', '%' . $this->search . '%')
-                        ->orWhere('first_name', 'like', '%' . $this->search . '%')
-                        ->orWhere('last_name', 'like', '%' . $this->search . '%');
-                })->orWhere('id', 'like', '%' . $this->search . '%');
+                    $subQuery->where('name', 'like', '%'.$this->search.'%')
+                        ->orWhere('first_name', 'like', '%'.$this->search.'%')
+                        ->orWhere('last_name', 'like', '%'.$this->search.'%');
+                })->orWhere('id', 'like', '%'.$this->search.'%');
             });
         }
 

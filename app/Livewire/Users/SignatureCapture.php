@@ -12,8 +12,10 @@ use Livewire\WithFileUploads;
 class SignatureCapture extends Component
 {
     use WithFileUploads;
+
     // Reçoit les données de l'image au format Base64 depuis le Javascript
     public ?string $signatureData = null;
+
     // Variable temporaire pour le fichier importé
     public $signatureFile = null;
 
@@ -32,31 +34,32 @@ class SignatureCapture extends Component
         // 1. Validation de la présence du tracé
         if (empty($this->signatureData)) {
             $this->dispatch('notify', type: 'error', message: 'Le cadre de signature est vide.');
+
             return;
         }
 
         // 2. Extraction et décodage de la chaîne Base64 (ex: "data:image/png;base64,iVBORw0K...")
         try {
-            $imageInfo = explode(";base64,", $this->signatureData);
-            $imageType = explode("image/", $imageInfo[0])[1]; // png, jpeg, etc.
+            $imageInfo = explode(';base64,', $this->signatureData);
+            $imageType = explode('image/', $imageInfo[0])[1]; // png, jpeg, etc.
             $base64Image = base64_decode($imageInfo[1]);
 
             // 3. Génération d'un nom unique pour le fichier
-            $fileName = 'signatures/' . Str::random(40) . '.' . $imageType;
+            $fileName = 'signatures/'.Str::random(40).'.'.$imageType;
 
             // 4. Stockage physique du fichier sur le disque public (équivalent à store())
             Storage::disk('public')->put($fileName, $base64Image);
 
             // 5. Sauvegarde du chemin en base de données pour l'utilisateur connecté
             $this->user->update([
-                'signature' => $fileName
+                'signature' => $fileName,
             ]);
 
             session()->flash('success', 'Votre signature électronique a été enregistrée avec succès.');
             // Réinitialisation
             $this->reset('signatureData');
         } catch (\Exception $e) {
-            session()->flash('error', 'Erreur lors du traitement de la signature : ' . $e->getMessage());
+            session()->flash('error', 'Erreur lors du traitement de la signature : '.$e->getMessage());
         }
     }
 
@@ -65,7 +68,7 @@ class SignatureCapture extends Component
      */
     public function toggleSignaturePad()
     {
-        $this->showSignaturePad = !$this->showSignaturePad;
+        $this->showSignaturePad = ! $this->showSignaturePad;
     }
 
     /**
@@ -93,7 +96,7 @@ class SignatureCapture extends Component
 
             // Mise à jour de l'utilisateur
             $this->user->update([
-                'signature' => $path
+                'signature' => $path,
             ]);
 
             // Nettoyage de la variable temporaire
@@ -102,7 +105,7 @@ class SignatureCapture extends Component
 
             $this->showSignaturePad = false;
         } catch (\Exception $e) {
-            session()->flash('error', 'Erreur lors de l\'enregistrement du fichier : ' . $e->getMessage());
+            session()->flash('error', 'Erreur lors de l\'enregistrement du fichier : '.$e->getMessage());
         }
     }
 

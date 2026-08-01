@@ -28,7 +28,7 @@ return new class extends Migration
             $table->enum('role', [
                 'responsable',
                 'superviseur',
-                'membre'
+                'membre',
             ])->default('membre');
 
             /*
@@ -40,7 +40,7 @@ return new class extends Migration
             $table->timestamps();
             $table->primary([
                 'project_id',
-                'user_id'
+                'user_id',
             ]);
         });
     }

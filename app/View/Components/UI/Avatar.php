@@ -8,7 +8,6 @@ use Illuminate\View\Component;
 
 class Avatar extends Component
 {
-
     public ?string $src;
 
     public ?string $name;
@@ -16,7 +15,6 @@ class Avatar extends Component
     public string $size;
 
     public bool $status;
-
 
     public function __construct(
         ?string $src = null,
@@ -30,7 +28,6 @@ class Avatar extends Component
         $this->size = $size;
         $this->status = $status;
     }
-
 
     public function render(): View|Closure|string
     {

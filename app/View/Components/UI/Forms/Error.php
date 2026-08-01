@@ -8,13 +8,11 @@ use Illuminate\View\Component;
 
 class Error extends Component
 {
-
     public function __construct(
 
         public string $name,
 
     ) {}
-
 
     public function render(): View|Closure|string
     {

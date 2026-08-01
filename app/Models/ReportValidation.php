@@ -3,9 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Activitylog\Traits\LogsActivity;
-use Spatie\Activitylog\LogOptions;
 use Illuminate\Support\Facades\Auth;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class ReportValidation extends Model
 {
@@ -16,7 +17,7 @@ class ReportValidation extends Model
         'validator_id',
         'decision',
         'comment',
-        'validated_at'
+        'validated_at',
     ];
 
     protected $casts = [
@@ -33,7 +34,7 @@ class ReportValidation extends Model
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
             ->useLogName('report_validation')
-            ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
+            ->setDescriptionForEvent(fn (string $eventName) => match ($eventName) {
                 'created' => 'Validation de rapport effectuée',
                 'updated' => 'Validation de rapport modifiée',
                 'deleted' => 'Validation de rapport supprimée',
@@ -56,7 +57,7 @@ class ReportValidation extends Model
      */
     public function activityLogs()
     {
-        return $this->morphMany(\Spatie\Activitylog\Models\Activity::class, 'subject');
+        return $this->morphMany(Activity::class, 'subject');
     }
 
     /**
@@ -64,7 +65,7 @@ class ReportValidation extends Model
      */
     public function latestActivityLog()
     {
-        return $this->morphOne(\Spatie\Activitylog\Models\Activity::class, 'subject')->latest('created_at');
+        return $this->morphOne(Activity::class, 'subject')->latest('created_at');
     }
 
     /**
@@ -142,7 +143,7 @@ class ReportValidation extends Model
     /**
      * Approuver la validation avec log personnalisé
      */
-    public function approve(string $comment = null)
+    public function approve(?string $comment = null)
     {
         $this->decision = 'Validé';
         $this->validated_at = now();
@@ -158,7 +159,7 @@ class ReportValidation extends Model
                 'validator_id' => $this->validator_id,
                 'decision' => 'approuvé',
                 'comment' => $comment,
-                'validated_at' => now()
+                'validated_at' => now(),
             ])
             ->log('Rapport approuvé');
 
@@ -190,7 +191,7 @@ class ReportValidation extends Model
                 'validator_id' => $this->validator_id,
                 'decision' => 'rejeté',
                 'reason' => $reason,
-                'validated_at' => now()
+                'validated_at' => now(),
             ])
             ->log('Rapport rejeté');
 
@@ -206,7 +207,7 @@ class ReportValidation extends Model
     /**
      * Annuler la validation avec log personnalisé
      */
-    public function cancel(string $reason = null)
+    public function cancel(?string $reason = null)
     {
         $oldDecision = $this->decision;
         $this->decision = null;
@@ -222,7 +223,7 @@ class ReportValidation extends Model
                 'validator_id' => $this->validator_id,
                 'old_decision' => $oldDecision,
                 'reason' => $reason,
-                'cancelled_at' => now()
+                'cancelled_at' => now(),
             ])
             ->log('Validation de rapport annulée');
 
@@ -251,7 +252,7 @@ class ReportValidation extends Model
                 'report_id' => $this->monthly_report_id,
                 'old_comment' => $oldComment,
                 'new_comment' => $comment,
-                'added_at' => now()
+                'added_at' => now(),
             ])
             ->log('Commentaire de validation ajouté');
 

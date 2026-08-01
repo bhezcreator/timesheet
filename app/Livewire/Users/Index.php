@@ -19,24 +19,35 @@ class Index extends Component
 
     // Champs de formulaire indexés sur le modèle
     public string $num_order = '';
+
     public string $name = '';
+
     public string $first_name = '';
+
     public string $last_name = '';
+
     public string $job_title = '';
+
     public ?int $supervisor_id = null;
+
     public string $email = '';
+
     public string $password = '';
+
     public bool $is_active = true;
+
     public array $selectedRoles = [];
 
     public ?int $userId = null;
 
     // Gestion Modal
     public bool $showModal = false;
+
     public bool $showDeleteModal = false;
 
     // Variables de suppression
     public ?int $deleteId = null;
+
     public ?string $deleteName = null;
 
     // Recherche réactive
@@ -54,14 +65,14 @@ class Index extends Component
     protected function rules(): array
     {
         return [
-            'num_order'   => ['required', 'string', 'max:50', 'unique:users,num_order,' . $this->userId],
-            'name'        => ['required', 'string', 'max:255'],
-            'first_name'  => ['required', 'string', 'max:255'],
-            'last_name'   => ['nullable', 'string', 'max:255'],
-            'job_title'   => ['required', 'string', 'max:255'],
+            'num_order' => ['required', 'string', 'max:50', 'unique:users,num_order,'.$this->userId],
+            'name' => ['required', 'string', 'max:255'],
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['nullable', 'string', 'max:255'],
+            'job_title' => ['required', 'string', 'max:255'],
             'supervisor_id' => ['nullable', 'integer', 'exists:users,id'],
-            'email'       => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $this->userId],
-            'is_active'   => ['required', 'boolean'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$this->userId],
+            'is_active' => ['required', 'boolean'],
             'selectedRoles' => [
                 'required',
                 'array',
@@ -74,14 +85,14 @@ class Index extends Component
                     if ($roles->count() !== count($value)) {
                         $fail('Un ou plusieurs rôles sont invalides.');
                     }
-                }
+                },
             ],
             'password' => [
                 $this->userId ? 'nullable' : 'required',
                 'string',
                 'min:8',
                 // 4. Validation de la force du mot de passe
-                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/'
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/',
             ],
         ];
     }
@@ -99,7 +110,7 @@ class Index extends Component
         }
 
         throw ValidationException::withMessages([
-            'permission' => ["Action non autorisée : Privilèges insuffisants pour exécuter cette opération."]
+            'permission' => ['Action non autorisée : Privilèges insuffisants pour exécuter cette opération.'],
         ]);
     }
 
@@ -141,16 +152,16 @@ class Index extends Component
         // 2. Construction sécurisée avec bindings
         $users = User::query()
             ->with(['supervisor', 'roles'])
-            ->when(!empty($searchTerm), function ($query) use ($searchTerm) {
+            ->when(! empty($searchTerm), function ($query) use ($searchTerm) {
                 $query->where(function ($q) use ($searchTerm) {
-                    $q->where('name', 'LIKE', '%' . $searchTerm . '%')
-                        ->orWhere('first_name', 'LIKE', '%' . $searchTerm . '%')
-                        ->orWhere('email', 'LIKE', '%' . $searchTerm . '%')
-                        ->orWhere('num_order', 'LIKE', '%' . $searchTerm . '%');
+                    $q->where('name', 'LIKE', '%'.$searchTerm.'%')
+                        ->orWhere('first_name', 'LIKE', '%'.$searchTerm.'%')
+                        ->orWhere('email', 'LIKE', '%'.$searchTerm.'%')
+                        ->orWhere('num_order', 'LIKE', '%'.$searchTerm.'%');
                 });
             })
             // 3. Filtrer par permissions
-            ->when(!Gate::allows('Admin'), function ($query) {
+            ->when(! Gate::allows('Admin'), function ($query) {
                 // 4. Les utilisateurs normaux ne voient que leur équipe
                 $userId = Auth::id();
                 $subordinates = User::where('supervisor_id', $userId)->pluck('id');
@@ -162,8 +173,8 @@ class Index extends Component
         // 5. Sécurisation des superviseurs
         $supervisors = User::query()
             ->where('is_active', true)
-            ->when($this->userId, fn($q) => $q->where('id', '!=', $this->userId))
-            ->when(!Gate::allows('Admin'), function ($query) {
+            ->when($this->userId, fn ($q) => $q->where('id', '!=', $this->userId))
+            ->when(! Gate::allows('Admin'), function ($query) {
                 // 6. Non-Admin ne voit que ses subordonnés
                 $query->where('supervisor_id', Auth::id());
             })
@@ -184,7 +195,7 @@ class Index extends Component
 
     public function openModal()
     {
-        $this->checkPermissionOrFail("utilisateurs.creer");
+        $this->checkPermissionOrFail('utilisateurs.creer');
         $this->resetForm();
         $this->showModal = true;
         $this->showDeleteModal = false;
@@ -192,7 +203,7 @@ class Index extends Component
 
     public function edit($id)
     {
-        $this->checkPermissionOrFail("utilisateurs.modifier");
+        $this->checkPermissionOrFail('utilisateurs.modifier');
 
         $user = User::findOrFail($id);
         $this->userId = $user->id;
@@ -203,10 +214,10 @@ class Index extends Component
         $this->job_title = $user->job_title;
         $this->supervisor_id = $user->supervisor_id;
         $this->email = $user->email;
-        $this->is_active = (bool)$user->is_active;
+        $this->is_active = (bool) $user->is_active;
         $this->password = '';
 
-        $this->selectedRoles = $user->roles->pluck('id')->map(fn($id) => (string)$id)->toArray();
+        $this->selectedRoles = $user->roles->pluck('id')->map(fn ($id) => (string) $id)->toArray();
         $this->showModal = true;
         $this->showDeleteModal = false;
     }
@@ -214,7 +225,7 @@ class Index extends Component
     public function save()
     {
         if ($this->userId) {
-            $this->checkPermissionOrFail("utilisateurs.modifier");
+            $this->checkPermissionOrFail('utilisateurs.modifier');
             $this->validate();
 
             // Vérification des cycles de supervision
@@ -225,17 +236,17 @@ class Index extends Component
             $user = User::findOrFail($this->userId);
 
             $data = [
-                'num_order'   => trim($this->num_order),
-                'name'        => trim($this->name),
-                'first_name'  => trim($this->first_name),
-                'last_name'   => trim($this->last_name) ?: null,
-                'job_title'   => trim($this->job_title),
+                'num_order' => trim($this->num_order),
+                'name' => trim($this->name),
+                'first_name' => trim($this->first_name),
+                'last_name' => trim($this->last_name) ?: null,
+                'job_title' => trim($this->job_title),
                 'supervisor_id' => $this->supervisor_id,
-                'email'       => trim($this->email),
-                'is_active'   => $this->is_active,
+                'email' => trim($this->email),
+                'is_active' => $this->is_active,
             ];
 
-            if (!empty($this->password)) {
+            if (! empty($this->password)) {
                 $data['password'] = Hash::make($this->password);
             }
 
@@ -251,7 +262,7 @@ class Index extends Component
 
             session()->flash('success', 'Personnel et habilitations mis à jour avec succès.');
         } else {
-            $this->checkPermissionOrFail("utilisateurs.creer");
+            $this->checkPermissionOrFail('utilisateurs.creer');
             $this->validate();
 
             // Vérification des cycles de supervision
@@ -260,21 +271,21 @@ class Index extends Component
             }
 
             $user = User::create([
-                'num_order'   => trim($this->num_order),
-                'name'        => trim($this->name),
-                'first_name'  => trim($this->first_name),
-                'last_name'   => trim($this->last_name) ?: null,
-                'job_title'   => trim($this->job_title),
+                'num_order' => trim($this->num_order),
+                'name' => trim($this->name),
+                'first_name' => trim($this->first_name),
+                'last_name' => trim($this->last_name) ?: null,
+                'job_title' => trim($this->job_title),
                 'supervisor_id' => $this->supervisor_id,
-                'email'       => trim($this->email),
-                'password'    => Hash::make($this->password),
-                'is_active'   => $this->is_active,
+                'email' => trim($this->email),
+                'password' => Hash::make($this->password),
+                'is_active' => $this->is_active,
                 'settings' => [
                     'notifications' => [
                         'database' => true,
                         'email' => false,
-                    ]
-                ]
+                    ],
+                ],
             ]);
 
             // Synchronisation sécurisée des rôles
@@ -296,7 +307,7 @@ class Index extends Component
         // Empêcher un utilisateur d'être son propre superviseur
         if ($this->userId && $supervisorId === $this->userId) {
             throw ValidationException::withMessages([
-                'supervisor_id' => ["Un utilisateur ne peut pas être son propre superviseur."]
+                'supervisor_id' => ['Un utilisateur ne peut pas être son propre superviseur.'],
             ]);
         }
 
@@ -305,10 +316,10 @@ class Index extends Component
         $currentId = $supervisorId;
         $userId = $this->userId ?? Auth::id();
 
-        while ($currentId && !in_array($currentId, $visited)) {
+        while ($currentId && ! in_array($currentId, $visited)) {
             if ($currentId === $userId) {
                 throw ValidationException::withMessages([
-                    'supervisor_id' => ["Cette configuration créerait une boucle de supervision."]
+                    'supervisor_id' => ['Cette configuration créerait une boucle de supervision.'],
                 ]);
             }
 
@@ -320,25 +331,25 @@ class Index extends Component
 
     public function confirmDelete(int $id)
     {
-        $this->checkPermissionOrFail("utilisateurs.supprimer");
+        $this->checkPermissionOrFail('utilisateurs.supprimer');
 
         $user = User::findOrFail($id);
 
         if ($user->id === Auth::id()) {
             throw ValidationException::withMessages([
-                'user' => ["Action impossible : Vous ne pouvez pas supprimer votre propre compte."]
+                'user' => ['Action impossible : Vous ne pouvez pas supprimer votre propre compte.'],
             ]);
         }
 
         $this->deleteId = $user->id;
-        $this->deleteName = $user->first_name . ' ' . $user->name;
+        $this->deleteName = $user->first_name.' '.$user->name;
         $this->showDeleteModal = true;
         $this->showModal = false;
     }
 
     public function delete()
     {
-        $this->checkPermissionOrFail("utilisateurs.supprimer");
+        $this->checkPermissionOrFail('utilisateurs.supprimer');
 
         if ($this->deleteId) {
             $user = User::findOrFail($this->deleteId);
@@ -377,7 +388,7 @@ class Index extends Component
             'password',
             'is_active',
             'selectedRoles',
-            'userId'
+            'userId',
         ]);
         $this->resetValidation();
         $this->resetPage();

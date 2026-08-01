@@ -3,20 +3,25 @@
 namespace App\Livewire\Reports;
 
 use App\Models\MonthlyReport;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
-use Livewire\Component;
 use Livewire\Attributes\Layout;
+use Livewire\Component;
 
 #[Layout('layouts.print')]
 class PrintReports extends Component
 {
     public $reports;
+
     public $filters = [];
+
     public $statistics = [];
+
     public $status = '';
+
     public $month = '';
+
     public $year = '';
+
     public $search = '';
 
     public function mount($filters = null)
@@ -57,21 +62,21 @@ class PrintReports extends Component
             $query = MonthlyReport::with(['user', 'activities']);
 
             // Appliquer les filtres
-            if (!empty($this->status)) {
+            if (! empty($this->status)) {
                 $query->where('status', $this->status);
             }
 
-            if (!empty($this->month) && !empty($this->year)) {
+            if (! empty($this->month) && ! empty($this->year)) {
                 $query->where('month', $this->month)
                     ->where('year', $this->year);
             }
 
-            if (!empty($this->search)) {
+            if (! empty($this->search)) {
                 $query->whereHas('user', function ($q) {
-                    $q->where('name', 'like', '%' . $this->search . '%')
-                        ->orWhere('email', 'like', '%' . $this->search . '%')
-                        ->orWhere('first_name', 'like', '%' . $this->search . '%')
-                        ->orWhere('last_name', 'like', '%' . $this->search . '%');
+                    $q->where('name', 'like', '%'.$this->search.'%')
+                        ->orWhere('email', 'like', '%'.$this->search.'%')
+                        ->orWhere('first_name', 'like', '%'.$this->search.'%')
+                        ->orWhere('last_name', 'like', '%'.$this->search.'%');
                 });
             }
 
@@ -89,7 +94,7 @@ class PrintReports extends Component
         } catch (\Exception $e) {
             Log::error('Erreur lors du chargement des rapports pour impression', [
                 'error' => $e->getMessage(),
-                'filters' => $this->filters
+                'filters' => $this->filters,
             ]);
 
             $this->reports = collect([]);
@@ -135,6 +140,7 @@ class PrintReports extends Component
             // Si c'est une chaîne avec des virgules
             if (str_contains($ids, ',')) {
                 $parts = explode(',', $ids);
+
                 return array_filter(array_map('trim', $parts));
             }
 

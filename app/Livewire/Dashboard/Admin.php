@@ -16,29 +16,47 @@ use Livewire\Component;
 class Admin extends Component
 {
     public $user;
+
     public $hasPermission = true;
+
     public $errorMessage = '';
 
     // Statistiques globales
     public $totalProjects = 0;
+
     public $activeProjects = 0;
+
     public $completedProjects = 0;
+
     public $totalSubProjects = 0;
+
     public $activeSubProjects = 0;
+
     public $totalUsers = 0;
+
     public $totalActivities = 0;
+
     public $totalActivitiesMonth = 0;
+
     public $totalHours = 0;
+
     public $totalReports = 0;
+
     public $pendingReports = 0;
+
     public $validationRate = 0;
 
     // Données pour les graphiques
     public $projectsByStatus = [];
+
     public $activitiesByMonth = [];
+
     public $reportsByStatus = [];
+
     public $topProjects = [];
+
     public $recentProjects = [];
+
     public $projectStats = [];
 
     public function mount()
@@ -47,9 +65,10 @@ class Admin extends Component
 
         try {
             // Vérifier si l'utilisateur a la permission tableauAdmin
-            if (!$this->user || !$this->user->can('tableauAdmin')) {
+            if (! $this->user || ! $this->user->can('tableauAdmin')) {
                 $this->hasPermission = false;
                 $this->errorMessage = 'Vous n\'avez pas les permissions nécessaires pour accéder à ce tableau de bord.';
+
                 return;
             }
 
@@ -59,7 +78,7 @@ class Admin extends Component
             $this->errorMessage = 'Une erreur est survenue lors du chargement des données.';
             Log::error('Erreur dans Admin Dashboard', [
                 'error' => $e->getMessage(),
-                'user_id' => $this->user?->id
+                'user_id' => $this->user?->id,
             ]);
         }
     }
@@ -142,6 +161,7 @@ class Admin extends Component
             ->get()
             ->map(function ($item) {
                 $date = Carbon::createFromDate($item->year, $item->month, 1);
+
                 return [
                     'month' => $date->translatedFormat('F'), // Déjà formaté
                     'month_number' => $item->month,

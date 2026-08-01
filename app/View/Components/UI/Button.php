@@ -9,6 +9,7 @@ use Illuminate\View\Component;
 class Button extends Component
 {
     public string $variant;
+
     public string $size;
 
     public function __construct(

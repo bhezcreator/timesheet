@@ -8,7 +8,6 @@ use Illuminate\View\Component;
 
 class Checkbox extends Component
 {
-
     public function __construct(
 
         public ?string $name = null,
@@ -24,8 +23,6 @@ class Checkbox extends Component
         public ?string $helper = null,
 
     ) {}
-
-
 
     public function render(): View|Closure|string
     {

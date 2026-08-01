@@ -3,9 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Activitylog\Traits\LogsActivity;
-use Spatie\Activitylog\LogOptions;
 use Illuminate\Support\Facades\Auth;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Project extends Model
 {
@@ -18,7 +18,7 @@ class Project extends Model
         'manager_id',
         'start_date',
         'end_date',
-        'status'
+        'status',
     ];
 
     protected function casts(): array
@@ -39,7 +39,7 @@ class Project extends Model
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
             ->useLogName('project')
-            ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
+            ->setDescriptionForEvent(fn (string $eventName) => match ($eventName) {
                 'created' => "Projet {$this->name} créé",
                 'updated' => "Projet {$this->name} modifié",
                 'deleted' => "Projet {$this->name} supprimé",
@@ -59,7 +59,7 @@ class Project extends Model
             ->withPivot([
                 'role',
                 'assigned_at',
-                'ended_at'
+                'ended_at',
             ])
             ->withTimestamps();
     }
@@ -168,7 +168,7 @@ class Project extends Model
     public function isOverdue(): bool
     {
         return $this->end_date && $this->end_date->isPast()
-            && !in_array($this->status, ['completed', 'cancelled']);
+            && ! in_array($this->status, ['completed', 'cancelled']);
     }
 
     /**
@@ -182,7 +182,7 @@ class Project extends Model
     /**
      * Changer le statut du projet avec log personnalisé
      */
-    public function changeStatus(string $newStatus, string $reason = null)
+    public function changeStatus(string $newStatus, ?string $reason = null)
     {
         $oldStatus = $this->status;
         $this->status = $newStatus;
@@ -195,7 +195,7 @@ class Project extends Model
                 'old_status' => $oldStatus,
                 'new_status' => $newStatus,
                 'reason' => $reason,
-                'changed_at' => now()
+                'changed_at' => now(),
             ])
             ->log("Statut du projet changé de {$oldStatus} à {$newStatus}");
 
@@ -205,7 +205,7 @@ class Project extends Model
     /**
      * Changer le manager du projet avec log personnalisé
      */
-    public function changeManager(User $newManager, string $reason = null)
+    public function changeManager(User $newManager, ?string $reason = null)
     {
         $oldManagerId = $this->manager_id;
         $oldManagerName = $this->manager?->name;
@@ -221,7 +221,7 @@ class Project extends Model
                 'new_manager_id' => $newManager->id,
                 'new_manager_name' => $newManager->name,
                 'reason' => $reason,
-                'changed_at' => now()
+                'changed_at' => now(),
             ])
             ->log("Manager du projet changé de {$oldManagerName} à {$newManager->name}");
 
@@ -231,7 +231,7 @@ class Project extends Model
     /**
      * Marquer le projet comme terminé avec log
      */
-    public function complete(string $reason = null)
+    public function complete(?string $reason = null)
     {
         return $this->changeStatus('completed', $reason);
     }
@@ -239,7 +239,7 @@ class Project extends Model
     /**
      * Marquer le projet comme en pause avec log
      */
-    public function pause(string $reason = null)
+    public function pause(?string $reason = null)
     {
         return $this->changeStatus('on_hold', $reason);
     }
@@ -247,7 +247,7 @@ class Project extends Model
     /**
      * Réactiver le projet avec log
      */
-    public function reactivate(string $reason = null)
+    public function reactivate(?string $reason = null)
     {
         return $this->changeStatus('active', $reason);
     }
@@ -255,7 +255,7 @@ class Project extends Model
     /**
      * Annuler le projet avec log
      */
-    public function cancel(string $reason = null)
+    public function cancel(?string $reason = null)
     {
         return $this->changeStatus('cancelled', $reason);
     }

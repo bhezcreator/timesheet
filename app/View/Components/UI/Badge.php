@@ -12,7 +12,6 @@ class Badge extends Component
 
     public string $size;
 
-
     public function __construct(
         string $variant = 'default',
         string $size = 'md'
@@ -21,7 +20,6 @@ class Badge extends Component
         $this->variant = $variant;
         $this->size = $size;
     }
-
 
     public function render(): View|Closure|string
     {

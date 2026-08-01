@@ -3,6 +3,7 @@
 namespace App\Livewire\Users;
 
 use App\Models\Setting;
+use App\Services\AppSettingsService;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
@@ -11,15 +12,22 @@ class Settings extends Component
 {
     // 1. Temps et Calendrier
     public float $time_workday_hours = 8.0;
+
     public float $time_workweek_hours = 40.0;
+
     public int $time_first_day_of_week = 1; // 1 = Lundi
+
     public bool $time_allow_weekend_logging = false;
 
     // 2. Règles de Saisie et Validations
     public float $timesheet_max_hours_per_day = 12.0;
+
     public bool $timesheet_allow_future_logging = false;
+
     public int $timesheet_lock_day_of_month = 5;
+
     public string $timesheet_period_type = 'monthly';
+
     public bool $timesheet_require_description = true;
 
     // 3. Heures Supplémentaires
@@ -33,6 +41,7 @@ class Settings extends Component
 
     // 6. Rappels et Notifications (Nouvelle catégorie à ajouter)
     public bool $reminder_submit_enabled = true;
+
     public string $reminder_manager_pending = '08:00';
 
     protected function rules()
@@ -77,9 +86,9 @@ class Settings extends Component
                 if (is_bool($this->{$key})) {
                     $this->{$key} = filter_var($value, FILTER_VALIDATE_BOOLEAN);
                 } elseif (is_float($this->{$key})) {
-                    $this->{$key} = (float)$value;
+                    $this->{$key} = (float) $value;
                 } elseif (is_int($this->{$key})) {
-                    $this->{$key} = (int)$value;
+                    $this->{$key} = (int) $value;
                 } else {
                     $this->{$key} = $value;
                 }
@@ -108,7 +117,7 @@ class Settings extends Component
             );
         }
 
-        app(\App\Services\AppSettingsService::class)->clearCache();
+        app(AppSettingsService::class)->clearCache();
         session()->flash('success', 'Configurations globales mises à jour avec succès.');
     }
 
@@ -122,7 +131,7 @@ class Settings extends Component
         }
 
         throw ValidationException::withMessages([
-            'permission' => ["Action non autorisée : Privilèges insuffisants pour accéder aux paramètres."]
+            'permission' => ['Action non autorisée : Privilèges insuffisants pour accéder aux paramètres.'],
         ]);
     }
 

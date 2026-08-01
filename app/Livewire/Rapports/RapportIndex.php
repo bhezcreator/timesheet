@@ -2,14 +2,14 @@
 
 namespace App\Livewire\Rapports;
 
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Validation\ValidationException;
 use App\Models\MonthlyReport;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Livewire\Attributes\Layout;
 
 #[Layout('layouts.app')]
 class RapportIndex extends Component
@@ -18,7 +18,9 @@ class RapportIndex extends Component
 
     // Propriétés des filtres bindées via @entangle
     public $month = '';
+
     public $year = '';
+
     public $selected_project_id = 'all';
 
     // Gestion Modal
@@ -26,6 +28,7 @@ class RapportIndex extends Component
 
     // Propriétés pour la modale de suppression
     public $deleteId = null;
+
     public $deleteName = '';
 
     public int $user_id;
@@ -35,10 +38,12 @@ class RapportIndex extends Component
     {
         $this->resetPage();
     }
+
     public function updatedYear()
     {
         $this->resetPage();
     }
+
     public function updatedSelectedProjectId()
     {
         $this->resetPage();
@@ -52,7 +57,7 @@ class RapportIndex extends Component
 
     public function confirmDelete($reportId)
     {
-        $this->checkPermissionOrFail("rapports.supprimer");
+        $this->checkPermissionOrFail('rapports.supprimer');
         $report = MonthlyReport::where('user_id', $this->user_id)->findOrFail($reportId);
         $this->deleteId = $report->id;
         // Nom affiché dans la modale : exemple "Rapport de Janvier 2026"
@@ -62,7 +67,7 @@ class RapportIndex extends Component
 
     public function delete()
     {
-        $this->checkPermissionOrFail("rapports.supprimer");
+        $this->checkPermissionOrFail('rapports.supprimer');
         if ($this->deleteId) {
             $report = MonthlyReport::where('user_id', $this->user_id)->find($this->deleteId);
 
@@ -138,7 +143,7 @@ class RapportIndex extends Component
         }
 
         throw ValidationException::withMessages([
-            'permission' => ["Action non autorisée : Privilèges insuffisants pour exécuter cette opération."]
+            'permission' => ['Action non autorisée : Privilèges insuffisants pour exécuter cette opération.'],
         ]);
     }
 }

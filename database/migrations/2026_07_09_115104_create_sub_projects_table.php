@@ -26,7 +26,7 @@ return new class extends Migration
             $table->enum('status', [
                 'actif',
                 'fermer',
-                'brouillon'
+                'brouillon',
             ])->default('actif');
 
             $table->timestamps();

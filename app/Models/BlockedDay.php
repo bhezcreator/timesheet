@@ -2,10 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
-use Spatie\Activitylog\Traits\LogsActivity;
+use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class BlockedDay extends Model
 {
@@ -36,7 +37,7 @@ class BlockedDay extends Model
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
             ->useLogName('blocked_day')
-            ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
+            ->setDescriptionForEvent(fn (string $eventName) => match ($eventName) {
                 'created' => "Jour bloqué ajouté : {$this->date} - {$this->name}",
                 'updated' => "Jour bloqué modifié : {$this->date} - {$this->name}",
                 'deleted' => "Jour bloqué supprimé : {$this->date} - {$this->name}",
@@ -62,7 +63,7 @@ class BlockedDay extends Model
         return static::whereBetween('date', [$startDate, $endDate])
             ->where('is_active', true)
             ->pluck('date')
-            ->map(fn($date) => $date->format('Y-m-d'))
+            ->map(fn ($date) => $date->format('Y-m-d'))
             ->toArray();
     }
 
@@ -71,7 +72,7 @@ class BlockedDay extends Model
      */
     public function activityLogs()
     {
-        return $this->morphMany(\Spatie\Activitylog\Models\Activity::class, 'subject');
+        return $this->morphMany(Activity::class, 'subject');
     }
 
     /**
@@ -79,7 +80,7 @@ class BlockedDay extends Model
      */
     public function latestActivityLog()
     {
-        return $this->morphOne(\Spatie\Activitylog\Models\Activity::class, 'subject')->latest('created_at');
+        return $this->morphOne(Activity::class, 'subject')->latest('created_at');
     }
 
     /**

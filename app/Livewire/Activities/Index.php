@@ -17,8 +17,11 @@ class Index extends Component
 
     // Filtres de recherche
     public string $search = '';
+
     public string $filterMonth = '';
+
     public string $filterYear = '';
+
     public string $filterStatus = '';
 
     // Gestion Modal
@@ -26,6 +29,7 @@ class Index extends Component
 
     // Variables de suppression
     public ?int $deleteId = null;
+
     public ?string $deleteName = null;
 
     // ID User
@@ -52,14 +56,17 @@ class Index extends Component
     {
         $this->resetPage();
     }
+
     public function updatingFilterMonth()
     {
         $this->resetPage();
     }
+
     public function updatingFilterYear()
     {
         $this->resetPage();
     }
+
     public function updatingFilterStatus()
     {
         $this->resetPage();
@@ -75,14 +82,14 @@ class Index extends Component
         }
 
         throw ValidationException::withMessages([
-            'permission' => ["Action non autorisée : Privilèges insuffisants pour exécuter cette opération."]
+            'permission' => ['Action non autorisée : Privilèges insuffisants pour exécuter cette opération.'],
         ]);
     }
 
     public function render()
     {
         // Nettoyage préventif contre les bugs SQL / injections injectées
-        $searchTerm = '%' . str_replace(['%', '_'], ['\%', '\_'], $this->search) . '%';
+        $searchTerm = '%'.str_replace(['%', '_'], ['\%', '\_'], $this->search).'%';
 
         $activities = Activity::query()
             ->with(['project', 'subProject', 'activityType']) // Eager loading optimisé
@@ -116,7 +123,7 @@ class Index extends Component
             '9' => 'Septembre',
             '10' => 'Octobre',
             '11' => 'Novembre',
-            '12' => 'Décembre'
+            '12' => 'Décembre',
         ];
 
         $years = range(now()->year, now()->year - 4);
@@ -124,31 +131,31 @@ class Index extends Component
         return view('livewire.activities.index', [
             'timesheets' => $activities,
             'months' => $months,
-            'years' => $years
+            'years' => $years,
         ]);
     }
 
     public function confirmDelete(int $id)
     {
-        $this->checkPermissionOrFail("activites.supprimer");
+        $this->checkPermissionOrFail('activites.supprimer');
 
         $activity = Activity::where('user_id', $this->user_id)->findOrFail($id);
 
         // Sécurité métier : On empêche la suppression d'une activité déjà validée ou soumise
         if ($activity->status !== 'brouillon' && $activity->status !== 'rejeté') {
             throw ValidationException::withMessages([
-                'activity' => ["Action impossible : Une activité transmise ou validée ne peut plus être supprimée."]
+                'activity' => ['Action impossible : Une activité transmise ou validée ne peut plus être supprimée.'],
             ]);
         }
 
         $this->deleteId = $activity->id;
-        $this->deleteName = $activity->titre . ' (' . $activity->activity_date->format('d/m/Y') . ')';
+        $this->deleteName = $activity->titre.' ('.$activity->activity_date->format('d/m/Y').')';
         $this->showDeleteModal = true;
     }
 
     public function delete()
     {
-        $this->checkPermissionOrFail("activites.supprimer");
+        $this->checkPermissionOrFail('activites.supprimer');
 
         if ($this->deleteId) {
             $activity = Activity::where('id', $this->deleteId)->where('user_id', $this->user_id)->first();
