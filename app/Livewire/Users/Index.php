@@ -150,7 +150,7 @@ class Index extends Component
                 });
             })
             // 3. Filtrer par permissions
-            ->when(!Gate::allows('admin'), function ($query) {
+            ->when(!Gate::allows('Admin'), function ($query) {
                 // 4. Les utilisateurs normaux ne voient que leur équipe
                 $userId = Auth::id();
                 $subordinates = User::where('supervisor_id', $userId)->pluck('id');
@@ -163,8 +163,8 @@ class Index extends Component
         $supervisors = User::query()
             ->where('is_active', true)
             ->when($this->userId, fn($q) => $q->where('id', '!=', $this->userId))
-            ->when(!Gate::allows('admin'), function ($query) {
-                // 6. Non-admin ne voit que ses subordonnés
+            ->when(!Gate::allows('Admin'), function ($query) {
+                // 6. Non-Admin ne voit que ses subordonnés
                 $query->where('supervisor_id', Auth::id());
             })
             ->orderBy('name')
@@ -172,10 +172,6 @@ class Index extends Component
             ->get();
 
         $allRoles = Role::query()
-            ->when(!Gate::allows('admin'), function ($query) {
-                // 7. Non-admin ne voit que les rôles de base
-                $query->whereIn('name', ['user', 'editor']);
-            })
             ->orderBy('name')
             ->get();
 

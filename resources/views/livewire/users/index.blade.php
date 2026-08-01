@@ -152,9 +152,9 @@
     <x-ui.modal
         id="user-modal"
         :show="$showModal"
-        title="{{ $userId ? 'Modifier les informations de l\'utilisateur' : 'Ajouter un nouvel utilisateur' }}"
+        title="{{ $userId ? 'Modifier les informations du personel' : 'Ajouter un nouvel personel' }}"
         size="xl"
-        subtitle="{{ $userId ? 'Modifiez les informations et les rôles de l\'utilisateur' : 'Créez un nouveau compte utilisateur avec ses rôles' }}"
+        subtitle="{{ $userId ? 'Modifiez les informations et les rôles du personel' : 'Créez un nouveau compte personel avec ses rôles' }}"
     >
         <div class="space-y-6">
             <!-- Grille d'informations personnelles -->
