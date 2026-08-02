@@ -65,13 +65,13 @@ class Index extends Component
     protected function rules(): array
     {
         return [
-            'num_order' => ['required', 'string', 'max:50', 'unique:users,num_order,'.$this->userId],
+            'num_order' => ['required', 'string', 'max:50', 'unique:users,num_order,' . $this->userId],
             'name' => ['required', 'string', 'max:255'],
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['nullable', 'string', 'max:255'],
             'job_title' => ['required', 'string', 'max:255'],
             'supervisor_id' => ['nullable', 'integer', 'exists:users,id'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$this->userId],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $this->userId],
             'is_active' => ['required', 'boolean'],
             'selectedRoles' => [
                 'required',
@@ -91,9 +91,52 @@ class Index extends Component
                 $this->userId ? 'nullable' : 'required',
                 'string',
                 'min:8',
-                // 4. Validation de la force du mot de passe
+                // 3. Validation de la force du mot de passe
                 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/',
             ],
+        ];
+    }
+
+    /**
+     * Messages d'erreur personnalisés et compréhensibles.
+     */
+    protected function messages(): array
+    {
+        return [
+            // Messages génériques réutilisés par Laravel (:attribute sera remplacé par le nom lisible)
+            'required' => 'Le champ :attribute est obligatoire.',
+            'string' => 'Le champ :attribute doit être du texte.',
+            'max' => 'Le champ :attribute ne doit pas dépasser :max caractères.',
+            'unique' => 'Cette valeur est déjà utilisée par un autre utilisateur.',
+            'email' => 'L’adresse email saisie n’est pas valide.',
+            'exists' => 'Le responsable sélectionné n’existe pas.',
+
+            // Messages spécifiques
+            'selectedRoles.required' => 'Vous devez attribuer au moins un rôle à cet utilisateur.',
+            'selectedRoles.min' => 'Vous devez sélectionner au moins :min rôle.',
+
+            'password.required' => 'Le mot de passe est obligatoire pour un nouvel utilisateur.',
+            'password.min' => 'Le mot de passe doit contenir au moins :min caractères.',
+            'password.regex' => 'Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial (@, $, !, %, *, ?, &).',
+        ];
+    }
+
+    /**
+     * Traduction des noms des champs informatiques en français lisible.
+     */
+    protected function validationAttributes(): array
+    {
+        return [
+            'num_order' => 'numéro d’ordre',
+            'name' => 'nom complet',
+            'first_name' => 'prénom',
+            'last_name' => 'nom de famille',
+            'job_title' => 'titre du poste',
+            'supervisor_id' => 'responsable hiérarchique',
+            'email' => 'adresse email',
+            'is_active' => 'statut d’activation',
+            'selectedRoles' => 'rôles',
+            'password' => 'mot de passe',
         ];
     }
 
@@ -114,35 +157,6 @@ class Index extends Component
         ]);
     }
 
-    // public function render()
-    // {
-    //     $searchTerm = '%' . str_replace(['%', '_'], ['\%', '\_'], $this->search) . '%';
-
-    //     $users = User::query()
-    //         ->with(['supervisor', 'roles'])
-    //         ->where(function ($query) use ($searchTerm) {
-    //             $query->where('name', 'like', $searchTerm)
-    //                 ->orWhere('first_name', 'like', $searchTerm)
-    //                 ->orWhere('email', 'like', $searchTerm)
-    //                 ->orWhere('num_order', 'like', $searchTerm);
-    //         })
-    //         ->latest()
-    //         ->paginate(10);
-
-    //     $supervisors = User::query()
-    //         ->where('is_active', true)
-    //         ->when($this->userId, fn($q) => $q->where('id', '!=', $this->userId))
-    //         ->orderBy('name')
-    //         ->get();
-
-    //     $allRoles = Role::query()->orderBy('name')->get();
-
-    //     return view('livewire.users.index', [
-    //         'users' => $users,
-    //         'supervisors' => $supervisors,
-    //         'allRoles' => $allRoles,
-    //     ]);
-    // }
     public function render()
     {
         // 1. Nettoyage et validation de la recherche
@@ -154,30 +168,23 @@ class Index extends Component
             ->with(['supervisor', 'roles'])
             ->when(! empty($searchTerm), function ($query) use ($searchTerm) {
                 $query->where(function ($q) use ($searchTerm) {
-                    $q->where('name', 'LIKE', '%'.$searchTerm.'%')
-                        ->orWhere('first_name', 'LIKE', '%'.$searchTerm.'%')
-                        ->orWhere('email', 'LIKE', '%'.$searchTerm.'%')
-                        ->orWhere('num_order', 'LIKE', '%'.$searchTerm.'%');
+                    $q->where('name', 'LIKE', '%' . $searchTerm . '%')
+                        ->orWhere('first_name', 'LIKE', '%' . $searchTerm . '%')
+                        ->orWhere('email', 'LIKE', '%' . $searchTerm . '%')
+                        ->orWhere('num_order', 'LIKE', '%' . $searchTerm . '%');
                 });
-            })
-            // 3. Filtrer par permissions
-            ->when(! Gate::allows('Admin'), function ($query) {
-                // 4. Les utilisateurs normaux ne voient que leur équipe
-                $userId = Auth::id();
-                $subordinates = User::where('supervisor_id', $userId)->pluck('id');
-                $query->whereIn('id', $subordinates->push($userId));
             })
             ->latest()
             ->paginate(10);
 
-        // 5. Sécurisation des superviseurs
+        // 4. Sécurisation des superviseurs
         $supervisors = User::query()
             ->where('is_active', true)
-            ->when($this->userId, fn ($q) => $q->where('id', '!=', $this->userId))
-            ->when(! Gate::allows('Admin'), function ($query) {
-                // 6. Non-Admin ne voit que ses subordonnés
-                $query->where('supervisor_id', Auth::id());
-            })
+            ->when($this->userId, fn($q) => $q->where('id', '!=', $this->userId))
+            // ->when(!Gate::allows('Admin'), function ($query) {
+            //     // 5. Non-Admin ne voit que ses subordonnés
+            //     $query->where('supervisor_id', Auth::id());
+            // })
             ->orderBy('name')
             ->limit(100)
             ->get();
@@ -217,7 +224,7 @@ class Index extends Component
         $this->is_active = (bool) $user->is_active;
         $this->password = '';
 
-        $this->selectedRoles = $user->roles->pluck('id')->map(fn ($id) => (string) $id)->toArray();
+        $this->selectedRoles = $user->roles->pluck('id')->map(fn($id) => (string) $id)->toArray();
         $this->showModal = true;
         $this->showDeleteModal = false;
     }
@@ -342,7 +349,7 @@ class Index extends Component
         }
 
         $this->deleteId = $user->id;
-        $this->deleteName = $user->first_name.' '.$user->name;
+        $this->deleteName = $user->first_name . ' ' . $user->name;
         $this->showDeleteModal = true;
         $this->showModal = false;
     }

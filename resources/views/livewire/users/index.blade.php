@@ -11,29 +11,17 @@
             <x-ui.alert type="success" class="mb-4 mt-8">
                 {{ session('success') }}
             </x-ui.alert>
+            <br>
         @endif
 
         @error('permission')
             <x-ui.alert type="error" class="mb-4 mt-8">
                 {{ $message }}
             </x-ui.alert>
+            <br>
         @enderror
 
-        @if($errors->any())
-            <x-ui.alert type="error" class="mb-4 mt-8">
-                <div class="flex flex-col gap-1">
-                    <span class="font-bold text-sm mb-1">Message d'erreur :</span>
-                    <ul class="list-disc list-inside text-xs space-y-0.5 opacity-90">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            </x-ui.alert>
-            <br>
-        @endif
-
-     <!-- Tableau principal ou État vide -->
+        <!-- Tableau principal ou État vide -->
         @if(!$users->count() And empty($search))
                     <!-- État vide par défaut -->
             <x-ui.empty-state title="Aucun agent trouvé" description="Enregistrez vos collaborateurs et affectez leurs rôles de sécurité." icon="las la-users">
@@ -44,18 +32,19 @@
                 </x-slot:action>
             </x-ui.empty-state>
         @else
-            <x-ui.table :columns="['N°', 'Matricule', 'Collaborateur', 'Poste / Fonction', 'Superviseur', 'Rôles d\'accès', 'Statut', 'Actions']">
+            <x-ui.table :columns="['N°', 'Matricule', 'Personnel', 'Poste / Fonction', 'Superviseur', 'Rôles d\'accès', 'Statut', 'Actions']">
                 <x-slot:header>
-                    <div class="flex flex-col xs:flex-row justify-between items-start xs:items-center gap-3 xs:gap-4 mb-4 sm:mb-6">
-                        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 truncate max-w-full">
+                    <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 mb-4 sm:mb-6">
+                        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 truncate">
                             Personnel
                         </h1>
-                        <x-ui.button wire:click="openModal" class="w-full xs:w-auto justify-center">
+                        <x-ui.button wire:click="openModal" class="w-full sm:w-auto justify-center">
                             <i class="las la-plus mr-1.5 sm:mr-2"></i>
-                            <span class="hidden xs:inline text-sm sm:text-base">Ajouter un personnel</span>
-                            <span class="inline xs:hidden text-sm">Ajouter</span>
+                            <span class="hidden sm:inline text-sm sm:text-base">Ajouter un personnel</span>
+                            <span class="inline sm:hidden text-sm">Ajouter</span>
                         </x-ui.button>
                     </div>
+
                     <x-ui.forms.input wire:model.live.debounce.300ms="search" placeholder="Recherche par matricule, nom, prénom ou email..." />
                 </x-slot:header>
 
@@ -154,9 +143,21 @@
         :show="$showModal"
         title="{{ $userId ? 'Modifier les informations du personel' : 'Ajouter un nouvel personel' }}"
         size="xl"
-        subtitle="{{ $userId ? 'Modifiez les informations et les rôles du personel' : 'Créez un nouveau compte personel avec ses rôles' }}"
-    >
+        subtitle="{{ $userId ? 'Modifiez les informations et les rôles du personel' : 'Créez un nouveau compte personel avec ses rôles' }}">
         <div class="space-y-6">
+            @if($errors->any())
+                <x-ui.alert type="error" class="mb-4 mt-8">
+                    <div class="flex flex-col gap-1">
+                        <span class="font-bold text-sm mb-1">Message d'erreur :</span>
+                        <ul class="list-disc list-inside text-xs space-y-0.5 opacity-90">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </x-ui.alert>
+                <br>
+            @endif
             <!-- Grille d'informations personnelles -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -174,7 +175,7 @@
                         label="Nom d'utilisateur"
                         name="name"
                         wire:model="name"
-                        placeholder="Ex: jdupont"
+                        placeholder="Ex: Jean Dupont"
                     />
                     <x-ui.forms.error name="name" />
                 </div>
@@ -204,24 +205,25 @@
                         label="Fonction"
                         name="job_title"
                         wire:model="job_title"
-                        placeholder="Ex: Développeur"
+                        placeholder="Ex: Secrétaire, Comptable, Directeur..."
                     />
                     <x-ui.forms.error name="job_title" />
                 </div>
 
                 <div>
                     <x-ui.forms.select
-                        label="Superviseur"
-                        name="supervisor_id"
                         wire:model="supervisor_id"
-                    >
-                        <option value="">Aucun superviseur</option>
-                        @foreach($supervisors as $supervisor)
-                            <option value="{{ $supervisor->id }}">
-                                {{ $supervisor->first_name }} {{ $supervisor->name }}
-                            </option>
-                        @endforeach
-                    </x-ui.forms.select>
+                        name="supervisor_id"
+                        label="Superviseur"
+                        placeholder="Choisir le superviseur responsable..."
+                        :selected="$supervisor_id"
+                        :options="$supervisors->map(fn($s) => [
+                            'value'       => (string)$s->id,
+                            'label'       => $s->first_name . ' ' . $s->name,
+                            'description' => $s->job_title,
+                            'icon'        => 'las la-user-tie'
+                        ])->toArray()"
+                    />
                     <x-ui.forms.error name="supervisor_id" />
                 </div>
 

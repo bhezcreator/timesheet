@@ -66,8 +66,51 @@ class Profil extends Component
             'last_name' => ['nullable', 'string', 'max:255'],
             'job_title' => ['nullable', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($this->user->id)],
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed', 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/'],
             'photo' => ['nullable', 'image', 'max:2048'], // Max 2MB
+        ];
+    }
+
+    /**
+     * Messages d'erreur personnalisés et compréhensibles.
+     */
+    protected function messages(): array
+    {
+        return [
+            // Messages génériques
+            'required' => 'Le champ :attribute est obligatoire.',
+            'string' => 'Le champ :attribute doit être du texte.',
+            'max' => 'Le champ :attribute ne doit pas dépasser :max caractères.',
+            'email' => 'L’adresse email saisie n’est pas valide.',
+
+            // Spécifique à l'unicité de l'email
+            'email.unique' => 'Cette adresse email est déjà enregistrée pour un autre utilisateur.',
+
+            // Spécifiques au mot de passe
+            'password.min' => 'Le mot de passe doit contenir au moins :min caractères.',
+            'password.confirmed' => 'Les deux mots de passe saisis ne correspondent pas.',
+            'password.regex' => 'Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial (@, $, !, %, *, ?, &).',
+
+            // Spécifiques à la photo
+            'photo.image' => 'Le fichier téléversé doit être une image (jpg, png, jpeg, etc.).',
+            'photo.max' => 'L’image est trop lourde. Elle ne doit pas dépasser 2 Mo (2048 Ko).',
+        ];
+    }
+
+    /**
+     * Traduction des noms des champs informatiques.
+     */
+    protected function validationAttributes(): array
+    {
+        return [
+            'num_order' => 'numéro d’ordre',
+            'name' => 'nom complet',
+            'first_name' => 'prénom',
+            'last_name' => 'nom de famille',
+            'job_title' => 'titre du poste',
+            'email' => 'adresse email',
+            'password' => 'mot de passe',
+            'photo' => 'photo de profil',
         ];
     }
 
