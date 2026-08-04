@@ -19,37 +19,6 @@
     ]" />
 
     <div class="w-full">
-        <!-- Messages flash de succès -->
-        @if(session('success'))
-            <x-ui.alert type="success" class="mb-4 mt-8">
-                {{ session('success') }}
-            </x-ui.alert>
-        @endif
-
-        <!-- Traitement exclusif des erreurs d'autorisation -->
-        @error('permission')
-            <x-ui.alert type="error" class="mb-4 mt-8">
-                {{ $message }}
-            </x-ui.alert>
-        @enderror
-
-        <!-- Liste récapitulative des alertes de saisie -->
-        @if($errors->any())
-            <x-ui.alert type="error" class="mb-4 mt-8">
-                <div class="flex flex-col gap-1">
-                    <span class="font-bold text-sm mb-1">Veuillez ajuster les données du sous-projet :</span>
-                    <ul class="list-disc list-inside text-xs space-y-0.5 opacity-90">
-                        @foreach ($errors->all() as $error)
-                            @if($error !== $errors->first('permission'))
-                                <li>{{ $error }}</li>
-                            @endif
-                        @endforeach
-                    </ul>
-                </div>
-            </x-ui.alert>
-            <br>
-        @endif
-
         <!-- Tableau principal ou État vide -->
         @if(!$subProjects->count() && empty($search))
             <x-ui.empty-state title="Aucun sous-projet" description="Divisez ce projet principal en plusieurs lots technologiques ou opérationnels." icon="las la-folder">
@@ -75,6 +44,22 @@
                 <div class="mb-6">
                     <x-ui.forms.input wire:model.live.debounce.300ms="search" placeholder="Filtrer les sous-projets par nom..." />
                 </div>
+
+                <!-- Messages flash de succès -->
+                @if(session('success'))
+                    <x-ui.alert type="success" class="mb-4 mt-8">
+                        {{ session('success') }}
+                    </x-ui.alert>
+                    <br>
+                @endif
+
+                <!-- Traitement exclusif des erreurs d'autorisation -->
+                @error('permission')
+                    <x-ui.alert type="error" class="mb-4 mt-8">
+                        {{ $message }}
+                    </x-ui.alert>
+                    <br>
+                @enderror
 
                 <!-- Grille responsive de cartes -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -158,12 +143,11 @@
         :show="$showModal"
         title="{{ $subProjectId ? 'Configuration du sous-projet' : 'Créer un sous-projet' }}"
         size="xl"
-        subtitle="{{ $subProjectId ? 'Modifiez les informations du sous-projet' : 'Créez un nouveau sous-projet pour ce projet' }}"
-    >
+        subtitle="{{ $subProjectId ? 'Modifiez les informations du sous-projet' : 'Créez un nouveau sous-projet pour ce projet' }}">
         <div class="space-y-5">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="md:col-span-2">
-                    <x-ui.forms.input label="Intitulé du Sous-Projet" name="name" wire:model="name" placeholder="Ex: Développement Backend de l'API" required />
+                    <x-ui.forms.input label="Intitulé du Sous-Projet" name="name" wire:model="name" placeholder="Ex: Formation des agents de terrain" required />
                 </div>
                 <x-ui.forms.select
                     name="status"

@@ -70,7 +70,13 @@ class Index extends Component
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['nullable', 'string', 'max:255'],
             'job_title' => ['required', 'string', 'max:255'],
-            'supervisor_id' => ['nullable', 'integer', 'exists:users,id'],
+            'supervisor_id' => ['nullable', 'integer', 'exists:users,id',   function ($attribute, $value, $fail) {
+                // Vérifier si l'utilisateur a le rôle "manager"
+                $user = User::find($value);
+                if ($user && !$user->hasRole('Superviseur')) {
+                    $fail('L\'utilisateur sélectionné doit avoir le rôle de superviseur.');
+                }
+            }],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $this->userId],
             'is_active' => ['required', 'boolean'],
             'selectedRoles' => [
@@ -180,11 +186,10 @@ class Index extends Component
         // 4. Sécurisation des superviseurs
         $supervisors = User::query()
             ->where('is_active', true)
+            ->whereHas('roles', function ($q) {
+                $q->where('name', 'Superviseur');
+            })
             ->when($this->userId, fn($q) => $q->where('id', '!=', $this->userId))
-            // ->when(!Gate::allows('Admin'), function ($query) {
-            //     // 5. Non-Admin ne voit que ses subordonnés
-            //     $query->where('supervisor_id', Auth::id());
-            // })
             ->orderBy('name')
             ->limit(100)
             ->get();

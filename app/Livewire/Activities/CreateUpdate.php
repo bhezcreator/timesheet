@@ -230,18 +230,9 @@ class CreateUpdate extends Component
     }
 
     /**
-     * Personnalisation des phrases de messages d'erreur
+     * Règles de validation
      */
-    protected function messages()
-    {
-        return [
-            'end_time.after' => "L'heure de fin doit impérativement être postérieure à l'heure de début.",
-            '*.required' => 'Le champ :attribute est obligatoire.',
-            '*.date_format' => 'Le champ :attribute ne respecte pas le format requis (Heures:Minutes).',
-        ];
-    }
-
-    protected function rules()
+    protected function rules(): array
     {
         return [
             'titre' => ['required', 'string', 'max:255', new SecureString],
@@ -256,19 +247,60 @@ class CreateUpdate extends Component
     }
 
     /**
-     * Traduction des champs pour les messages d'erreur de ce composant
+     * Personnalisation des noms d'attributs
      */
-    protected function validationAttributes()
+    protected function validationAttributes(): array
     {
         return [
-            'titre' => 'titre',
+            'titre' => 'titre de l\'activité',
             'project_id' => 'projet',
             'sub_project_id' => 'sous-projet',
-            'activity_type_id' => "type d'activité",
-            'activity_date' => "date d'activité",
+            'activity_type_id' => 'type d\'activité',
+            'activity_date' => 'date de l\'activité',
             'start_time' => 'heure de début',
             'end_time' => 'heure de fin',
             'description' => 'description',
+        ];
+    }
+
+    /**
+     * Personnalisation des messages d'erreur
+     */
+    protected function messages(): array
+    {
+        return [
+            // Titre
+            'titre.required' => 'Le :attribute est obligatoire.',
+            'titre.string' => 'Le :attribute doit être une chaîne de caractères.',
+            'titre.max' => 'Le :attribute ne doit pas dépasser 255 caractères.',
+
+            // Project
+            'project_id.required' => 'Le :attribute est obligatoire.',
+            'project_id.exists' => 'Le :attribute sélectionné n\'existe pas.',
+
+            // Sub Project
+            'sub_project_id.exists' => 'Le :attribute sélectionné n\'existe pas.',
+
+            // Activity Type
+            'activity_type_id.required' => 'Le :attribute est obligatoire.',
+            'activity_type_id.exists' => 'Le :attribute sélectionné n\'existe pas.',
+
+            // Activity Date
+            'activity_date.required' => 'La :attribute est obligatoire.',
+            'activity_date.date' => 'La :attribute doit être une date valide.',
+
+            // Start Time
+            'start_time.required' => 'L\' :attribute est obligatoire.',
+            'start_time.date_format' => 'L\' :attribute doit être au format HH:MM (ex: 14:30).',
+
+            // End Time
+            'end_time.required' => 'L\' :attribute est obligatoire.',
+            'end_time.date_format' => 'L\' :attribute doit être au format HH:MM (ex: 16:30).',
+            'end_time.after' => 'L\' :attribute doit impérativement être postérieure à l\'heure de début.',
+
+            // Description
+            'description.string' => 'La :attribute doit être une chaîne de caractères.',
+            'description.max' => 'La :attribute ne doit pas dépasser 1000 caractères.',
         ];
     }
 
@@ -278,7 +310,7 @@ class CreateUpdate extends Component
     public function save(AppSettingsService $settingsService, TimesheetLockService $lockService, CalendarBusinessService $calendarService)
     {
         // Limitation du nombre de tentatives
-        $key = 'activity_save_'.$this->user_id.'_'.$this->activity_date;
+        $key = 'activity_save_' . $this->user_id . '_' . $this->activity_date;
 
         if (RateLimiter::tooManyAttempts($key, 10)) {
             throw ValidationException::withMessages([
@@ -393,7 +425,7 @@ class CreateUpdate extends Component
         // 7. VÉRIFICATION DU CHEVAUCHEMENT HORAIRE (Requête SQL en dernier pour optimiser les performances)
         if ($this->hasTimeOverlap($this->activity_date, $this->start_time, $this->end_time)) {
             throw ValidationException::withMessages([
-                'start_time' => ["Conflit d'horaire : Vous avez déjà une activité enregistrée qui chevauche la tranche ".$this->start_time.' - '.$this->end_time.' pour cette journée.'],
+                'start_time' => ["Conflit d'horaire : Vous avez déjà une activité enregistrée qui chevauche la tranche " . $this->start_time . ' - ' . $this->end_time . ' pour cette journée.'],
             ]);
         }
 
@@ -432,30 +464,39 @@ class CreateUpdate extends Component
     /**
      * RÈGLE A : Vérifie si la plage horaire soumise chevauche une activité existante.
      * Formule mathématique : (DébutA < FinB) ET (FinA > DébutB)
+     * Buffer de 30 secondes pour éviter les chevauchements à la limite.
      */
     protected function hasTimeOverlap(string $date, string $startTime, string $endTime): bool
     {
-        // Vérifier que les temps sont bien formatés
-        if (
-            ! preg_match('/^([01]\d|2[0-3]):([0-5]\d)$/', $startTime) ||
-            ! preg_match('/^([01]\d|2[0-3]):([0-5]\d)$/', $endTime)
-        ) {
+        // 1. Valider les formats
+        $timeRegex = '/^([01]\d|2[0-3]):([0-5]\d)$/';
+        if (!preg_match($timeRegex, $startTime) || !preg_match($timeRegex, $endTime)) {
             return true; // Format invalide = bloquer
         }
 
-        // Ajouter un buffer de sécurité (30 secondes)
-        $startBuffer = Carbon::parse($startTime)->subSeconds(30)->format('H:i');
-        $endBuffer = Carbon::parse($endTime)->addSeconds(30)->format('H:i');
+        // 2. Vérifier que start < end
+        if ($startTime >= $endTime) {
+            return true; // Heure de début après heure de fin = bloquer
+        }
 
+        // 3. Créer des objets Carbon complets (date + heure)
+        $startDateTime = Carbon::parse($date . ' ' . $startTime);
+        $endDateTime = Carbon::parse($date . ' ' . $endTime);
+
+        // 4. Ajouter le buffer de sécurité (30 secondes)
+        $startBuffer = $startDateTime->clone()->subSeconds(30);
+        $endBuffer = $endDateTime->clone()->addSeconds(30);
+
+        // 5. Vérifier le chevauchement
         return Activity::query()
             ->where('user_id', $this->user_id)
             ->whereDate('activity_date', $date)
-            ->when($this->isEditMode, function ($query) {
+            ->when($this->isEditMode ?? false, function ($query) {
                 $query->where('id', '!=', $this->activityId);
             })
             ->where(function ($query) use ($startBuffer, $endBuffer) {
-                $query->where('start_time', '<', $endBuffer)
-                    ->where('end_time', '>', $startBuffer);
+                $query->whereRaw('? < end_time', [$endBuffer])
+                    ->whereRaw('? > start_time', [$startBuffer]);
             })
             ->exists();
     }
@@ -523,7 +564,7 @@ class CreateUpdate extends Component
 
         // 2. Récupération du libellé du mois en français (ex: "Juillet") et de l'année
         $dateDetails = $calendarService->getMonthAndYearInFrench($targetDate);
-        $this->monthLabel = $dateDetails['mois'].' '.$dateDetails['annee'];
+        $this->monthLabel = $dateDetails['mois'] . ' ' . $dateDetails['annee'];
 
         // 3. Calcul du nombre de jours ouvrés théoriques du mois (hors week-ends)
         $this->workingDaysCount = $calendarService->getWorkingDaysCount($targetDate->month, $targetDate->year);

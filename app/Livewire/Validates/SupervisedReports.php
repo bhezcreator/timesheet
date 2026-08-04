@@ -60,6 +60,7 @@ class SupervisedReports extends Component
                 'media',
                 'validation',
             ])
+            ->where('status', '!=', 'brouillon')
             ->whereHas('user', function ($query) use ($supervisor) {
                 $query->where('supervisor_id', $supervisor->id);
             });

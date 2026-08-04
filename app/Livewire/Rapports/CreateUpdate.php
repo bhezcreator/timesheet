@@ -39,6 +39,8 @@ class CreateUpdate extends Component
 
     public $next_actions;
 
+    public $activities;
+
     public $status = 'brouillon';
 
     // Filtrage des activités
@@ -63,72 +65,58 @@ class CreateUpdate extends Component
 
     public $existingFiles = []; // Liste des fichiers déjà en BDD (Mode Édition)
 
-    // protected function rules()
-    // {
-    //     // 1. Récupérer les identifiants des projets assignés à l'utilisateur
-    //     $assignedProjectIds = User::find($this->user_id)         ?->projects()
-    //         ->pluck('projects.id')
-    //         ->toArray() ?? [];
-
-    //     // 2. Autoriser la valeur 'all' en plus des IDs de projets assignés
-    //     $allowedProjectValues = array_merge(['all'], $assignedProjectIds);
-
-    //     return [
-    //         'month' => 'required|integer|between:1,12',
-    //         'year' => 'required|integer|min:2020',
-    //         'report_date' => 'required|date',
-    //         'objectives' => 'required|string|min:10',
-    //         'achievements' => 'required|string|min:10',
-    //         'next_actions' => 'required|string|min:10',
-    //         'selected_project_id' => [
-    //             'required',
-    //             Rule::in($allowedProjectValues),
-    //             'files.*' => [
-    //                 'nullable',
-    //                 'file',
-    //                 'mimes:pdf,doc,docx,xls,xlsx,csv,jpg,jpeg,png,webp',
-    //                 'max:5120' // 5 Mo maximum par fichier
-    //             ],
-    //         ],
-    //     ];
-    // }
-
     // 1. Ajouter des règles de validation renforcées
     protected function rules()
     {
+        $assignedProjectIds = User::find($this->user_id)?->projects()
+            ->pluck('projects.id')
+            ->toArray() ?? [];
+
+        // 2. Autoriser la valeur 'all' en plus des IDs de projets assignés
+        $allowedProjectValues = array_merge(['all'], $assignedProjectIds);
         return [
-            'files.*' => [
-                'nullable',
-                'file',
-                'mimes:pdf,doc,docx,xls,xlsx,csv,jpg,jpeg,png,webp',
-                'max:5120', // 5 Mo
-                function ($attribute, $value, $fail) {
-                    // 2. Vérification MIME réelle
-                    $finfo = finfo_open(FILEINFO_MIME_TYPE);
-                    $mimeType = finfo_file($finfo, $value->getRealPath());
-                    finfo_close($finfo);
+            'month' => 'required|integer|between:1,12',
+            'year' => 'required|integer|min:2020',
+            'report_date' => 'required|date',
+            'objectives' => 'required|string|min:10',
+            'achievements' => 'required|string|min:10',
+            'next_actions' => 'required|string|min:10',
+            'selected_project_id' => [
+                'required',
+                Rule::in($allowedProjectValues),
+                'files.*' => [
+                    'nullable',
+                    'file',
+                    'mimes:pdf,doc,docx,xls,xlsx,csv,jpg,jpeg,png,webp',
+                    'max:5120', // 5 Mo
+                    function ($attribute, $value, $fail) {
+                        // 2. Vérification MIME réelle
+                        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                        $mimeType = finfo_file($finfo, $value->getRealPath());
+                        finfo_close($finfo);
 
-                    $allowedMimes = [
-                        'application/pdf',
-                        'application/msword',
-                        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                        'application/vnd.ms-excel',
-                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                        'text/csv',
-                        'image/jpeg',
-                        'image/png',
-                        'image/webp',
-                    ];
+                        $allowedMimes = [
+                            'application/pdf',
+                            'application/msword',
+                            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                            'application/vnd.ms-excel',
+                            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                            'text/csv',
+                            'image/jpeg',
+                            'image/png',
+                            'image/webp',
+                        ];
 
-                    if (! in_array($mimeType, $allowedMimes)) {
-                        $fail("Le fichier {$value->getClientOriginalName()} n'est pas valide.");
-                    }
+                        if (! in_array($mimeType, $allowedMimes)) {
+                            $fail("Le fichier {$value->getClientOriginalName()} n'est pas valide.");
+                        }
 
-                    // 3. Vérification de la signature du fichier
-                    if (! $this->validateFileSignature($value)) {
-                        $fail("Le fichier {$value->getClientOriginalName()} semble corrompu.");
-                    }
-                },
+                        // 3. Vérification de la signature du fichier
+                        if (! $this->validateFileSignature($value)) {
+                            $fail("Le fichier {$value->getClientOriginalName()} semble corrompu.");
+                        }
+                    },
+                ],
             ],
         ];
     }
@@ -196,6 +184,7 @@ class CreateUpdate extends Component
             $this->achievements = $report->achievements;
             $this->next_actions = $report->next_actions;
             $this->status = $report->status;
+            $this->selected_project_id = $report->project_ids ?: 'all';
 
             // Charger les pièces jointes existantes
             $this->loadAttachments($report);
@@ -218,19 +207,6 @@ class CreateUpdate extends Component
             ];
         })->toArray();
     }
-
-    // Supprimer une pièce jointe existante
-    // public function deleteAttachment($mediaId)
-    // {
-    //    if ($this->ID_report) {
-    //        $report = MonthlyReport::where('user_id', $this->user_id)->findOrFail($this->ID_report);
-    //        $media = $report->media()->find($mediaId);
-    //        if ($media) {
-    //            $media->delete();
-    //            $this->loadAttachments($report);
-    //        }
-    //    }
-    // }
 
     public function deleteAttachment($mediaId)
     {
@@ -287,88 +263,14 @@ class CreateUpdate extends Component
         $this->standardHoursPerMonth = (int) $settings->get('standard_hours_per_month', 160);
     }
 
-    // Récupérer les activités selon la période et le projet sélectionné
-    // public function getActivitiesProperty()
-    // {
-    //     // 1. Récupérer les identifiants des projets assignés à l'utilisateur
-    //     $assignedProjectIds = User::find($this->user_id)
-    //         ?->projects()
-    //         ->pluck('projects.id') // Remplacez 'projects.id' par le nom correct si nécessaire
-    //         ->toArray() ?? [];
-
-    //     // 2. Construire la requête de base pour les activités de l'utilisateur
-    //     $query = Activity::where('user_id', $this->user_id)
-    //         ->whereYear('activity_date', $this->year)
-    //         ->whereMonth('activity_date', $this->month);
-
-    //     // 3. Appliquer le filtre de projet sélectionné tout en respectant ses affectations
-    //     if ($this->selected_project_id !== 'all') {
-    //         // Si un projet spécifique est choisi, on vérifie s'il fait partie de ses projets assignés
-    //         if (in_array($this->selected_project_id, $assignedProjectIds)) {
-    //             $query->where('project_id', $this->selected_project_id);
-    //         } else {
-    //             // Sécurité : Si le projet n'est pas assigné, on force une liste vide
-    //             $query->whereRaw('1 = 0');
-    //         }
-    //     } else {
-    //         // Si "Tous les projets" est sélectionné, on restreint uniquement à ses projets assignés
-    //         $query->whereIn('project_id', $assignedProjectIds);
-    //     }
-
-    //     $activities = $query->with('project', 'activityType')->orderBy('activity_date', 'asc')->get();
-
-    //     // Calcul des totaux d'heures
-    //     $this->totalHours = $activities->sum('duration');
-    //     if ($this->calculateOvertime && $this->totalHours > $this->standardHoursPerMonth) {
-    //         $this->overtimeHours = $this->totalHours - $this->standardHoursPerMonth;
-    //     } else {
-    //         $this->overtimeHours = 0;
-    //     }
-
-    //     return $activities;
-    // }
     public function getActivitiesProperty()
     {
-        // 1. Validation stricte des paramètres
-        $year = (int) $this->year;
-        $month = (int) $this->month;
-
-        // 2. Récupération sécurisée des projets assignés
-        $assignedProjectIds = User::find($this->user_id)
-            ?->projects()
-            ->pluck('projects.id')
-            ->toArray() ?? [];
-
-        // 3. Nettoyage et validation de la sélection
-        $selectedProject = $this->selected_project_id;
-        if ($selectedProject !== 'all' && ! in_array($selectedProject, $assignedProjectIds)) {
-            // Sécurité : Projet non assigné -> retourner une collection vide
-            return collect();
-        }
-
-        // 4. Construction sécurisée de la requête
-        $query = Activity::where('user_id', $this->user_id)
-            ->whereYear('activity_date', $year)
-            ->whereMonth('activity_date', $month);
-
-        // 5. Application du filtre de projet de manière sécurisée
-        if ($selectedProject !== 'all') {
-            $query->where('project_id', (int) $selectedProject);
-        } elseif (! empty($assignedProjectIds)) {
-            $query->whereIn('project_id', $assignedProjectIds);
-        } else {
-            // Aucun projet assigné -> retour vide
-            return collect();
-        }
-
         // 6. Exécution avec pagination pour limiter la charge
-        $activities = $query->with(['project', 'activityType'])
-            ->orderBy('activity_date', 'asc')
-            ->limit(500) // Protection contre les requêtes massives
-            ->get();
+        $activities = $this->activities;
 
         // 7. Calcul sécurisé des totaux
         $this->totalHours = $activities->sum('duration');
+
         $this->calculateOvertimeHours();
 
         return $activities;
@@ -383,91 +285,22 @@ class CreateUpdate extends Component
         }
     }
 
-    // public function save($submit = false)
-    // {
-    //     try {
-    //         if ($this->ID_report) {
-    //             $this->checkPermissionOrFail("rapports.modifier");
-    //         } else {
-    //             $this->checkPermissionOrFail("rapports.creer");
-    //         }
+    protected function prepareData($submit): array
+    {
+        return [
+            'user_id' => $this->user_id,
+            'month' => (int) $this->month,
+            'year' => (int) $this->year,
+            'project_ids' => ($this->selected_project_id === 'all') ? '' : $this->selected_project_id,
+            'report_date' => $this->report_date,
+            'objectives' => strip_tags(trim($this->objectives)),
+            'achievements' => strip_tags(trim($this->achievements)),
+            'next_actions' => strip_tags(trim($this->next_actions)),
+            'status' => $submit ? 'soumis' : 'brouillon',
+            'submitted_at' => $submit ? now() : null,
+        ];
+    }
 
-    //         $selected_project_id = ($this->selected_project_id === 'all') ? '' : $this->selected_project_id;
-    //         $this->validate();
-
-    //         // 🔍 VÉRIFICATION DE LA CONTRAINTE D'UNICITÉ
-    //         if (!$this->ID_report) {
-    //             $this->checkUniqueReportConstraint();
-    //         }
-
-    //         $data = [
-    //             'user_id' => $this->user_id,
-    //             'month' => $this->month,
-    //             'year' => $this->year,
-    //             'project_ids' => $selected_project_id,
-    //             'report_date' => $this->report_date,
-    //             'objectives' => $this->objectives,
-    //             'achievements' => $this->achievements,
-    //             'next_actions' => $this->next_actions,
-    //             'status' => $submit ? 'soumis' : 'brouillon',
-    //             'submitted_at' => $submit ? now() : null,
-    //         ];
-
-    //         // Sauvegarde ou Mise à jour du rapport
-    //         $report = MonthlyReport::updateOrCreate(
-    //             ['id' => $this->ID_report, 'user_id' => $this->user_id],
-    //             $data
-    //         );
-
-    //         // Traitement des pièces jointes Spatie Media Library
-    //         if (!empty($this->files)) {
-    //             foreach ($this->files as $file) {
-    //                 $report->addMedia($file->getRealPath())
-    //                     ->usingFileName($file->getClientOriginalName())
-    //                     ->toMediaCollection('attachments');
-    //             }
-    //             // Dans le contrôleur lors de l'ajout de fichiers
-    //             activity()
-    //                 ->performedOn($report)
-    //                 ->causedBy(Auth::user())
-    //                 ->withProperties([
-    //                     'file_count' => $report->getMedia('attachments')->count(),
-    //                     'file_names' => $report->getMedia('attachments')->pluck('file_name')->toArray()
-    //                 ])
-    //                 ->log('Fichiers joints ajoutés au rapport');
-    //             $this->reset('files');
-    //         }
-
-    //         // Lier toutes les activités affichées à ce rapport
-    //         Activity::whereIn('id', $this->activities->pluck('id'))->update([
-    //             'monthly_report_id' => $report->id,
-    //             'status' => $submit ? 'soumis' : 'brouillon',
-    //         ]);
-
-    //         if ($submit) {
-    //             $supervise = $report->user->supervisor;
-
-    //             event(new UniversalModelStatusChanged(
-    //                 model: $report,
-    //                 recipient: $supervise,
-    //                 title: "Soumission du : " . $report->full_title,
-    //                 messageContent: "Le colaborateur " . $report->user->name . ' ' . $report->user->first_name . " vient de soumetre son rapport.",
-    //                 status: 'soumis',
-    //                 comment: '',
-    //                 routeUrl: route('validations.show', $report->id),
-    //                 icon: 'las la-check-circle text-emerald-500'
-    //             ));
-    //         }
-
-    //         session()->flash('message', $submit ? 'Rapport soumis avec succès !' : 'Brouillon enregistré avec succès !');
-
-    //         return redirect()->route('rapports.index');
-    //     } catch (\Exception $e) {
-    //         // Ajouter l'erreur au système de validation de Livewire
-    //         $this->addError('permission', $e->getMessage());
-    //         return null;
-    //     }
-    // }
     public function save($submit = false)
     {
         try {
@@ -523,9 +356,112 @@ class CreateUpdate extends Component
         }
     }
 
+    /**
+     * Traite les fichiers joints au rapport
+     */
+    private function processAttachments(MonthlyReport $report): void
+    {
+        // 1. Vérifier s'il y a des fichiers à traiter
+        if (empty($this->files)) {
+            return;
+        }
+
+        // 2. Traiter chaque fichier
+        foreach ($this->files as $file) {
+            try {
+                $this->secureStoreFile($report, $file);
+            } catch (\Exception $e) {
+                Log::error('Erreur lors du téléversement du fichier', [
+                    'report_id' => $report->id,
+                    'file_name' => $file->getClientOriginalName(),
+                    'error' => $e->getMessage()
+                ]);
+                // On continue avec les autres fichiers
+            }
+        }
+
+        // 3. Réinitialiser les fichiers après traitement
+        $this->files = [];
+    }
+
+    /**
+     * Met à jour les activités associées au rapport
+     * Supprime les activités qui ne sont plus dans la liste
+     */
+    private function updateActivities(MonthlyReport $report, bool $submit): void
+    {
+        // 1. Récupérer les activités actuellement affichées
+        $currentActivityIds = $this->activities->pluck('id')->toArray();
+
+        // 2. Récupérer le projet sélectionné actuel
+        $selectedProject = $this->selected_project_id;
+
+        // 3. Si le rapport est "All", on associe TOUTES les activités du mois
+        if ($selectedProject === 'all') {
+            $allMonthActivities = Activity::where('user_id', $this->user_id)
+                ->whereYear('activity_date', $this->year)
+                ->whereMonth('activity_date', $this->month)
+                ->pluck('id')
+                ->toArray();
+
+            $currentActivityIds = $allMonthActivities;
+        }
+
+        // 4. UPDATE les activités qui ne sont plus dans la liste
+        $updatedCount = Activity::where('monthly_report_id', $report->id)
+            ->whereNotIn('id', $currentActivityIds)
+            ->update([
+                'monthly_report_id' => null,
+                'status' => 'brouillon',
+            ]);
+
+        // 5. Attacher les nouvelles activités
+        Activity::whereIn('id', $currentActivityIds)
+            ->update([
+                'monthly_report_id' => $report->id,
+                'status' => $submit ? 'soumis' : 'brouillon',
+            ]);
+
+        // 6. Mettre à jour le champ project_ids du rapport
+        $report->project_ids = ($selectedProject === 'all') ? '' : $selectedProject;
+        $report->save();
+
+        // 7. Log du résultat
+        Log::info('Activités du rapport mises à jour', [
+            'report_id' => $report->id,
+            'selected_project' => $this->selected_project_id,
+            'activities_kept' => count($currentActivityIds),
+            'activities_updated' => $updatedCount,
+            'submit' => $submit
+        ]);
+    }
+
+    /**
+     * Gère la réponse après sauvegarde
+     */
+    private function handleSuccess(bool $submit)
+    {
+        // 1. Message de succès
+        $message = $submit
+            ? 'Rapport soumis avec succès !'
+            : 'Rapport enregistré en brouillon.';
+
+        session()->flash('success', $message);
+
+        // 2. Redirection ou refresh
+        if ($submit) {
+            // Rediriger vers la liste des rapports après soumission
+            return redirect()->route('rapports.index');
+        }
+
+        // 3. Pour le brouillon, on reste sur la page
+        return redirect()->route('rapports.index');
+    }
+
+
     protected function checkRateLimit(): void
     {
-        $key = 'report_save_'.$this->user_id;
+        $key = 'report_save_' . $this->user_id;
         if (RateLimiter::tooManyAttempts($key, 10)) {
             throw new \Exception('Trop de tentatives. Veuillez attendre 5 minutes.');
         }
@@ -536,22 +472,6 @@ class CreateUpdate extends Component
     {
         $permission = $this->ID_report ? 'rapports.modifier' : 'rapports.creer';
         $this->checkPermissionOrFail($permission);
-    }
-
-    protected function prepareData($submit): array
-    {
-        return [
-            'user_id' => $this->user_id,
-            'month' => (int) $this->month,
-            'year' => (int) $this->year,
-            'project_ids' => $this->selected_project_id === 'all' ? '' : (int) $this->selected_project_id,
-            'report_date' => $this->report_date,
-            'objectives' => strip_tags(trim($this->objectives)),
-            'achievements' => strip_tags(trim($this->achievements)),
-            'next_actions' => strip_tags(trim($this->next_actions)),
-            'status' => $submit ? 'soumis' : 'brouillon',
-            'submitted_at' => $submit ? now() : null,
-        ];
     }
 
     protected function sendSubmissionNotification(MonthlyReport $report): void
@@ -578,8 +498,8 @@ class CreateUpdate extends Component
         }
 
         // 3. Nettoyage des données pour l'événement
-        $title = 'Soumission du rapport : '.e($report->full_title);
-        $message = 'Le collaborateur '.e($report->user->name.' '.$report->user->first_name).
+        $title = 'Soumission du rapport : ' . e($report->full_title);
+        $message = 'Le collaborateur ' . e($report->user->name . ' ' . $report->user->first_name) .
             ' vient de soumettre son rapport.';
 
         // 4. Envoi avec rate limiting
@@ -613,24 +533,6 @@ class CreateUpdate extends Component
      *
      * @throws \Exception
      */
-    // private function checkUniqueReportConstraint()
-    // {
-    //     // Déterminer la valeur à vérifier ('' pour 'all', sinon l'ID du projet)
-    //     $projectValue = ($this->selected_project_id === 'all') ? '' : $this->selected_project_id;
-
-    //     $exists = MonthlyReport::where('user_id', $this->user_id)
-    //         ->where('month', $this->month)
-    //         ->where('year', $this->year)
-    //         ->where('project_ids', $projectValue)
-    //         ->exists();
-
-    //     if ($exists) {
-    //         $type = $this->selected_project_id === 'all' ? 'global (tous les projets)' : "pour le projet #{$this->selected_project_id}";
-    //         // Lance une exception qui sera capturée par le système de validation
-    //         throw new \Exception("Un rapport {$type} existe déjà pour ce mois-ci.");
-    //     }
-    // }
-
     private function checkUniqueReportConstraint()
     {
         // 1. Validation des données d'entrée
@@ -660,14 +562,6 @@ class CreateUpdate extends Component
         }
     }
 
-    // public function render()
-    // {
-    //     $user = User::find($this->user_id);
-    //     return view('livewire.rapports.create-update', [
-    //         'projects' => $user->projects()->get(),
-    //         'activitiesList' => $this->activities,
-    //     ]);
-    // }
     public function render()
     {
         // 1. Récupération sécurisée des projets
@@ -698,12 +592,15 @@ class CreateUpdate extends Component
             $query->where('project_id', (int) $this->selected_project_id);
         }
 
-        return $query->whereYear('activity_date', $this->year)
+        $this->activities = $query->whereYear('activity_date', $this->year)
             ->whereMonth('activity_date', $this->month)
             ->with(['project', 'activityType'])
             ->orderBy('activity_date', 'asc')
             ->limit(500)
             ->get();
+        $this->getActivitiesProperty();
+
+        return $this->activities;
     }
 
     /**

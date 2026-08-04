@@ -7,12 +7,6 @@
 
     <div class="w-full">
         <!-- Alertes de session -->
-        @if(session('success'))
-            <x-ui.alert type="success" class="mb-4">
-                {{ session('success') }}
-            </x-ui.alert>
-        @endif
-
         @error('permission')
             <x-ui.alert type="error" class="mb-4">
                 {{ $message }}
@@ -29,7 +23,7 @@
         @if(!$timesheets->count() && empty($search) && empty($filterMonth) && empty($filterYear) && empty($filterStatus))
             <x-ui.empty-state title="Aucune activité déclarée" description="Aucune donnée." icon="las la-calendar-times">
                 <x-slot:action>
-                    <a href="{{ route('activities.create-update') }}" wire:navigate>
+                    <a href="{{ route('activities.create') }}" wire:navigate>
                         <x-ui.button>
                             <i class="las la-plus mr-1"></i> Déclarer une activité
                         </x-ui.button>
@@ -39,11 +33,11 @@
         @else
             <x-ui.table :columns="['N°', 'Date', 'Intitulé', 'Projet / Sous-Projet', 'Type', 'Durée', 'Statut', 'Actions']">
                 <x-slot:header>
-                    <div class="flex flex-col xs:flex-row justify-between items-start xs:items-center gap-3 xs:gap-4 mb-4 sm:mb-6">
-                        <h1 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">
+                    <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 mb-4 sm:mb-6">
+                        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 truncate">
                             Mon journal d'activités
                         </h1>
-                        <a href="{{ route('activities.create') }}" wire:navigate class="w-full xs:w-auto">
+                        <a href="{{ route('activities.create') }}" wire:navigate class="w-full sm:w-auto justify-center">
                             <x-ui.button class="w-full xs:w-auto justify-center">
                                 <i class="las la-plus mr-1.5 sm:mr-2"></i>
                                 <span class="hidden xs:inline text-sm sm:text-base">Déclarer une activité</span>
@@ -137,6 +131,12 @@
 
                         </div>
                     </div>
+
+                    @if(session('success'))
+                        <x-ui.alert type="success" class="mb-4">
+                            {{ session('success') }}
+                        </x-ui.alert>
+                    @endif
                 </x-slot:header>
 
                 <tbody>
@@ -181,7 +181,7 @@
 
                             <!-- Durée formatée -->
                             <td class="px-6 py-4 text-xs font-mono font-black text-gray-900 align-middle whitespace-nowrap">
-                                {{ round($activite->duration) }} h
+                                {{ floor($activite->duration) }}h : {{ round(($activite->duration - floor($activite->duration)) * 60) }}m
                             </td>
 
                             <!-- Statut Badge Coloré -->

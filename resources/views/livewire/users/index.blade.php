@@ -5,7 +5,7 @@
         </h2>
     </x-slot>
 
-    <div class="w-full">
+    <div class="w-full pt-0">
         <!-- Alertes de session -->
         @if(session('success'))
             <x-ui.alert type="success" class="mb-4 mt-8">
@@ -145,19 +145,6 @@
         size="xl"
         subtitle="{{ $userId ? 'Modifiez les informations et les rôles du personel' : 'Créez un nouveau compte personel avec ses rôles' }}">
         <div class="space-y-6">
-            @if($errors->any())
-                <x-ui.alert type="error" class="mb-4 mt-8">
-                    <div class="flex flex-col gap-1">
-                        <span class="font-bold text-sm mb-1">Message d'erreur :</span>
-                        <ul class="list-disc list-inside text-xs space-y-0.5 opacity-90">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                </x-ui.alert>
-                <br>
-            @endif
             <!-- Grille d'informations personnelles -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>

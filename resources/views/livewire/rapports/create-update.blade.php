@@ -23,15 +23,57 @@
         </div>
 
         <div class="flex items-center gap-3 w-full sm:w-auto">
-            <button wire:click="save(false)" wire:loading.attr="disabled" class="flex-1 sm:flex-none cursor-pointer px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition shadow-2xs">
-                <i class="las la-save mr-1.5 text-base"></i> Enregistrer le brouillon
-            </button>
+            <!-- Bouton Brouillon -->
+            <x-ui.button
+                type="button"
+                wire:click="save(false)"
+                wire:loading.attr="disabled"
+                wire:target="save(false)"
+                class="flex-1 sm:flex-none cursor-pointer px-4 py-2.5 text-sm font-medium bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition shadow-2xs"
+            >
+                <!-- État normal -->
+                <span wire:loading.remove wire:target="save(false)" class="flex items-center gap-1.5 !text-blue-600">
+                    <i class="las la-save mr-1.5 text-base"></i>
+                    Enregistrer le brouillon
+                </span>
 
-            <button wire:click="save(true)" wire:loading.attr="disabled" class="flex-1 sm:flex-none cursor-pointer px-4 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition shadow-xs flex items-center justify-center">
-                <i class="las la-paper-plane mr-1.5 text-base"></i> Soumettre le rapport
-            </button>
+                <!-- État chargement -->
+                <span wire:loading wire:target="save(false)" class="flex items-center gap-1.5 text-gray-700">
+                    <i class="las la-spinner animate-spin text-lg"></i>
+                    Enregistrement...
+                </span>
+            </x-ui.button>
+
+            <!-- Bouton Soumission -->
+            <x-ui.button
+                type="button"
+                wire:click="save(true)"
+                wire:loading.attr="disabled"
+                wire:target="save(true)"
+                class="flex-1 sm:flex-none cursor-pointer px-4 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition shadow-xs flex items-center justify-center"
+            >
+                <!-- État normal -->
+                <span wire:loading.remove wire:target="save(true)" class="flex items-center gap-1.5">
+                    <i class="las la-paper-plane mr-1.5 text-base"></i>
+                    Soumettre le rapport
+                </span>
+
+                <!-- État chargement -->
+                <span wire:loading wire:target="save(true)" class="flex items-center gap-1.5">
+                    <i class="las la-spinner animate-spin text-lg"></i>
+                    Soumission en cours...
+                </span>
+            </x-ui.button>
         </div>
     </div>
+
+    <!-- Alertes Flash de Session -->
+    @if(session('success'))
+        <x-ui.alert type="success" class="mb-4">
+            {{ session('success') }}
+        </x-ui.alert>
+        <br>
+    @endif
 
     @error('permission')
         <x-ui.alert type="error" class="mb-6">{{ $message }}</x-ui.alert> <br>
@@ -94,8 +136,8 @@
                     </div>
 
                     <!-- Filtre Regrouper les projets -->
-                    <div class="relative w-full group" x-data="{ val: @entangle('selected_project_id') }">
-                        <select wire:model.live="selected_project_id"
+                    <div class="relative w-full group" x-data="{ val: @entangle('selected_project_id').live  }">
+                        <select  x-model="val"
                                 class="w-full appearance-none bg-white rounded-xl border border-gray-200 px-4 py-4 pr-10 text-xs font-medium text-gray-700 shadow-xs cursor-pointer hover:border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 focus:outline-none transition duration-150">
                             <option value="all">Tous les projets</option>
                             @foreach($projects as $project)
@@ -116,13 +158,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Alertes Flash de Session -->
-                @if(session('success'))
-                    <x-ui.alert type="success" class="mb-4">
-                        {{ session('success') }}
-                    </x-ui.alert>
-                @endif
             </div>
 
             <!-- Section 2 : Rédaction (Objectifs, Réalisations, Suivant) -->
@@ -294,7 +329,7 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div class="bg-white/10 p-3 rounded-xl backdrop-blur-xs">
                         <span class="text-[10px] text-blue-200 block uppercase font-medium">Heures Déclarante(s)</span>
-                        <span class="text-2xl font-black block mt-0.5">{{ round($totalHours) }}h</span>
+                        <span class="text-2xl font-black block mt-0.5">{{ floor($totalHours) }}h : {{ round(($totalHours - floor($totalHours)) * 60) }}m</span>
                     </div>
 
                     @if($calculateOvertime)
@@ -341,7 +376,7 @@
                             </div>
                             <div class="text-right shrink-0">
                                 <span class="px-2 py-0.5 bg-white border border-gray-200 rounded-md text-[10px] font-bold text-gray-700 shadow-3xs">
-                                    {{ round($activity->duration) }}h
+                                    {{ floor($activity->duration) }}h : {{ round(($activity->duration - floor($activity->duration)) * 60) }}m
                                 </span>
                             </div>
                         </div>

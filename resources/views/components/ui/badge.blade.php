@@ -32,7 +32,7 @@ $variants = [
         'bg-cyan-100 text-cyan-700',
 
 
-    'purple' =>
+    'secondary' =>
         'bg-purple-100 text-purple-700',
 
 

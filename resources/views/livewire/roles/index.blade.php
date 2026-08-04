@@ -7,31 +7,11 @@
 
     <div class="w-full mt-0">
         <!-- Alertes de session -->
-        @if(session('success'))
-            <x-ui.alert type="success" class="mb-4 mt-8">
-                {{ session('success') }}
-            </x-ui.alert>
-        @endif
-
         @error('permission')
             <x-ui.alert type="error" class="mb-4 mt-8">
                 {{ $message }}
             </x-ui.alert>
         @enderror
-
-        @if($errors->any())
-            <x-ui.alert type="error" class="mb-4 mt-8">
-                <div class="flex flex-col gap-1">
-                    <span class="font-bold text-sm mb-1">Message d'erreur :</span>
-                    <ul class="list-disc list-inside text-xs space-y-0.5 opacity-90">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            </x-ui.alert>
-            <br>
-        @endif
 
         <!-- Liste des rôles -->
         @if(!$roles->count() && empty($search))
@@ -45,11 +25,11 @@
         @else
             <x-ui.table :columns="['N°', 'Nom du Rôle', 'Permissions assignées', 'Type d\'accès', 'Actions']">
                 <x-slot:header>
-                    <div class="flex flex-col xs:flex-row justify-between items-start xs:items-center gap-3 xs:gap-4 mb-4 sm:mb-6">
-                        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 truncate max-w-full">
+                    <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 mb-4 sm:mb-6">
+                        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 truncate">
                             Rôles du système
                         </h1>
-                        <x-ui.button wire:click="openModal" class="w-full xs:w-auto justify-center">
+                        <x-ui.button wire:click="openModal" class="w-full sm:w-auto justify-center">
                             <i class="las la-plus mr-1.5 sm:mr-2"></i>
                             <span class="hidden xs:inline text-sm sm:text-base">Nouveau rôle</span>
                             <span class="inline xs:hidden text-sm">Nouveau</span>
@@ -57,6 +37,14 @@
                     </div>
 
                     <x-ui.forms.input wire:model.live="search" placeholder="Recherche sur l'intitulé du rôle..." />
+
+                    @if(session('success'))
+                    <br>
+                        <x-ui.alert type="success" class="mb-4 mt-8">
+                            {{ session('success') }}
+                        </x-ui.alert>
+                        <br>
+                    @endif
                 </x-slot:header>
 
                 <tbody>

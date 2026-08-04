@@ -251,13 +251,13 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3 whitespace-nowrap text-center">
-                                <button
-                                    wire:click="viewDetails({{ $log->id }})"
-                                    class="text-blue-600 hover:text-blue-800 transition-colors"
-                                    title="Voir les détails"
-                                >
-                                    <i class="las la-eye"></i>
-                                </button>
+                                <x-ui.tooltip text="Voir les détails">
+                                    <button
+                                        wire:click="viewDetails({{ $log->id }})"
+                                        class="text-blue-600 hover:text-blue-800 transition-colors cursor-pointer">
+                                        <i class="las la-eye"></i>
+                                    </button>
+                                </x-ui.tooltip>
                             </td>
                         </tr>
                     @empty
@@ -274,17 +274,8 @@
         </div>
 
         <!-- Pagination -->
-        <div class="px-4 py-3 border-t border-gray-200 bg-gray-50">
-            <div class="flex flex-wrap items-center justify-between gap-3">
-                <div class="text-sm text-gray-600">
-                    Affichage de <span class="font-medium">{{ $logs->firstItem() ?? 0 }}</span> à
-                    <span class="font-medium">{{ $logs->lastItem() ?? 0 }}</span> sur
-                    <span class="font-medium">{{ $logs->total() }}</span> résultats
-                </div>
-                <div>
-                    {{ $logs->links() }}
-                </div>
-            </div>
+        <div class="mt-5">
+            <x-ui.pagination :paginator="$logs" />
         </div>
     </div>
 
@@ -293,7 +284,7 @@
         <div class="fixed inset-0 z-50 overflow-y-auto" x-data="{ open: true }" x-show="open">
             <div class="flex items-center justify-center min-h-screen px-4">
                 <!-- Overlay -->
-                <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" wire:click="closeDetailsModal"></div>
+                <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-md bg-opacity-50 transition-opacity" wire:click="closeDetailsModal"></div>
 
                 <!-- Modal -->
                 <div class="relative bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
@@ -303,7 +294,7 @@
                             <i class="las la-info-circle text-blue-600 mr-2"></i>
                             Détails du log
                         </h3>
-                        <button wire:click="closeDetailsModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <button wire:click="closeDetailsModal" class="text-gray-400 hover:text-gray-600 transition-colors  cursor-pointer">
                             <i class="las la-times text-xl"></i>
                         </button>
                     </div>
@@ -404,7 +395,7 @@
                     <div class="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-3 flex justify-end">
                         <button
                             wire:click="closeDetailsModal"
-                            class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-sm font-medium transition-colors"
+                            class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-sm font-medium transition-colors cursor-pointer"
                         >
                             Fermer
                         </button>

@@ -132,7 +132,10 @@
                             {{ $rapport->full_title }}
                         </h3>
                         <p class="text-xs text-gray-600 font-medium mt-0.5">
-                            <i class="las la-clock"></i> {{ count($rapport->activities) }} activité(s) indexée(s) : <span class="font-bold"> ({{ round($rapport->activities->sum('duration')) }}h)</span>
+                            <i class="las la-clock"></i> {{ count($rapport->activities) }} activité(s) indexée(s) :
+                            <span class="font-bold">
+                                {{ floor($rapport->activities->sum('duration')) }}h : {{ round(($rapport->activities->sum('duration') - floor($rapport->activities->sum('duration'))) * 60) }}m
+                            </span>
                         </p>
                     </div>
 

@@ -4,6 +4,7 @@ namespace App\Livewire\Projects;
 
 use App\Models\Project;
 use App\Models\SubProject;
+use App\Rules\SecureString;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
@@ -61,8 +62,31 @@ class SubProjectManager extends Component
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string', 'max:1000'],
+            'description' => ['nullable', 'string', 'max:1000', new SecureString],
             'status' => ['required', 'string', 'in:brouillon,actif,annuler'],
+        ];
+    }
+
+    /**
+     * Messages de validation personnalisés
+     */
+    public function messages(): array
+    {
+        return [
+            // Name
+            'name.required' => 'Le nom du projet est obligatoire.',
+            'name.string' => 'Le nom doit être une chaîne de caractères.',
+            'name.max' => 'Le nom ne doit pas dépasser 255 caractères.',
+
+            // Description
+            'description.string' => 'La description doit être une chaîne de caractères.',
+            'description.max' => 'La description ne doit pas dépasser 1000 caractères.',
+            // Le message pour SecureString sera géré directement dans la classe SecureString
+
+            // Status
+            'status.required' => 'Le statut du projet est obligatoire.',
+            'status.string' => 'Le statut doit être une chaîne de caractères.',
+            'status.in' => 'Le statut doit être : brouillon, actif ou annuler.',
         ];
     }
 
@@ -79,7 +103,7 @@ class SubProjectManager extends Component
 
     public function render()
     {
-        $searchTerm = '%'.str_replace(['%', '_'], ['\%', '\_'], $this->search).'%';
+        $searchTerm = '%' . str_replace(['%', '_'], ['\%', '\_'], $this->search) . '%';
 
         $subProjects = SubProject::query()
             ->with('users')

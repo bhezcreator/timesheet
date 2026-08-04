@@ -33,6 +33,7 @@
             <x-ui.alert type="success" class="mb-4">
                 {{ session('success') }}
             </x-ui.alert>
+            <br>
         @endif
         <!-- Message d'erreur exclusif sur droit ou blocage structurel -->
         @error('permission')
@@ -162,6 +163,7 @@
                     label="Description / Livrables produits"
                     helper="Décrivez les tâches réalisées."
                     placeholder="Décrivez brièvement les tâches accomplies (Obligatoire selon les paramètres de l'organisation)..."
+                    maxlength="1000"
                 />
             </div>
 

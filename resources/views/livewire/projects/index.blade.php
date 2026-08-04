@@ -5,37 +5,7 @@
         </h2>
     </x-slot>
 
-    <div class="w-full">
-        <!-- Messages flash de succès -->
-        @if(session('success'))
-            <x-ui.alert type="success" class="mb-4 mt-8">
-                {{ session('success') }}
-            </x-ui.alert>
-        @endif
-
-        @error('permission')
-            <x-ui.alert type="error" class="mb-4 mt-8">
-                {{ $message }}
-            </x-ui.alert>
-        @enderror
-
-        <!-- Liste récapitulative des alertes de saisie -->
-        @if($errors->any())
-            <x-ui.alert type="error" class="mb-4 mt-8">
-                <div class="flex flex-col gap-1">
-                    <span class="font-bold text-sm mb-1">Message(s) :</span>
-                    <ul class="list-disc list-inside text-xs space-y-0.5 opacity-90">
-                        @foreach ($errors->all() as $error)
-                            @if($error !== $errors->first('permission'))
-                                <li>{{ $error }}</li>
-                            @endif
-                        @endforeach
-                    </ul>
-                </div>
-            </x-ui.alert>
-            <br>
-        @endif
-
+    <div class="w-full pt-0">
         <!-- Tableau principal ou État vide -->
         @if(!$projects->count() && empty($search))
             <x-ui.empty-state title="Aucun projet trouvé" description="Créez et configurez vos projets d'entreprise." icon="las la-folder-open">
@@ -61,6 +31,21 @@
                 <div class="mb-6">
                     <x-ui.forms.input wire:model.live.debounce.300ms="search" placeholder="Recherche par code, nom ou statut..." />
                 </div>
+
+                <!-- Messages flash de succès -->
+                @if(session('success'))
+                    <x-ui.alert type="success" class="mb-4 mt-8">
+                        {{ session('success') }}
+                    </x-ui.alert>
+                    <br>
+                @endif
+
+                @error('permission')
+                    <x-ui.alert type="error" class="mb-4 mt-8">
+                        {{ $message }}
+                    </x-ui.alert>
+                    <br>
+                @enderror
 
                 <!-- Grille principale des cartes de projets -->
                 <div class="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
@@ -171,8 +156,8 @@
 
                             <!-- 4. PIED DE PAGE : Boutons d'actions du Projet -->
                             <div class="p-3 sm:p-4 bg-white border-t border-gray-50 rounded-b-2xl flex flex-wrap items-center justify-end gap-1.5 sm:gap-2">
-                                <a href="{{ route('projects.subprojects', ['projectId' => $project->id]) }}" 
-                                    wire:navigate 
+                                <a href="{{ route('projects.subprojects', ['projectId' => $project->id]) }}"
+                                    wire:navigate
                                     class="inline-flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-sm font-medium rounded-xl border border-gray-200 bg-gray-50 text-gray-700 hover:text-blue-600 hover:bg-blue-50/50 hover:border-blue-100 transition shadow-xs mr-auto flex-shrink-0"
                                     title="Gérer les sous-projets">
                                     <i class="las la-folder-plus text-sm sm:text-base"></i>
@@ -181,7 +166,7 @@
                                 </a>
 
                                 <a href="{{ route('projects.show', ['projectId' => $project->id]) }}"
-                                    wire:navigate 
+                                    wire:navigate
                                     class="inline-flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-sm font-medium rounded-xl border border-blue-200 bg-blue-50 text-blue-600 hover:text-blue-700 hover:bg-blue-100/50 hover:border-blue-300 transition shadow-xs flex-shrink-0"
                                     title="Gérer les attributions de projets">
                                     <i class="las la-chart-bar text-sm sm:text-base text-blue-600"></i>
@@ -217,107 +202,128 @@
         :show="$showModal"
         title="{{ $projectId ? 'Mise à jour du projet' : 'Créer un nouveau projet' }}"
         size="xl"
-        subtitle="{{ $projectId ? 'Modifiez les informations du projet' : 'Créez un nouveau projet avec ses détails' }}"
-    >
+        subtitle="{{ $projectId ? 'Modifiez les informations du projet' : 'Créez un nouveau projet avec ses détails' }}">
         <div class="space-y-5">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <x-ui.forms.input label="Code du Projet" name="code" wire:model="code" placeholder="Ex: PRJ-001" required />
-                <div class="md:col-span-2">
-                    <x-ui.forms.input label="Intitulé du Projet" name="name" wire:model="name" placeholder="Ex: Migration Cloud ERP" required />
+            {{-- Ligne 1 : Code et Intitulé sur 2 colonnes chacun --}}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <x-ui.forms.input
+                        label="Code du Projet"
+                        name="code"
+                        wire:model="code"
+                        placeholder="Ex: PRJ-001"
+                        required
+                    />
+                    <x-ui.forms.error name="code" />
+                </div>
+
+                <div>
+                    <x-ui.forms.input
+                        label="Intitulé du Projet"
+                        name="name"
+                        wire:model="name"
+                        placeholder="Ex: Migration Cloud ERP"
+                        required
+                    />
+                    <x-ui.forms.error name="name" />
                 </div>
             </div>
-            <x-ui.forms.error name="code" />
-            <x-ui.forms.error name="name" />
 
-            <div class="w-full">
+            {{-- Ligne 2 : Description sur toute la largeur --}}
+            <div class="mt-4">
                 <x-ui.forms.textarea
                     wire:model="description"
                     name="description"
                     label="Description / Objectifs"
                     rows="3"
                     placeholder="Saisir la description ou le résumé du projet..."
-                    helper="Décrivez les activités réalisées."
+                    helper="S'ouvre et s'ajuste dynamiquement en fonction du volume d'informations écrit."
+                    maxlength="1000"
                 />
                 <x-ui.forms.error name="description" />
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Intégration du composant Select personnalisé pour le Manager -->
-                <x-ui.forms.select
-                    wire:model="manager_id"
-                    name="manager_id"
-                    label="Manager du Projet"
-                    placeholder="Choisir le gestionnaire responsable..."
-                    :selected="$manager_id"
-                    required
-                    :options="$managers->map(fn($m) => [
-                        'value'       => (string)$m->id,
-                        'label'       => $m->first_name . ' ' . $m->name,
-                        'description' => $m->job_title,
-                        'icon'        => 'las la-user-tie'
-                    ])->toArray()"
-                />
-                <x-ui.forms.error name="manager_id" />
+            {{-- Ligne 3 : Manager et Statut sur 2 colonnes --}}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div>
+                    <x-ui.forms.select
+                        wire:model="manager_id"
+                        name="manager_id"
+                        label="Manager du Projet"
+                        placeholder="Choisir le gestionnaire responsable..."
+                        :selected="$manager_id"
+                        required
+                        :options="$managers->map(fn($m) => [
+                            'value'       => (string)$m->id,
+                            'label'       => $m->first_name . ' ' . $m->name,
+                            'description' => $m->job_title,
+                            'icon'        => 'las la-user-tie'
+                        ])->toArray()"
+                    />
+                    <x-ui.forms.error name="manager_id" />
+                </div>
 
-                <!-- Intégration du composant Select personnalisé pour le Statut -->
-                <x-ui.forms.select
-                    wire:model="status"
-                    name="status"
-                    label="Statut Initial"
-                    :selected="$status"
-                    required
-                    :options="[
-                        [
-                            'value'       => 'brouillon',
-                            'label'       => 'Brouillon',
-                            'icon'        => 'las la-edit',
-                            'description' => 'En cours d\'écriture'
-                        ],
-                        [
-                            'value'       => 'active',
-                            'label'       => 'Actif',
-                            'icon'        => 'las la-play-circle',
-                            'description' => 'Projet actif et en cours d\'exécution'
-                        ],
-                        [
-                            'value'       => 'annuler',
-                            'label'       => 'Annulé',
-                            'icon'        => 'las la-ban',
-                            'description' => 'Projet stoppé ou abandonné'
-                        ],
-                        [
-                            'value'       => 'complete',
-                            'label'       => 'Complété',
-                            'icon'        => 'las la-check-circle',
-                            'description' => 'Projet clôturé avec succès'
-                        ]
-                    ]"
-                />
-                <x-ui.forms.error name="status" />
+                <div>
+                    <x-ui.forms.select
+                        wire:model="status"
+                        name="status"
+                        label="Statut Initial"
+                        :selected="$status"
+                        required
+                        :options="[
+                            [
+                                'value'       => 'brouillon',
+                                'label'       => 'Brouillon',
+                                'icon'        => 'las la-edit',
+                                'description' => 'En cours d\'écriture'
+                            ],
+                            [
+                                'value'       => 'active',
+                                'label'       => 'Actif',
+                                'icon'        => 'las la-play-circle',
+                                'description' => 'Projet actif et en cours d\'exécution'
+                            ],
+                            [
+                                'value'       => 'annuler',
+                                'label'       => 'Annulé',
+                                'icon'        => 'las la-ban',
+                                'description' => 'Projet stoppé ou abandonné'
+                            ],
+                            [
+                                'value'       => 'complete',
+                                'label'       => 'Complété',
+                                'icon'        => 'las la-check-circle',
+                                'description' => 'Projet clôturé avec succès'
+                            ]
+                        ]"
+                    />
+                    <x-ui.forms.error name="status" />
+                </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Champ Date de Début -->
-                <x-ui.forms.datepicker
-                    wire:model="start_date"
-                    name="start_date"
-                    label="Date de Début"
-                    :selected="$start_date"
-                    placeholder="Sélectionner la date de début..."
-                    required
-                />
-                <x-ui.forms.error name="start_date" />
+            {{-- Ligne 4 : Dates sur 2 colonnes --}}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div>
+                    <x-ui.forms.datepicker
+                        wire:model="start_date"
+                        name="start_date"
+                        label="Date de Début"
+                        :selected="$start_date"
+                        placeholder="Sélectionner la date de début..."
+                        required
+                    />
+                </div>
 
-                <!-- Champ Date de Fin Prévisionnelle -->
-                <x-ui.forms.datepicker
-                    wire:model="end_date"
-                    name="end_date"
-                    label="Date de Fin Prévisionnelle"
-                    :selected="$end_date"
-                    placeholder="Sélectionner la date de fin..."
-                    required
-                />
-                <x-ui.forms.error name="end_date" />
+                <div>
+                    <x-ui.forms.datepicker
+                        wire:model="end_date"
+                        name="end_date"
+                        label="Date de Fin Prévisionnelle"
+                        :selected="$end_date"
+                        placeholder="Sélectionner la date de fin..."
+                        required
+                    />
+                </div>
             </div>
         </div>
 

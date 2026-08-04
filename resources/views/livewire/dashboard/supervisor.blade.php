@@ -249,7 +249,7 @@
                         </div>
                         @if($index === 0)
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                🏆 Meilleur
+                                <i class="las la-trophy text-lg mr-1"></i> Meilleur
                             </span>
                         @endif
                     </div>

@@ -8,10 +8,12 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
+use App\Rules\SecureString;
 
 #[Layout('layouts.app')]
 class Index extends Component
@@ -77,9 +79,121 @@ class Index extends Component
                     }
                 },
                 'regex:/^[a-z0-9\-\._]+$/i',
-                'not_in:'.implode(',', ['admin', 'test', 'demo']), // Mots interdits
+                'not_in:admin,test,demo', // Mots interdits
             ],
-            // ... autres règles
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                'min:3',
+                'regex:/^[a-z0-9\-\._ a-zàâäéèêëîïôöùûüç;:!,?ÂÆÇÈÉÊËÎÏÔŒÙÛÜ@\'"]+$/i', // Caractères autorisés
+            ],
+
+            'description' => [
+                'nullable',
+                'string',
+                'max:1000',
+                'min:10',
+                new SecureString
+            ],
+
+            'manager_id' => [
+                'required',
+                'integer',
+                'exists:users,id', // Doit exister dans la table users
+                function ($attribute, $value, $fail) {
+                    // Vérifier si l'utilisateur a le rôle "manager"
+                    $user = User::find($value);
+                    if ($user && !$user->hasRole('manager')) {
+                        $fail('L\'utilisateur sélectionné doit avoir le rôle de manager.');
+                    }
+                },
+            ],
+
+            'start_date' => [
+                'required',
+                'date',
+                function ($attribute, $value, $fail) {
+                    if ($this->end_date && $value > $this->end_date) {
+                        $fail('La date de début doit être antérieure à la date de fin.');
+                    }
+                },
+            ],
+
+            'end_date' => [
+                'required',
+                'date',
+                'after_or_equal:start_date', // Après ou égale à start_date
+            ],
+
+            'status' => [
+                'required',
+                'string',
+                Rule::in(['brouillon', 'active', 'complete', 'annuler']),
+            ],
+        ];
+    }
+
+    /**
+     * Personnalisation des noms d'attributs pour les messages d'erreur
+     */
+    public function validationAttributes(): array
+    {
+        return [
+            'code' => 'code du projet',
+            'name' => 'nom du projet',
+            'description' => 'description du projet',
+            'manager_id' => 'responsable du projet',
+            'start_date' => 'date de début',
+            'end_date' => 'date de fin',
+            'status' => 'statut du projet',
+        ];
+    }
+
+    /**
+     * Messages de validation personnalisés
+     */
+    public function messages(): array
+    {
+        return [
+            // Code
+            'code.required' => 'Le code du projet est obligatoire.',
+            'code.string' => 'Le code doit être une chaîne de caractères.',
+            'code.max' => 'Le code ne doit pas dépasser 50 caractères.',
+            'code.regex' => 'Le code ne peut contenir que des lettres, chiffres, tirets, points et underscores.',
+            'code.not_in' => 'Le code ne peut pas être "admin", "test" ou "demo".',
+
+            // Nom
+            'name.required' => 'Le nom du projet est obligatoire.',
+            'name.string' => 'Le nom doit être une chaîne de caractères.',
+            'name.max' => 'Le nom ne doit pas dépasser 255 caractères.',
+            'name.min' => 'Le nom doit contenir au moins 3 caractères.',
+            'name.unique' => 'Ce nom de projet est déjà utilisé.',
+            'name.regex' => 'Le nom ne peut contenir que des lettres, chiffres, espaces, tirets et underscores.',
+
+            // Description
+            'description.string' => 'La description doit être une chaîne de caractères.',
+            'description.max' => 'La description ne doit pas dépasser 1000 caractères.',
+            'description.min' => 'La description doit contenir au moins 10 caractères.',
+
+            // Manager
+            'manager_id.required' => 'Le responsable du projet est obligatoire.',
+            'manager_id.integer' => 'L\'identifiant du manager doit être un nombre entier.',
+            'manager_id.exists' => 'L\'utilisateur sélectionné n\'existe pas.',
+
+            // Dates
+            'start_date.required' => 'La date de début est obligatoire.',
+            'start_date.date' => 'La date de début doit être une date valide.',
+            'start_date.after_or_equal' => 'La date de début ne peut pas être dans le passé.',
+
+            'end_date.required' => 'La date de fin est obligatoire.',
+            'end_date.date' => 'La date de fin doit être une date valide.',
+            'end_date.after_or_equal' => 'La date de fin doit être postérieure ou égale à la date de début.',
+            'end_date.after' => 'La date de fin doit être dans le futur.',
+
+            // Status
+            'status.required' => 'Le statut du projet est obligatoire.',
+            'status.in' => 'Le statut doit être : brouillon, active, complete ou annuler.',
         ];
     }
 
@@ -167,9 +281,9 @@ class Index extends Component
         $search = preg_replace('/[^\p{L}\p{N}\s\-_]/u', '', $search);
 
         $query->where(function ($q) use ($search) {
-            $q->where('name', 'LIKE', '%'.$search.'%')
-                ->orWhere('code', 'LIKE', '%'.$search.'%')
-                ->orWhere('status', 'LIKE', '%'.$search.'%');
+            $q->where('name', 'LIKE', '%' . $search . '%')
+                ->orWhere('code', 'LIKE', '%' . $search . '%')
+                ->orWhere('status', 'LIKE', '%' . $search . '%');
         });
     }
 
@@ -332,7 +446,7 @@ class Index extends Component
 
         // 3. Si des dépendances existent, demander confirmation
         if (! empty($dependencies)) {
-            session()->flash('warning', 'Ce projet est lié à '.implode(' et ', $dependencies).
+            session()->flash('warning', 'Ce projet est lié à ' . implode(' et ', $dependencies) .
                 '. La suppression est irréversible.');
 
             // 4. Demander confirmation supplémentaire
