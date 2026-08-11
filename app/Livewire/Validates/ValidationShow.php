@@ -68,15 +68,19 @@ class ValidationShow extends Component
                 $activityUpdateData['rejection_reason'] = $this->comment;
             }
 
-            // Mise à jour en cascade de toutes les activités rattachées
-            $this->report->activities()->update($activityUpdateData);
+            // Mise à jour du statut dans la table pivot uniquement
+            $activityIds = $this->report->activities()->pluck('activities.id')->toArray();
+            $this->report->activities()->syncWithPivotValues(
+                $activityIds,
+                ['status' => 'approuvé']
+            );
         });
 
         // 4. Déclenchement universel pour votre cas de Rapport Mensuel
         event(new UniversalModelStatusChanged(
             model: $this->report,
             recipient: $this->report->user, // L'agent recevra la notification
-            title: 'Mise à jour : '.$this->report->full_title,
+            title: 'Mise à jour : ' . $this->report->full_title,
             messageContent: 'Votre rapport mensuel a été traité par le superviseur.',
             status: $this->decision === 'Validé' ? 'approuvé' : 'rejeté',
             comment: $this->comment,
@@ -92,12 +96,12 @@ class ValidationShow extends Component
                 event(new UniversalModelStatusChanged(
                     model: $this->report,
                     recipient: $user, // L'agent recevra la notification
-                    title: 'Validation du : '.$this->report->full_title,
-                    messageContent: 'Le rapport mensuel du colaborateur '.$this->report->user->name.' '.$this->report->user->first_name.' a été approuvé par son superviseur.',
+                    title: 'Validation du : ' . $this->report->full_title,
+                    messageContent: 'Le rapport mensuel du colaborateur ' . $this->report->user->name . ' ' . $this->report->user->first_name . ' a été approuvé par son superviseur.',
                     status: 'approuvé',
                     comment: '',
                     routeUrl: route('rapports.print', ['reportId' => $this->report->id]),
-                    icon: 'las la-check-circle text-emerald-500'
+                    icon: 'las la-check-circle text-emerald-500',
                 ));
             }
 
@@ -107,12 +111,12 @@ class ValidationShow extends Component
                 event(new UniversalModelStatusChanged(
                     model: $this->report,
                     recipient: $supervise,
-                    title: 'Validation du : '.$this->report->full_title,
-                    messageContent: 'Le rapport mensuel du colaborateur '.$this->report->user->name.' '.$this->report->user->first_name.' a été approuvé avec succès.',
+                    title: 'Validation du : ' . $this->report->full_title,
+                    messageContent: 'Le rapport mensuel du colaborateur ' . $this->report->user->name . ' ' . $this->report->user->first_name . ' vient d\'être approuvé avec succès.',
                     status: 'approuvé',
                     comment: '',
                     routeUrl: route('rapports.print', ['reportId' => $this->report->id]),
-                    icon: 'las la-check-circle text-emerald-500'
+                    icon: 'las la-check-circle text-emerald-500',
                 ));
             }
         }

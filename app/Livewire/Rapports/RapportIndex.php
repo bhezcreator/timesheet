@@ -73,7 +73,7 @@ class RapportIndex extends Component
 
             if ($report) {
                 // Optionnel : Dissocier les activités liées avant la suppression
-                $report->activities()->update(['monthly_report_id' => null]);
+                // $report->activities()->update(['monthly_report_id' => null]);
                 $report->delete();
 
                 session()->flash('message', 'Le rapport a été supprimé avec succès.');

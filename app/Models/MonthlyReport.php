@@ -45,7 +45,7 @@ class MonthlyReport extends Model implements HasMedia
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
             ->useLogName('monthly_report')
-            ->setDescriptionForEvent(fn (string $eventName) => match ($eventName) {
+            ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
                 'created' => 'Nouveau rapport mensuel créé',
                 'updated' => 'Rapport mensuel modifié',
                 'submitted' => 'Rapport mensuel soumis',
@@ -79,7 +79,9 @@ class MonthlyReport extends Model implements HasMedia
 
     public function activities()
     {
-        return $this->hasMany(Activity::class);
+        return $this->belongsToMany(Activity::class, 'report_activity')
+            ->withPivot('status')
+            ->withTimestamps();
     }
 
     /**
@@ -129,12 +131,12 @@ class MonthlyReport extends Model implements HasMedia
                     1
                 )->translatedFormat('F');
 
-                $baseTitle = 'Rapport du mois de '.ucfirst($monthName)." {$this->attributes['year']}";
+                $baseTitle = 'Rapport du mois de ' . ucfirst($monthName) . " {$this->attributes['year']}";
                 $projectField = $this->attributes['project_ids'] ?? '';
 
                 // Rapport "all"
                 if (empty($projectField) || $projectField === 'all' || $projectField === '""' || $projectField === '[]') {
-                    return $baseTitle.' (tous les projets)';
+                    return $baseTitle . ' (tous les projets)';
                 }
 
                 if ($projectField) {
@@ -142,11 +144,11 @@ class MonthlyReport extends Model implements HasMedia
                     // Rapport projet spécifique
                     $project = Project::where('id', $projectId)->first();
                     if ($project) {
-                        return $baseTitle." concernant le projet : {$project->name}";
+                        return $baseTitle . " concernant le projet : {$project->name}";
                     }
                 }
 
-                return $baseTitle." (projet : {$projectField})";
+                return $baseTitle . " (projet : {$projectField})";
             }
         );
     }

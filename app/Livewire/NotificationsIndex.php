@@ -54,8 +54,8 @@ class NotificationsIndex extends Component
         // Recherche
         if (! empty($this->search)) {
             $query->where(function ($q) {
-                $q->where('data->title', 'LIKE', '%'.$this->search.'%')
-                    ->orWhere('data->message', 'LIKE', '%'.$this->search.'%');
+                $q->where('data->title', 'LIKE', '%' . $this->search . '%')
+                    ->orWhere('data->message', 'LIKE', '%' . $this->search . '%');
             });
         }
 
@@ -80,7 +80,7 @@ class NotificationsIndex extends Component
 
             // Redirection avec JavaScript
             $this->js("setTimeout(() => {
-                window.location.href = '".($notification->data['route_url'] ?? '#')."';
+                window.location.href = '" . ($notification->data['route_url'] ?? '#') . "';
             }, 300)");
         }
     }

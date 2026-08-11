@@ -4,16 +4,15 @@
             Paramètres
         </h2>
     </x-slot>
-    {{-- En-tête de la page --}}
+
     <div>
-        {{-- <h1 class="text-2xl font-700 text-gray-900 tracking-tight">Paramètres</h1> --}}
         <p class="text-sm text-gray-500 mt-0.5">Gérez vos informations personnelles, la sécurité de vos accès et vos préférences.</p>
     </div>
 
     {{-- Système d'onglets --}}
     <div class="bg-white border border-gray-200 my-4 rounded-t-xl">
 
-        {{-- Version Mobile : Menu déroulant (S'affiche uniquement sur les petits écrans) --}}
+        {{-- Version Mobile : Menu déroulant --}}
         <div class="sm:hidden mb-4">
             <label for="tabs" class="sr-only">Choisir un onglet</label>
             <select
@@ -21,16 +20,16 @@
                 wire:model.live="activeTab"
                 class="block w-full rounded-2xl border-gray-300 text-base focus:border-indigo-500 focus:ring-indigo-500 py-2.5 shadow-xs"
             >
-                @foreach($tabs as $key => $tab)
+                @foreach($filteredTabs as $key => $tab)  {{-- ✅ CHANGÉ --}}
                     <option value="{{ $key }}">{{ $tab['label'] }}</option>
                 @endforeach
             </select>
         </div>
 
-        {{-- Version Bureau : Onglets alignés horizontaux (Masqué sur mobile) --}}
+        {{-- Version Bureau : Onglets alignés horizontaux --}}
         <div class="hidden sm:block">
             <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                @foreach($tabs as $key => $tab)
+                @foreach($filteredTabs as $key => $tab)  {{-- ✅ CHANGÉ --}}
                     <button
                         type="button"
                         wire:click="changeTab('{{ $key }}')"
@@ -57,29 +56,27 @@
         @if($activeTab === 'profile')
             <div class="space-y-2 animate-fade-in" wire:key="tab-content-profile">
                 <p class="text-sm text-gray-700">Mettez à jour vos coordonnées publiques et votre avatar d'identification.</p>
-
-                {{-- Insérez votre composant ou formulaire de profil ici --}}
                 @livewire('users.profil')
             </div>
         @endif
 
-        {{-- Contenu : signature --}}
+        {{-- Contenu : Signature --}}
         @if($activeTab === 'signature')
-            <div class="space-y-4 animate-fade-in" wire:key="tab-content-security">
+            <div class="space-y-4 animate-fade-in" wire:key="tab-content-signature">
                 @livewire('users.signature-capture')
             </div>
         @endif
 
         {{-- Contenu : Jour bloqué --}}
         @if($activeTab === 'blockedDay')
-            <div class="space-y-4 animate-fade-in" wire:key="tab-content-security">
+            <div class="space-y-4 animate-fade-in" wire:key="tab-content-blocked">
                 @livewire('users.blocked-day-index')
             </div>
         @endif
 
         {{-- Contenu : Type activité --}}
         @if($activeTab === 'type')
-            <div class="space-y-4 animate-fade-in" wire:key="tab-content-security">
+            <div class="space-y-4 animate-fade-in" wire:key="tab-content-type">
                 @livewire('activity-types.index')
             </div>
         @endif
@@ -89,14 +86,13 @@
             <div class="space-y-4 animate-fade-in" wire:key="tab-content-general">
                 <h2 class="text-lg font-bold text-gray-900">Paramètres généraux</h2>
                 <p class="text-sm text-gray-500">Configurez les options système et d'administration.</p>
-                {{-- Insérez vos formulaires généraux ici --}}
                 @livewire('users.settings')
             </div>
         @endif
 
-                {{-- Contenu : Journal activité --}}
+        {{-- Contenu : Journal activité --}}
         @if($activeTab === 'logs')
-            <div class="space-y-4 animate-fade-in" wire:key="tab-content-security">
+            <div class="space-y-4 animate-fade-in" wire:key="tab-content-logs">
                 @livewire('activity-logs')
             </div>
         @endif

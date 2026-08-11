@@ -2,6 +2,7 @@
 
 use App\Livewire\Actions\Logout;
 use Livewire\Volt\Component;
+use Illuminate\Support\Facades\Auth;
 
 new class extends Component
 {
@@ -10,59 +11,105 @@ new class extends Component
             'title' => 'Tableau de bord',
             'icon'  => 'la-home',
             'route' => 'dashboard',
+            'permission' => null, // Accessible à tous
         ],
         [
             'title' => 'Feuilles de temps',
             'icon'  => 'la-business-time',
             'route' => 'timesheet.calendar',
+            'permission' => 'projets.voir',
         ],
         [
             'title' => 'Projets',
             'icon'  => 'la-project-diagram',
             'route' => 'projects.index',
+            'permission' => 'projets.voir',
         ],
         [
             'title' => 'Activités',
             'icon'  => 'la-tasks',
             'route' => 'activities.index',
+            'permission' => 'activites.voir',
         ],
         [
             'title' => 'Rapports',
             'icon'  => 'la-chart-bar',
             'route' => 'rapports.index',
+            'permission' => 'rapports.voir',
         ],
-
         [
             'title' => 'Liste Rapport',
             'icon'  => 'la-list',
             'route' => 'reports.index',
+            'permission' => 'Voir_liste_rapport',
         ],
         [
             'title' => 'Validations',
             'icon'  => 'la-check',
             'route' => 'validations.supervisor',
+            'permission' => 'validations.voir',
         ],
         [
             'title' => 'Personnels',
             'icon'  => 'la-users',
             'route' => 'users.index',
+            'permission' => 'utilisateurs.voir',
         ],
         [
             'title' => 'Permissions',
-            'icon'  => 'la-key', // Modifié la-user -> la-key (sémantique claire)
+            'icon'  => 'la-key',
             'route' => 'permissions.index',
+            'permission' => 'permissions.voir',
         ],
         [
             'title' => 'Rôles',
-            'icon'  => 'la-user-shield', // Modifié la-user -> la-user-shield (sécurité)
+            'icon'  => 'la-user-shield',
             'route' => 'roles.index',
+            'permission' => 'roles.voir',
         ],
         [
             'title' => 'Paramètres',
             'icon'  => 'la-cog',
             'route' => 'settings',
+            'permission' => 'parametres.voir',
         ],
     ];
+
+    public array $filteredMenus = [];
+
+    /**
+     * Mount method - Initialize component
+     */
+    public function mount(): void
+    {
+        $this->filteredMenus = $this->getFilteredMenus();
+    }
+
+    /**
+     * Get filtered menus based on user permissions
+     */
+    protected function getFilteredMenus(): array
+    {
+        $user = Auth::user();
+
+        // Si l'utilisateur n'est pas connecté, retourner les menus publics seulement
+        if (!$user) {
+            return array_filter($this->menus, function ($menu) {
+                return empty($menu['permission']);
+            });
+        }
+
+        // Filtrer les menus selon les permissions
+        return array_filter($this->menus, function ($menu) use ($user) {
+            // Si pas de permission requise, tout le monde voit
+            if (empty($menu['permission'])) {
+                return true;
+            }
+
+            // Vérifier si l'utilisateur a la permission
+            return $user->can($menu['permission']);
+        });
+    }
 
     /**
      * Log the current user out of the application.
@@ -73,20 +120,31 @@ new class extends Component
 
         $this->redirect('/', navigate: true);
     }
-}; ?>
+
+    /**
+     * Check if a menu item is active
+     */
+    protected function isMenuActive(array $menu): bool
+    {
+        if ($menu['route'] === '#') {
+            return false;
+        }
+
+        $routeGroup = explode('.', $menu['route'])[0] . '.*';
+
+        return request()->routeIs($menu['route']) || request()->routeIs($routeGroup);
+    }
+};
+?>
 
 <nav x-data="{ open: false }" class="h-full bg-white border-gray-100 p-0">
     <!-- Desktop Navigation -->
     <div class="hidden lg:flex flex-col h-full justify-between">
         <!-- Liens du menu principal -->
         <div class="space-y-1.5">
-            @foreach($menus as $menu)
+            @foreach($filteredMenus as $menu)
                 @php
-                    // Extrait le premier mot de la route (ex: "users" depuis "users.index" ou "users.edit")
-                    $routeGroup = $menu['route'] !== '#' ? explode('.', $menu['route'])[0] . '.*' : null;
-
-                    // Le menu est actif si la route exacte correspond OU si on est dans le même groupe de sous-pages
-                    $isActive = $menu['route'] !== '#' && (request()->routeIs($menu['route']) || ($routeGroup && request()->routeIs($routeGroup)));
+                    $isActive = $this->isMenuActive($menu);
                 @endphp
 
                 <a
@@ -98,7 +156,6 @@ new class extends Component
                         : 'text-gray-600 hover:bg-gray-50 hover:text-indigo-600'
                     }}"
                 >
-                    {{-- CORRECTION : $active remplacé par $isActive ici --}}
                     <i class="las {{ $menu['icon'] }} text-xl transition-colors {{ $isActive ? 'text-white' : 'text-gray-400 group-hover:text-indigo-600' }}"></i>
                     <span>{{ $menu['title'] }}</span>
                 </a>

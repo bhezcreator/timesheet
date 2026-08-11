@@ -30,10 +30,21 @@
                 <h1 class="text-xl font-black text-gray-900 uppercase">Feuille de Temps</h1>
                 <p class="text-xs text-gray-500 font-medium">{{ $report->full_title }}</p>
             </div>
-            <!-- Emplacement du Logo de l'entreprise -->
-            <div class="shrink-0">
-                <img src="/images/logo-entreprise.png" alt="Logo Entreprise" class="h-12 w-auto object-contain fallback-logo" onerror="this.style.display='none'; document.getElementById('text-logo').style.display='block'">
-                <div id="text-logo" class="hidden text-right font-black text-lg text-gray-800 tracking-tight">ENTERPRISE LOGO</div>
+
+            <!-- Emplacement du Logo CNRSC -->
+            <div class="shrink-0 flex flex-col items-center gap-1">
+                <img src="{{ asset('images/logo.jpg') }}"
+                    alt="Logo CNRSC ASBL"
+                    class="h-16 w-auto object-contain rounded-xl shadow-md border-2 border-blue-600 fallback-logo"
+                    onerror="this.style.display='none'; document.getElementById('text-logo').style.display='flex'">
+                <div id="text-logo" class="hidden items-center gap-2 font-bold text-lg tracking-tight">
+                    <span class="text-blue-600">CNRSC</span>
+                    <span class="text-orange-500">ASBL</span>
+                </div>
+                <div class="flex items-center gap-1 font-bold text-sm tracking-tight">
+                    <span class="text-blue-600">CNRSC</span>
+                    <span class="text-orange-500">ASBL</span>
+                </div>
             </div>
         </div>
 
@@ -115,11 +126,18 @@
                                     <td class="p-3 font-semibold text-gray-800 whitespace-nowrap">{{ $data['date_formatted'] }}</td>
                                     @foreach($projectsList as $pId => $pName)
                                         <td class="p-3 text-center border-l border-gray-200 font-medium">
-                                            {{ isset($data['projects'][$pId]) ? number_format($data['projects'][$pId], 0) . 'h' : '-' }}
+                                            @php
+                                                $hours = isset($data['projects'][$pId]) ? $data['projects'][$pId] : 0;
+                                                $totalHours = floor($data['total_day']);
+                                                $totalMinutes = round(($data['total_day'] - floor($data['total_day'])) * 60);
+                                            @endphp
+
+                                            {{ $hours ? number_format($hours, 0) . 'h' : '-' }}
+                                            sur {{ $totalHours }}h{{ $totalMinutes > 0 ? ' ' . $totalMinutes . 'm' : '' }}
                                         </td>
                                     @endforeach
                                     <td class="p-3 text-right font-bold text-gray-900 border-l border-gray-200 bg-gray-50/40">
-                                        {{ number_format($data['total_day'], 0) }}h
+                                        {{ floor($data['total_day']) }}h : {{ round(($data['total_day'] - floor($data['total_day'])) * 60) }}m
                                     </td>
                                 </tr>
                             @endforeach
@@ -129,11 +147,14 @@
                                 <td class="p-3 uppercase tracking-wider text-[10px]">Totaux par Projet :</td>
                                 @foreach($projectsList as $pId => $pName)
                                     <td class="p-3 text-center border-l border-gray-200 text-gray-700">
-                                        {{ number_format($activities->where('project_id', $pId)->sum('duration'), 0) }}h
+                                        @php
+                                            $totalActivites = $activities->where('project_id', $pId)->sum('duration');
+                                        @endphp
+                                        {{ floor($totalActivites) }}h : {{ round(($totalActivites - floor($totalActivites)) * 60) }}m
                                     </td>
                                 @endforeach
                                 <td class="p-3 text-right text-sm font-black text-blue-600 border-l border-gray-200 bg-blue-50/50">
-                                    {{ number_format($totalReportHours, 0) }}h
+                                    {{ floor($totalReportHours) }}h : {{ round(($totalReportHours - floor($totalReportHours)) * 60) }}m
                                 </td>
                             </tr>
                         </tfoot>

@@ -25,14 +25,14 @@
         <div class="flex items-center gap-2 flex-wrap">
             @if($notificationCount > 0)
                 <button wire:click="markAllAsRead"
-                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center gap-2">
+                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center gap-2 cursor-pointer">
                     <i class="las la-check-double"></i>
                     Tout marquer comme lu
                 </button>
             @endif
 
             <button wire:click="deleteAllRead"
-                    class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium rounded-lg transition-colors duration-200 flex items-center gap-2">
+                    class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium rounded-lg transition-colors duration-200 flex items-center gap-2 cursor-pointer">
                 <i class="las la-trash-alt"></i>
                 Supprimer les lues
             </button>

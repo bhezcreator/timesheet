@@ -4,6 +4,8 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
+        <link rel="icon" type="image/jpeg" href="{{ asset('images/logo.jpg') }}">
+
         <title>
             {{ config('app.name', 'TimeSheet') }}
         </title>
@@ -29,16 +31,19 @@
             <aside class="hidden lg:flex lg:w-72 lg:flex-col lg:flex-shrink-0 bg-white border-r border-gray-200">
                 <div class="h-20 flex items-center px-4 sm:px-6">
                     <a href="{{ route('dashboard') }}" class="flex items-center gap-2 sm:gap-3">
-                        <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-lg flex-shrink-0">
-                            <i class="las la-clock text-2xl sm:text-3xl"></i>
+                        <!-- Logo CNRSC -->
+                        <div class="w-14 h-14 rounded-xl overflow-hidden shadow-md">
+                            <img src="{{ asset('images/logo.jpg') }}"
+                                alt="Logo CNRSC"
+                                class="w-full h-full object-cover">
                         </div>
 
-                        <div class="hidden sm:block">
+                        <div>
                             <h1 class="font-bold text-lg sm:text-xl">
-                                Timesheet
+                                CNRSC ASBL
                             </h1>
                             <p class="text-[10px] sm:text-xs text-gray-500">
-                                Timesheet Manager
+                                Gestion intelligente du temps
                             </p>
                         </div>
                     </a>

@@ -38,9 +38,21 @@
                 <h1 class="text-2xl font-black text-gray-900 uppercase">Liste des Rapports</h1>
                 <p class="text-xs text-gray-500 font-medium">Généré le {{ now()->translatedFormat('d F Y à H:i') }}</p>
             </div>
-            <!-- Emplacement du Logo de l'entreprise -->
-            <div class="shrink-0">
-                <div class="text-right font-black text-lg text-gray-800 tracking-tight">ENTERPRISE LOGO</div>
+
+            <!-- Emplacement du Logo CNRSC -->
+            <div class="shrink-0 flex flex-col items-center gap-1">
+                <img src="{{ asset('images/logo.jpg') }}"
+                    alt="Logo CNRSC ASBL"
+                    class="h-16 w-auto object-contain rounded-xl shadow-md border-2 border-blue-600 fallback-logo"
+                    onerror="this.style.display='none'; document.getElementById('text-logo').style.display='flex'">
+                <div id="text-logo" class="hidden items-center gap-2 font-bold text-lg tracking-tight">
+                    <span class="text-blue-600">CNRSC</span>
+                    <span class="text-orange-500">ASBL</span>
+                </div>
+                <div class="flex items-center gap-1 font-bold text-sm tracking-tight">
+                    <span class="text-blue-600">CNRSC</span>
+                    <span class="text-orange-500">ASBL</span>
+                </div>
             </div>
         </div>
 

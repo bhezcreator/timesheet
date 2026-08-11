@@ -39,7 +39,7 @@ class CreateUpdate extends Component
 
     public $next_actions;
 
-    public $activities;
+    public $selectedActivities;
 
     public $status = 'brouillon';
 
@@ -68,9 +68,14 @@ class CreateUpdate extends Component
     // 1. Ajouter des règles de validation renforcées
     protected function rules()
     {
-        $assignedProjectIds = User::find($this->user_id)?->projects()
-            ->pluck('projects.id')
-            ->toArray() ?? [];
+        $user = User::with('projects')->find($this->user_id);
+        $assignedProjectIds = $user?->projects()->pluck('projects.id')->toArray() ?? [];
+        $allowedProjectValues = array_merge(['all'], $assignedProjectIds);
+
+        // Redirection si utilisateur inexistant
+        if (!$user) {
+            throw new \Exception('Utilisateur non trouvé');
+        }
 
         // 2. Autoriser la valeur 'all' en plus des IDs de projets assignés
         $allowedProjectValues = array_merge(['all'], $assignedProjectIds);
@@ -266,14 +271,14 @@ class CreateUpdate extends Component
     public function getActivitiesProperty()
     {
         // 6. Exécution avec pagination pour limiter la charge
-        $activities = $this->activities;
+        $activites = $this->selectedActivities;
 
         // 7. Calcul sécurisé des totaux
-        $this->totalHours = $activities->sum('duration');
+        $this->totalHours = $activites->sum('duration');
 
         $this->calculateOvertimeHours();
 
-        return $activities;
+        return $activites;
     }
 
     protected function calculateOvertimeHours(): void
@@ -385,54 +390,45 @@ class CreateUpdate extends Component
     }
 
     /**
-     * Met à jour les activités associées au rapport
-     * Supprime les activités qui ne sont plus dans la liste
+     * Met à jour les activités associées au rapport via la relation many-to-many
+     * Avec gestion des activités qui n'appartiennent à aucun rapport
      */
     private function updateActivities(MonthlyReport $report, bool $submit): void
     {
         // 1. Récupérer les activités actuellement affichées
-        $currentActivityIds = $this->activities->pluck('id')->toArray();
+        $currentActivityIds = $this->selectedActivities->pluck('id')->toArray();
 
-        // 2. Récupérer le projet sélectionné actuel
-        $selectedProject = $this->selected_project_id;
-
-        // 3. Si le rapport est "All", on associe TOUTES les activités du mois
-        if ($selectedProject === 'all') {
-            $allMonthActivities = Activity::where('user_id', $this->user_id)
+        // 2. Si "All", prendre toutes les activités du mois
+        if ($this->selected_project_id === 'all') {
+            $currentActivityIds = Activity::where('user_id', $this->user_id)
                 ->whereYear('activity_date', $this->year)
                 ->whereMonth('activity_date', $this->month)
                 ->pluck('id')
                 ->toArray();
-
-            $currentActivityIds = $allMonthActivities;
         }
 
-        // 4. UPDATE les activités qui ne sont plus dans la liste
-        $updatedCount = Activity::where('monthly_report_id', $report->id)
-            ->whereNotIn('id', $currentActivityIds)
-            ->update([
-                'monthly_report_id' => null,
-                'status' => 'brouillon',
-            ]);
+        // 3. Récupérer les IDs avant mise à jour (pour comparaison)
+        $oldActivityIds = $report->activities()->pluck('activities.id')->toArray();
+        // 4. Synchronisation many-to-many
+        $syncResult = $report->activities()->syncWithPivotValues(
+            $currentActivityIds,
+            ['status' => $submit ? 'soumis' : 'brouillon']
+        );
 
-        // 5. Attacher les nouvelles activités
-        Activity::whereIn('id', $currentActivityIds)
-            ->update([
-                'monthly_report_id' => $report->id,
-                'status' => $submit ? 'soumis' : 'brouillon',
-            ]);
-
-        // 6. Mettre à jour le champ project_ids du rapport
-        $report->project_ids = ($selectedProject === 'all') ? '' : $selectedProject;
+        // 5. Mettre à jour le projet du rapport
+        $report->project_ids = ($this->selected_project_id === 'all') ? '' : $this->selected_project_id;
         $report->save();
 
-        // 7. Log du résultat
-        Log::info('Activités du rapport mises à jour', [
+        // 6. Log détaillé
+        Log::info('Activités synchronisées (many-to-many)', [
             'report_id' => $report->id,
             'selected_project' => $this->selected_project_id,
-            'activities_kept' => count($currentActivityIds),
-            'activities_updated' => $updatedCount,
-            'submit' => $submit
+            'old_count' => count($oldActivityIds),
+            'new_count' => count($currentActivityIds),
+            'attached' => count($syncResult['attached'] ?? []),
+            'detached' => count($syncResult['detached'] ?? []),
+            'updated' => count($syncResult['updated'] ?? []),
+            'submit' => $submit,
         ]);
     }
 
@@ -592,15 +588,15 @@ class CreateUpdate extends Component
             $query->where('project_id', (int) $this->selected_project_id);
         }
 
-        $this->activities = $query->whereYear('activity_date', $this->year)
+        $this->selectedActivities = $query->whereYear('activity_date', $this->year)
             ->whereMonth('activity_date', $this->month)
             ->with(['project', 'activityType'])
             ->orderBy('activity_date', 'asc')
-            ->limit(500)
+            ->limit(100)
             ->get();
         $this->getActivitiesProperty();
 
-        return $this->activities;
+        return $this->selectedActivities;
     }
 
     /**

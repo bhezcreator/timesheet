@@ -31,7 +31,7 @@
                 </x-slot:action>
             </x-ui.empty-state>
         @else
-            <x-ui.table :columns="['N°', 'Date', 'Intitulé', 'Projet / Sous-Projet', 'Type', 'Durée', 'Statut', 'Actions']">
+            <x-ui.table :columns="['N°', 'Date', 'Intitulé', 'Projet / Sous-Projet', 'Type', 'Durée', 'Actions']">
                 <x-slot:header>
                     <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 mb-4 sm:mb-6">
                         <h1 class="text-xl sm:text-2xl font-bold text-gray-900 truncate">
@@ -185,7 +185,7 @@
                             </td>
 
                             <!-- Statut Badge Coloré -->
-                            <td class="px-6 py-4 text-xs align-middle whitespace-nowrap">
+{{--                             <td class="px-6 py-4 text-xs align-middle whitespace-nowrap">
                                 @if($activite->status === 'brouillon')
                                     <x-ui.badge variant="default">Brouillon</x-ui.badge>
                                     <x-ui.badge variant="warning">En attente</x-ui.badge>
@@ -196,12 +196,12 @@
                                 @else
                                     <x-ui.badge variant="danger">Rejeté</x-ui.badge>
                                 @endif
-                            </td>
+                            </td> --}}
 
                             <!-- Actions Contextuelles -->
                             <td class="px-6 py-4 text-xs space-x-1 whitespace-nowrap align-middle text-right">
                                 <!-- Lien Modifier conditionnel (Seulement si modifiable) -->
-                                @if($activite->status === 'brouillon' || $activite->status === 'rejeté')
+                                @if(!$activite->monthlyReports->count())
                                     <a href="{{ route('activities.update', ['activityId' => $activite->id]) }}" wire:navigate class="inline-block">
                                         <x-ui.button variant="outline" size="sm" title="Modifier l'activité">
                                             <i class="las la-edit text-sm"></i>

@@ -43,7 +43,7 @@ class Activity extends Model
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
             ->useLogName('activity')
-            ->setDescriptionForEvent(fn (string $eventName) => match ($eventName) {
+            ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
                 'created' => 'Nouvelle activité créée',
                 'updated' => 'Activité modifiée',
                 'deleted' => 'Activité supprimée',
@@ -78,11 +78,6 @@ class Activity extends Model
         return $this->belongsTo(ActivityType::class);
     }
 
-    public function monthlyReport()
-    {
-        return $this->belongsTo(MonthlyReport::class);
-    }
-
     /**
      * Récupère tous les logs d'activité
      */
@@ -107,6 +102,13 @@ class Activity extends Model
         return $this->morphMany(\Spatie\Activitylog\Models\Activity::class, 'subject')
             ->where('properties->attributes->status', $status)
             ->orWhere('properties->old->status', $status);
+    }
+
+    public function monthlyReports()
+    {
+        return $this->belongsToMany(MonthlyReport::class, 'report_activity')
+            ->withPivot('status')
+            ->withTimestamps();
     }
 
     /**

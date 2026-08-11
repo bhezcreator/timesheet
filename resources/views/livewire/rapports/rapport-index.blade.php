@@ -150,7 +150,7 @@
 
                 @if ($rapport->status === 'approuvé' || $rapport->status === 'rejeté')
                     @php
-                        $comment = $rapport->validation->comment;
+                        $comment = $rapport->validation?->comment;
                     @endphp
 
                     @if (!empty($comment))
