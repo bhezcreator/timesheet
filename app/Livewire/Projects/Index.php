@@ -219,30 +219,6 @@ class Index extends Component
         ]);
     }
 
-    // public function render()
-    // {
-    //     $searchTerm = '%' . str_replace(['%', '_'], ['\%', '\_'], $this->search) . '%';
-
-    //     $projects = Project::query()
-    //         ->with(['manager', 'subProjects', 'users'])
-    //         ->where(function ($query) use ($searchTerm) {
-    //             $query->where('name', 'like', $searchTerm)
-    //                 ->orWhere('code', 'like', $searchTerm)
-    //                 ->orWhere('status', 'like', $searchTerm);
-    //         })
-    //         ->latest()
-    //         ->paginate(2);
-
-    //     $managers = User::query()
-    //         ->where('is_active', true)
-    //         ->orderBy('name')
-    //         ->get();
-
-    //     return view('livewire.projects.index', [
-    //         'projects' => $projects,
-    //         'managers' => $managers,
-    //     ]);
-    // }
     public function render()
     {
         // 1. Validation des paramètres de pagination
@@ -337,13 +313,12 @@ class Index extends Component
         if ($this->projectId) {
             $this->checkPermissionOrFail('projets.modifier');
 
-            // 2. Vérification d'accès avant modification
+            // 1. Vérification d'accès avant modification
             $project = Project::findOrFail($this->projectId);
             $this->validateAccess($project);
 
             // Normalisation avant validation
             $this->code = $this->normalizeCode($this->code);
-            $this->description = $this->sanitizeInput($this->description);
             $this->validate();
 
             $project = Project::findOrFail($this->projectId);
@@ -379,28 +354,6 @@ class Index extends Component
         $this->closeModal();
     }
 
-    protected function sanitizeInput($input): ?string
-    {
-        if (empty($input)) {
-            return null;
-        }
-
-        // 2. Suppression des tags HTML
-        $clean = strip_tags($input, '<p><br><strong><em><ul><ol><li>'); // Tags autorisés
-
-        // 3. Échappement des caractères spéciaux
-        $clean = htmlspecialchars($clean, ENT_QUOTES, 'UTF-8');
-
-        // 4. Limitation de la longueur
-        $clean = substr($clean, 0, 1000);
-
-        // 5. Protection contre les injections
-        $clean = preg_replace('/javascript:/i', '', $clean);
-        $clean = preg_replace('/on\w+=/i', '', $clean);
-
-        return trim($clean);
-    }
-
     public function confirmDelete(int $id)
     {
         $this->checkPermissionOrFail('projets.supprimer');
@@ -423,7 +376,7 @@ class Index extends Component
     {
         $this->checkPermissionOrFail('projets.supprimer');
 
-        if (! $this->deleteId) {
+        if (!$this->deleteId) {
             throw ValidationException::withMessages([
                 'permission' => ['Aucun projet sélectionné.'],
             ]);
@@ -445,15 +398,15 @@ class Index extends Component
         }
 
         // 3. Si des dépendances existent, demander confirmation
-        if (! empty($dependencies)) {
-            session()->flash('warning', 'Ce projet est lié à ' . implode(' et ', $dependencies) .
-                '. La suppression est irréversible.');
+        // if (! empty($dependencies)) {
+        //     session()->flash('permission', 'Ce projet est lié à ' . implode(' et ', $dependencies) .
+        //         '. La suppression est irréversible.');
 
-            // 4. Demander confirmation supplémentaire
-            $this->dispatch('confirm-delete-with-dependencies');
+        //     // 4. Demander confirmation supplémentaire
+        //     $this->dispatch('confirm-delete-with-dependencies');
 
-            return;
-        }
+        //     return;
+        // }
 
         // 5. Suppression avec transaction
         DB::transaction(function () use ($project) {
@@ -477,21 +430,21 @@ class Index extends Component
 
     protected function validateAccess(Project $project): void
     {
-        // 3. Vérification des droits spécifiques
+        // 1. Vérification des droits spécifiques
         if (Gate::allows('admin')) {
             return; // Admin peut tout faire
         }
 
         $userId = Auth::id();
 
-        // 4. Vérification du rôle
-        if ($project->manager_id !== $userId) {
+        // 2. Correct : L'utilisateur peut être manager OU admin
+        if ($project->manager_id !== $userId && Gate::allows('admin')) {
             throw ValidationException::withMessages([
                 'permission' => ["Vous n'êtes pas le responsable de ce projet."],
             ]);
         }
 
-        // 5. Vérification des droits d'équipe
+        // 3. Vérification des droits d'équipe
         if (! Gate::allows('projets.modifier', $project)) {
             throw ValidationException::withMessages([
                 'permission' => ["Vous n'avez pas les droits sur ce projet."],

@@ -5,15 +5,13 @@
         </h2>
     </x-slot>
 
-    <x-ui.breadcrumb :items="[
-        [
-            'label' => 'Projets',
-            'url'   => route('projects.index')
-        ],
-        [
-            'label' => 'Description du projet'
-        ]
-    ]" />
+        {{-- Bouton Retour --}}
+    <div class="flex items-center justify-between mb-3 p-0">
+        <a href="{{ url()->previous() }}"
+            wire:navigate class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-indigo-600 transition-colors font-medium">
+            <i class="las la-arrow-left text-base"></i> <strong>Retour</strong>
+        </a>
+    </div>
 
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
         <div>
@@ -30,7 +28,7 @@
     </div>
 
     <!-- Écran global du Dashboard -->
-    <div class="w-full space-y-6 mt-8 pb-12">
+    <div class="w-full space-y-6 mt-8 pb-4">
 
         <!-- GRILLE TOP STATS (Cards) -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -172,6 +170,255 @@
                 </div>
             </div>
 
+        </div>
+    </div>
+
+    <!-- Section des activités -->
+    <div class="mt-4">
+        <!-- En-tête -->
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold text-gray-900">
+                <i class="las la-tasks text-xl"></i>
+                Activités du projet
+                <span class="ml-2 px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">
+                    {{ $activityStats->total ?? 0 }}
+                </span>
+            </h2>
+            <button wire:click="resetFilters" 
+                    class="text-sm text-gray-500 hover:text-gray-700 transition-colors cursor-pointer">
+                <i class="las la-undo"></i> Réinitialiser
+            </button>
+        </div>
+
+        <!-- Filtres -->
+        <div class="flex flex-wrap items-center gap-3 mb-4 bg-white p-3 rounded-lg shadow-sm border border-gray-200">
+            <!-- Filtre par statut -->
+            <div class="flex items-center gap-2">
+                <span class="text-sm text-gray-500">Statut:</span>
+                <select wire:model.live="activityFilter"  class="text-sm border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer">
+                    <option value="all">Tous</option>
+                    <option value="brouillon">Brouillon</option>
+                    <option value="soumis">Soumis</option>
+                    <option value="approuvé">Approuvé</option>
+                    <option value="rejeté">Rejeté</option>
+                </select>
+            </div>
+
+            <!-- Barre de recherche -->
+            <div class="flex-1 min-w-[200px]">
+                <div class="relative">
+                    <i class="las la-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" 
+                        wire:model.live.debounce="searchActivity" 
+                        placeholder="Rechercher une activité..."
+                        class="w-full pl-9 pr-3 py-1.5 text-sm border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+            </div>
+
+            <!-- Nombre par page -->
+            <div class="flex items-center gap-2">
+                <span class="text-sm text-gray-500">Afficher:</span>
+                <select wire:model.live="perPage" 
+                        class="text-sm border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer">
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                </select>
+            </div>
+
+            <!-- Mini statistiques -->
+            <div class="flex items-center gap-3 ml-auto text-sm">
+                <span class="text-gray-500">
+                    <i class="las la-pencil-alt"></i> {{ $activityStats->brouillon ?? 0 }}
+                </span>
+                <span class="text-yellow-600">
+                    <i class="las la-paper-plane"></i> {{ $activityStats->soumis ?? 0 }}
+                </span>
+                <span class="text-green-600">
+                    <i class="las la-check-circle"></i> {{ $activityStats->approuvé ?? 0 }}
+                </span>
+                <span class="text-red-600">
+                    <i class="las la-times-circle"></i> {{ $activityStats->rejeté ?? 0 }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Liste des activités -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            @if($activities->count() > 0)
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th wire:click="sortBy('titre')" 
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700">
+                                    <div class="flex items-center gap-1">
+                                        Activité
+                                        @if($sortBy === 'titre')
+                                            <i class="las la-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }}"></i>
+                                        @endif
+                                    </div>
+                                </th>
+                                <th wire:click="sortBy('status')" 
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700">
+                                    <div class="flex items-center gap-1">
+                                        Statut
+                                        @if($sortBy === 'status')
+                                            <i class="las la-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }}"></i>
+                                        @endif
+                                    </div>
+                                </th>
+                                <th wire:click="sortBy('user_id')" 
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700">
+                                    <div class="flex items-center gap-1">
+                                        Assigné à
+                                        @if($sortBy === 'user_id')
+                                            <i class="las la-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }}"></i>
+                                        @endif
+                                    </div>
+                                </th>
+                                <th wire:click="sortBy('activity_date')" 
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700">
+                                    <div class="flex items-center gap-1">
+                                        Date
+                                        @if($sortBy === 'activity_date')
+                                            <i class="las la-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }}"></i>
+                                        @endif
+                                    </div>
+                                </th>
+                                <th wire:click="sortBy('duration')" 
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700">
+                                    <div class="flex items-center gap-1">
+                                        Durée
+                                        @if($sortBy === 'duration')
+                                            <i class="las la-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }}"></i>
+                                        @endif
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @foreach($activities as $activity)
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-start gap-2">
+                                            <div class="flex-1">
+                                                <div class="text-sm font-medium text-gray-900">
+                                                    {{ $activity->titre ?? $activity->name ?? 'Sans titre' }}
+                                                </div>
+                                                @if($activity->description)
+                                                    <p class="text-xs text-gray-500 mt-1 line-clamp-2">
+                                                        {{ Str::limit($activity->description, 100) }}
+                                                    </p>
+                                                @endif
+                                                <div class="flex items-center gap-2 mt-1">
+                                                    @if($activity->subProject)
+                                                        <span class="text-xs text-gray-400">
+                                                            <i class="las la-folder"></i> {{ $activity->subProject->name }}
+                                                        </span>
+                                                    @endif
+                                                    @if($activity->activityType)
+                                                        <span class="text-xs text-gray-400">
+                                                            <i class="las la-tag"></i> {{ $activity->activityType->name }}
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        @php
+                                            $statusColors = [
+                                                'brouillon' => 'bg-gray-100 text-gray-800',
+                                                'soumis' => 'bg-yellow-100 text-yellow-800',
+                                                'approuvé' => 'bg-green-100 text-green-800',
+                                                'rejeté' => 'bg-red-100 text-red-800',
+                                            ];
+                                            $statusIcons = [
+                                                'brouillon' => 'la-pencil-alt',
+                                                'soumis' => 'la-paper-plane',
+                                                'approuvé' => 'la-check-circle',
+                                                'rejeté' => 'la-times-circle',
+                                            ];
+                                        @endphp
+                                        <span class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full {{ $statusColors[$activity->status] ?? 'bg-gray-100 text-gray-800' }}">
+                                            <i class="las {{ $statusIcons[$activity->status] ?? 'la-circle' }}"></i>
+                                            {{ ucfirst($activity->status ?? 'Non défini') }}
+                                        </span>
+                                        @if($activity->status === 'rejeté' && $activity->rejection_reason)
+                                            <div class="text-xs text-red-500 mt-1">
+                                                <i class="las la-info-circle"></i> {{ Str::limit($activity->rejection_reason, 30) }}
+                                            </div>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-2">
+                                            @if($activity->user)
+                                                <div class="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center">
+                                                    <span class="text-xs font-medium text-indigo-600">
+                                                        {{ substr($activity->user->name, 0, 1) }}
+                                                    </span>
+                                                </div>
+                                                <span class="text-sm text-gray-700">
+                                                    {{ $activity->user->name }}
+                                                </span>
+                                            @else
+                                                <span class="text-sm text-gray-400">Non assigné</span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="text-sm text-gray-700">
+                                            @if($activity->activity_date)
+                                                <span class="text-xs">{{ $activity->activity_date->format('d/m/Y') }}</span>
+                                            @else
+                                                <span class="text-xs text-gray-400">Non définie</span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="text-sm text-gray-700">
+                                            @if($activity->duration)
+                                                <span class="text-xs font-medium">
+                                                    {{ floor($activity->duration) }}h : {{ round(($activity->duration - floor($activity->duration)) * 60) }}m
+                                                </span>
+                                            @elseif($activity->start_time && $activity->end_time)
+                                                @php
+                                                    $start = \Carbon\Carbon::parse($activity->start_time);
+                                                    $end = \Carbon\Carbon::parse($activity->end_time);
+                                                    $diff = $start->diffInHours($end) . 'h' . $start->diffInMinutes($end) % 60 . 'min';
+                                                @endphp
+                                                <span class="text-xs">{{ $diff }}</span>
+                                            @else
+                                                <span class="text-xs text-gray-400">-</span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="px-6 py-3 border-t border-gray-200">
+                    {{ $activities->links() }}
+                </div>
+            @else
+                <!-- Message vide -->
+                <div class="text-center py-12">
+                    <i class="las la-tasks text-5xl text-gray-300"></i>
+                    <p class="mt-2 text-gray-500">Aucune activité trouvée pour ce projet.</p>
+                    <p class="text-sm text-gray-400">
+                        @if(!empty($searchActivity))
+                            Essayez de modifier vos filtres de recherche.
+                        @else
+                            Créez votre première activité.
+                        @endif
+                    </p>
+                </div>
+            @endif
         </div>
     </div>
 </div>

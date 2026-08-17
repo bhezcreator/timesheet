@@ -240,7 +240,6 @@
                     helper="S'ouvre et s'ajuste dynamiquement en fonction du volume d'informations écrit."
                     maxlength="1000"
                 />
-                <x-ui.forms.error name="description" />
             </div>
 
             {{-- Ligne 3 : Manager et Statut sur 2 colonnes --}}
@@ -362,8 +361,7 @@
         :show="$showDeleteModal"
         id="delete-project-modal"
         title="Confirmation de suppression"
-        size="sm"
-    >
+        size="sm">
         <div class="text-center py-2">
             <i class="las la-exclamation-triangle text-red-500 text-5xl block mb-3 animate-pulse"></i>
             <h3 class="text-lg font-bold text-gray-800 mb-1">Supprimer le projet ?</h3>
