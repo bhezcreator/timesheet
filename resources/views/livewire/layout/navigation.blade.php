@@ -38,7 +38,7 @@ new class extends Component
             'permission' => 'rapports.voir',
         ],
         [
-            'title' => 'Liste Rapport',
+            'title' => 'Liste des rapports',
             'icon'  => 'la-list',
             'route' => 'reports.index',
             'permission' => 'Voir_liste_rapport',

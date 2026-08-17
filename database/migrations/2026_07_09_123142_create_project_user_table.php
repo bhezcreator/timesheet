@@ -28,8 +28,8 @@ return new class extends Migration
             $table->enum('role', [
                 'responsable',
                 'superviseur',
-                'membre',
-            ])->default('membre');
+                'personnel',
+            ])->default('personnel');
 
             /*
             Affectation

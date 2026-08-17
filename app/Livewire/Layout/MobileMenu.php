@@ -41,7 +41,7 @@ class MobileMenu extends Component
             'permission' => 'rapports.voir',
         ],
         [
-            'title' => 'Liste Rapport',
+            'title' => 'Liste des rapports',
             'icon'  => 'la-list',
             'route' => 'reports.index',
             'permission' => 'Voir_liste_rapport',
@@ -58,12 +58,12 @@ class MobileMenu extends Component
             'route' => 'users.index',
             'permission' => 'utilisateurs.voir',
         ],
-        [
-            'title' => 'Permissions',
-            'icon'  => 'la-key',
-            'route' => 'permissions.index',
-            'permission' => 'permissions.voir',
-        ],
+        // [
+        //     'title' => 'Permissions',
+        //     'icon'  => 'la-key',
+        //     'route' => 'permissions.index',
+        //     'permission' => 'permissions.voir',
+        // ],
         [
             'title' => 'Rôles',
             'icon'  => 'la-user-shield',
