@@ -121,6 +121,14 @@
                                     <i class="las la-edit"></i>
                                 </x-ui.button>
 
+                                <!-- NOUVEAU : Bouton Réinitialiser le mot de passe -->
+                                <x-ui.button variant="warning" 
+                                    wire:click="resetPassword({{ $user->id }})" 
+                                    wire:confirm="Êtes-vous sûr de vouloir réinitialiser le mot de passe de {{ $user->name }} à 00000000 ?"
+                                    title="Réinitialiser le mot de passe">
+                                    <i class="las la-key"></i>
+                                </x-ui.button>
+
                                 <x-ui.button variant="danger" wire:click="confirmDelete({{ $user->id }})" title="Supprimer le compte">
                                     <i class="las la-trash"></i>
                                 </x-ui.button>

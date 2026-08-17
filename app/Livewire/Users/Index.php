@@ -6,6 +6,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -405,4 +407,43 @@ class Index extends Component
         $this->resetValidation();
         $this->resetPage();
     }
+
+    /**
+     * Méthode pour réinitialiser le mot de passe à 00000000
+     */
+    public function resetPassword($userId)
+    {
+        try {
+            DB::transaction(function () use ($userId) {
+                $user = User::findOrFail($userId);
+                
+                // Réinitialiser le mot de passe à 00000000
+                $user->password = Hash::make('00000000');
+                $user->save();
+                
+                // Optionnel : Logger l'action
+                Log::info('Mot de passe réinitialisé', [
+                    'user_id' => $userId,
+                    'user_name' => $user->name,
+                    'reset_by' => auth()->id(),
+                    'reset_at' => now()
+                ]);
+                
+                // Optionnel : Envoyer une notification par email
+                // $user->notify(new PasswordResetNotification('00000000'));
+            });
+            
+            // Message de succès
+            session()->flash('success', 'Mot de passe réinitialisé avec succès à 00000000');
+            
+        } catch (\Exception $e) {
+            // Gestion des erreurs
+            session()->flash('error', 'Erreur lors de la réinitialisation : ' . $e->getMessage());
+            Log::error('Erreur réinitialisation mot de passe', [
+                'user_id' => $userId,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+    
 }
