@@ -9,50 +9,52 @@ return new class extends Migration
 {
     public function up()
     {
-        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        // 1. Désactiver complètement la vérification au niveau de la connexion
+        Schema::disableForeignKeyConstraints();
 
-        Schema::table('monthly_reports', function (Blueprint $table) {
-            // 1. Vérifier si l'index existe avant de le supprimer
-            $indexes = Schema::getIndexes('monthly_reports');
-            $indexExists = collect($indexes)->contains('name', 'monthly_reports_user_id_month_year_unique');
+        // 2. Récupérer les index avant l'opération
+        $indexes = Schema::getIndexes('monthly_reports');
+        $indexExists = collect($indexes)->contains('name', 'monthly_reports_user_id_month_year_unique');
 
+        // On isole la suppression de la clé étrangère SI elle existe et bloque l'index
+        Schema::table('monthly_reports', function (Blueprint $table) use ($indexExists) {
             if ($indexExists) {
+                // Étape clé : Supprimer la clé étrangère sur user_id d'abord
+                $table->dropForeign(['user_id']);
                 $table->dropUnique('monthly_reports_user_id_month_year_unique');
             }
+        });
 
-            // 2. Changer le type de la colonne en string
+        // 3. Appliquer les autres modifications de structure
+        Schema::table('monthly_reports', function (Blueprint $table) use ($indexes) {
             $table->string('project_ids', 50)->nullable()->change();
 
-            // 3. Supprimer l'ancien index s'il existe sous un autre nom
             $uniqueExists = collect($indexes)->contains(function ($index) {
                 return $index['columns'] === ['user_id', 'month', 'year', 'project_ids'];
             });
 
             if ($uniqueExists) {
-                // Trouver le nom exact et le supprimer
                 $indexName = collect($indexes)->firstWhere('columns', ['user_id', 'month', 'year', 'project_ids'])['name'];
                 $table->dropUnique($indexName);
             }
 
-            // 4. Ajouter la nouvelle contrainte unique
             $table->unique(['user_id', 'month', 'year', 'project_ids'], 'unique_user_month_project');
+            
+            // Re-créer proprement la contrainte de clé étrangère qui avait été supprimée
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
 
-        DB::statement('SET FOREIGN_KEY_CHECKS=1');
+        Schema::enableForeignKeyConstraints();
     }
 
     public function down()
     {
-        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        Schema::disableForeignKeyConstraints();
 
         Schema::table('monthly_reports', function (Blueprint $table) {
-            // Supprimer la nouvelle contrainte
             $table->dropUnique('unique_user_month_project');
-
-            // Remettre en JSON
             $table->json('project_ids')->nullable()->change();
 
-            // Vérifier si l'ancien index existe
             $indexes = Schema::getIndexes('monthly_reports');
             $indexExists = collect($indexes)->contains('name', 'monthly_reports_user_id_month_year_unique');
 
@@ -61,6 +63,6 @@ return new class extends Migration
             }
         });
 
-        DB::statement('SET FOREIGN_KEY_CHECKS=1');
+        Schema::enableForeignKeyConstraints();
     }
 };
