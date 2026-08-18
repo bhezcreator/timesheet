@@ -642,4 +642,12 @@ class User extends Authenticatable
             return 'success';
         }
     }
+
+    /**
+     * Pointages de l'utilisateur.
+     */
+    public function attendanceRecords(): HasMany
+    {
+        return $this->hasMany(AttendanceRecord::class);
+    }
 }
