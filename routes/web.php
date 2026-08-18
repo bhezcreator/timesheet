@@ -2,6 +2,7 @@
 
 use App\Livewire\Activities\CreateUpdate as ActivitiesCreateUpdate;
 use App\Livewire\Activities\Index as ActivitiesIndex;
+use App\Livewire\Activities\UserActivities;
 use App\Livewire\Activities\TimesheetCalendar as ActivitiesTimesheetCalendar;
 use App\Livewire\ActivityLogs;
 use App\Livewire\NotificationsIndex;
@@ -68,6 +69,10 @@ Route::middleware(['auth'])
 
         Route::get('/activities/{activityId?}/form', ActivitiesCreateUpdate::class)
             ->name('activities.update');
+
+        // Superviseur : voir les activités du supervisé et modifier le statut
+        Route::get('/activities/supervise/{userId}', UserActivities::class)
+            ->name('activities.supervise');
 
         Route::get('/activities/Timesheet/Calendar', ActivitiesTimesheetCalendar::class)->name('timesheet.calendar');
 

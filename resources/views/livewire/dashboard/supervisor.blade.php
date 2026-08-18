@@ -1,9 +1,6 @@
 <div class="p-4 mt-8 border border-gray-100 bg-white rounded-xl shadow-sm border-t border-t-blue-700">
-    @if(session('permission'))
-        <x-ui.alert type="error" class="mb-4 mt-8">
-            {{ session('permission') }}
-        </x-ui.alert>
-    @endif
+<livewire:qr-scanner />
+
 
     <!-- En-tête avec bienvenue -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
@@ -40,6 +37,11 @@
         </div>
     @endif
 
+    @if(session('permission'))
+        <x-ui.alert type="error" class="mb-4 mt-8">
+            {{ session('permission') }}
+        </x-ui.alert>
+    @endif
     <!-- Cartes de statistiques principales -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8">
         <!-- Rapports à valider -->
@@ -118,7 +120,7 @@
         <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-medium text-gray-500 uppercase">Soumis</p>
+                    <p class="text-xs font-medium text-gray-500 uppercase">Rapports Soumis</p>
                     <p class="text-xl font-bold text-gray-900">{{ $reportsByStatus['soumis'] ?? 0 }}</p>
                 </div>
                 <div class="p-2 bg-blue-100 rounded-lg">
@@ -133,7 +135,7 @@
         <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-medium text-gray-500 uppercase">Approuvés</p>
+                    <p class="text-xs font-medium text-gray-500 uppercase">Rapports approuvés</p>
                     <p class="text-xl font-bold text-gray-900">{{ $reportsByStatus['approuvé'] ?? 0 }}</p>
                 </div>
                 <div class="p-2 bg-emerald-100 rounded-lg">
@@ -148,7 +150,7 @@
         <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-medium text-gray-500 uppercase">Rejetés</p>
+                    <p class="text-xs font-medium text-gray-500 uppercase">Rapports rejetés</p>
                     <p class="text-xl font-bold text-gray-900">{{ $reportsByStatus['rejeté'] ?? 0 }}</p>
                 </div>
                 <div class="p-2 bg-red-100 rounded-lg">
@@ -163,7 +165,7 @@
         <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-medium text-gray-500 uppercase">Brouillons</p>
+                    <p class="text-xs font-medium text-gray-500 uppercase">Rapports brouillons</p>
                     <p class="text-xl font-bold text-gray-900">{{ $reportsByStatus['brouillon'] ?? 0 }}</p>
                 </div>
                 <div class="p-2 bg-gray-100 rounded-lg">
@@ -277,7 +279,7 @@
         </div>
         <div class="p-4">
             @forelse($teamMembers as $member)
-                <div class="flex items-center justify-between py-2 border-b border-gray-50 hover:bg-gray-50 px-3 rounded-lg transition-colors">
+                <a href="{{ route('activities.supervise', ['userId' => $member['id']]) }}" wire:key="member-{{ $member['id'] }}" class="flex items-center justify-between py-2 border-b border-gray-50 hover:bg-gray-50 px-3 rounded-lg transition-colors">
                     <div class="flex items-center">
                         <div class="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
                             {{ strtoupper(substr($member['name'], 0, 2)) }}
@@ -291,7 +293,7 @@
                         <span class="w-1.5 h-1.5 bg-green-500 rounded-full mr-1"></span>
                         Actif
                     </span>
-                </div>
+                </a>
             @empty
                 <div class="text-center py-6 text-gray-500">
                     <p>Aucun membre dans votre équipe</p>
