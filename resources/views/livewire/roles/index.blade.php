@@ -25,7 +25,7 @@
         @else
             <x-ui.table :columns="['N°', 'Nom du Rôle', 'Permissions assignées', 'Type d\'accès', 'Actions']">
                 <x-slot:header>
-                    <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 mb-4 sm:mb-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 mb-3">
                         <h1 class="text-xl sm:text-2xl font-bold text-gray-900 truncate">
                             Rôles du système
                         </h1>

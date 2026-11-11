@@ -182,14 +182,14 @@ class Index extends Component
         $this->deleteName = null;
     }
 
-    // 🔄 Réinitialiser le formulaire
+    // Réinitialiser le formulaire
     private function resetForm()
     {
         $this->reset(['name', 'roleId', 'selectedPermissions']);
         $this->resetValidation();
     }
 
-    // 🔍 Gestion de la recherche
+    // Gestion de la recherche
     public function updatingSearch()
     {
         $this->resetPage();

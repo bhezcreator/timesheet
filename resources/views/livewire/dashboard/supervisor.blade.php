@@ -1,6 +1,4 @@
 <div class="p-4 mt-8 border border-gray-100 bg-white rounded-xl shadow-sm border-t border-t-blue-700">
-<livewire:qr-scanner />
-
 
     <!-- En-tête avec bienvenue -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">

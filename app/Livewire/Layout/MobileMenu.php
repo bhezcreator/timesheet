@@ -23,6 +23,12 @@ class MobileMenu extends Component
             'permission' => 'projets.voir',
         ],
         [
+            'title' => 'Mes présences',
+            'icon'  => 'la-user-check', 
+            'route' => 'presente.index',
+            'permission' => 'presente.voir',
+        ],
+        [
             'title' => 'Projets',
             'icon'  => 'la-project-diagram',
             'route' => 'projects.index',

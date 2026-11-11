@@ -197,7 +197,7 @@
             <div class="text-center mb-8">
                 <a href="/" wire:navigate class="inline-flex flex-col items-center group">
                     <div class="w-24 h-24 rounded-2xl shadow-lg flex items-center justify-center overflow-hidden p-1 transition-transform duration-300 group-hover:scale-105"
-                         style="background: linear-gradient(135deg, var(--cnrsc-green), var(--cnrsc-orange));">
+                        >
                         <div class="w-full h-full rounded-xl bg-white flex items-center justify-center">
                             <img src="{{ asset('images/logo.jpg') }}"
                                  alt="Logo CNRSC"
@@ -207,11 +207,10 @@
 
                     <h1 class="mt-4 text-3xl font-bold"
                         style="color: var(--cnrsc-green);">
-                        CNRSC ASBL
+                        CNRSC <span class="text-red-600 font-light">ASBL</span>
                     </h1>
 
-                    <p class="mt-1 text-sm font-medium"
-                       style="color: var(--cnrsc-orange);">
+                    <p class="text-[10px] sm:text-xs text-gray-500">
                         Gestion intelligente des feuilles de temps
                     </p>
                 </a>

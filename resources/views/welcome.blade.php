@@ -220,9 +220,9 @@
 
                 <div>
                     <h1 class="font-bold text-xl" style="color: var(--cnrsc-green);">
-                        CNRSC ASBL
+                        CNRSC  <span class="text-red-600 font-light">ASBL</span>
                     </h1>
-                    <p class="text-xs" style="color: var(--cnrsc-orange);">
+                    <p class="text-xs" class="text-[10px] sm:text-xs text-gray-500;">
                         Gestion intelligente du temps
                     </p>
                 </div>
@@ -246,7 +246,7 @@
     </header>
 
     <!-- Hero -->
-    <section class="max-w-7xl mx-auto px-6 py-20">
+    <section class="max-w-7xl mx-auto px-6 py-15">
         <div class="grid lg:grid-cols-2 gap-12 items-center">
             <div>
                 <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm"
@@ -335,73 +335,13 @@
         </div>
     </section>
 
-    <!-- Features -->
-    <section id="features" class="py-20" style="background: linear-gradient(180deg, white, var(--cnrsc-green-light));">
-        <div class="max-w-7xl mx-auto px-6">
-            <h2 class="text-3xl font-bold text-center">
-                Tout ce qu'il faut pour gérer votre temps
-            </h2>
-
-            <p class="text-center mt-3" style="color: var(--cnrsc-orange);">
-                Une plateforme pensée pour les équipes modernes.
-            </p>
-
-            <div class="grid md:grid-cols-3 gap-8 mt-12">
-                <div class="p-8 rounded-2xl shadow-sm border-2 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-                     style="border-color: var(--cnrsc-green);">
-                    <i class="las la-calendar-check text-5xl" style="color: var(--cnrsc-green);"></i>
-                    <h3 class="font-bold text-xl mt-5" style="color: var(--cnrsc-green);">
-                        Suivi des heures
-                    </h3>
-                    <p class="text-gray-600 mt-3">
-                        Enregistrez facilement les temps passés sur chaque activité.
-                    </p>
-                </div>
-
-                <div class="p-8 rounded-2xl shadow-sm border-2 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-                     style="border-color: var(--cnrsc-orange);">
-                    <i class="las la-users text-5xl" style="color: var(--cnrsc-orange);"></i>
-                    <h3 class="font-bold text-xl mt-5" style="color: var(--cnrsc-orange);">
-                        Gestion des équipes
-                    </h3>
-                    <p class="text-gray-600 mt-3">
-                        Suivez les performances et la charge de travail.
-                    </p>
-                </div>
-
-                <div class="p-8 rounded-2xl shadow-sm border-2 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-                     style="border-color: var(--cnrsc-green);">
-                    <i class="las la-chart-line text-5xl" style="background: linear-gradient(135deg, var(--cnrsc-green), var(--cnrsc-orange));
-                                 -webkit-background-clip: text;
-                                 -webkit-text-fill-color: transparent;
-                                 background-clip: text;"></i>
-                    <h3 class="font-bold text-xl mt-5" style="color: var(--cnrsc-green);">
-                        Rapports avancés
-                    </h3>
-                    <p class="text-gray-600 mt-3">
-                        Analysez vos données avec des tableaux de bord.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- Footer -->
     <footer class="py-8 text-center"
             style="background: var(--cnrsc-green); color: white;">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="flex flex-col items-center gap-2">
-                <span class="text-sm font-bold tracking-wider">
-                    CNRSC ASBL
-                </span>
-                <span class="text-sm opacity-80">
-                    Coordination Nationale de Renforcement du Système Communautaire
-                </span>
-                <div class="w-24 h-0.5 bg-white opacity-30 my-2"></div>
+        <div class="max-w-7xl mx-auto px-2">
                 <span class="text-sm opacity-60">
-                    © {{ date('Y') }} TimeSheet. Tous droits réservés.
+                    © {{ date('Y') }} TimeSheet.
                 </span>
-            </div>
         </div>
     </footer>
 

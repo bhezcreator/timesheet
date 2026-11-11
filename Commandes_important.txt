@@ -1,0 +1,15 @@
+1. Lancer Vite
+Dans un deuxième terminal :
+npm run dev
+
+Pour un environnement de production :
+npm run build
+
+2. Lancer Jobs
+php artisan queue:work
+
+3. Lancer l'App
+php artisan serve
+
+4. Lancer l'interface de test d'email
+maildev

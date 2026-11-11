@@ -20,7 +20,7 @@
                 wire:model.live="activeTab"
                 class="block w-full rounded-2xl border-gray-300 text-base focus:border-indigo-500 focus:ring-indigo-500 py-2.5 shadow-xs"
             >
-                @foreach($filteredTabs as $key => $tab)  {{-- ✅ CHANGÉ --}}
+                @foreach($filteredTabs as $key => $tab)  {{-- CHANGÉ --}}
                     <option value="{{ $key }}">{{ $tab['label'] }}</option>
                 @endforeach
             </select>
@@ -29,7 +29,7 @@
         {{-- Version Bureau : Onglets alignés horizontaux --}}
         <div class="hidden sm:block">
             <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                @foreach($filteredTabs as $key => $tab)  {{-- ✅ CHANGÉ --}}
+                @foreach($filteredTabs as $key => $tab)  {{-- CHANGÉ --}}
                     <button
                         type="button"
                         wire:click="changeTab('{{ $key }}')"
@@ -87,6 +87,20 @@
                 <h2 class="text-lg font-bold text-gray-900">Paramètres généraux</h2>
                 <p class="text-sm text-gray-500">Configurez les options système et d'administration.</p>
                 @livewire('users.settings')
+            </div>
+        @endif
+
+        {{-- Contenu : Horraire --}}
+        @if($activeTab === 'work')
+            <div class="space-y-4 animate-fade-in" wire:key="tab-content-work">
+                @livewire('work-schedule.index')
+            </div>
+        @endif
+
+        {{-- Contenu : Bureau --}}
+        @if($activeTab === 'office')
+            <div class="space-y-4 animate-fade-in" wire:key="tab-content-work">
+                @livewire('settings.offices.index')
             </div>
         @endif
 

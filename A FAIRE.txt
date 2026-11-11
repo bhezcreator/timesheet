@@ -153,7 +153,7 @@ resources/
             - Heures de travail par semaine standard(Calculer auto) OK
             - Jour limite de verrouillage du mois OK
 
-    - Rapport :  A FINIR
+    - Rapport :  
         Générer son rapport du mois Ok
         ajouter ou Modifier le rapport Ok
         Décrire : Ok
@@ -238,3 +238,11 @@ resources/
 - Amélioration des codes(design + sécurité)
 - Test pour chaque étape
 - Création App. Desktop
+
+##############################################################
+- Tableau de bord global pour DT (Donner la possibilité au DT de suivre tous les personnels)
+- Finir le système de présence et validation par le superviseur
+- Sécurisés les adresses mails lors de création du compte, lors de Update du profil ou autre
+- Arranger les navs mobile (limiter l'affichage de certaines options par rapport a leurs permissions)
+- Arranger l'affichage en mobile des composants (Comme le tableau comme page des personnels, )
+- Cacher la fenêtre : Permissions

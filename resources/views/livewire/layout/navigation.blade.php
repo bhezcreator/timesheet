@@ -17,7 +17,13 @@ new class extends Component
             'title' => 'Feuilles de temps',
             'icon'  => 'la-business-time',
             'route' => 'timesheet.calendar',
-            'permission' => 'projets.voir',
+            'permission' => 'presente.voir',
+        ],
+        [
+            'title' => 'Mes présences',
+            'icon'  => 'la-user-check', 
+            'route' => 'presente.index',
+            'permission' => 'presente.voir',
         ],
         [
             'title' => 'Projets',

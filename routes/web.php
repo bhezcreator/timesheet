@@ -22,6 +22,10 @@ use App\Livewire\Users\SettingsTabs;
 use App\Livewire\Users\Show as UsersShow;
 use App\Livewire\Validates\SupervisedReports;
 use App\Livewire\Validates\ValidationShow;
+use App\Livewire\Presente\Index as PresenteIndex;
+use App\Livewire\Presence\Scanner;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+
 // Dans routes/web.php
 use Illuminate\Support\Facades\Route;
 
@@ -38,6 +42,14 @@ Route::view('profile', 'profile')
 Route::middleware(['auth'])
     ->prefix('admin')
     ->group(function () {
+
+        // Présences
+    Route::get('/presente', PresenteIndex::class)
+        ->name('presente.index')
+        ->middleware('can:presente.voir');
+
+            Route::get('/presence/scanner/{office?}', Scanner::class)
+        ->name('presente.scanner');
 
         Route::get('/logs', ActivityLogs::class)->name('logs.index');
 

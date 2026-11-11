@@ -42,6 +42,17 @@ class SettingsTabs extends Component
             'icon' => 'la-sliders-h',
             'permission' => 'parametres_general',
         ],
+         'work' => [
+        'label' => 'Horraire', // Note: vous pouvez corriger l'orthographe en 'Horaire' si besoin
+        'icon' => 'la-calendar-alt', // Une icône de calendrier avec horloge pour les plannings
+        'permission' => 'parametres_general',
+    ],
+    'office' => [
+        'label' => 'Bureau',
+        'icon' => 'la-building', // Une icône de bâtiment/bureau professionnelle
+        'permission' => 'parametres_general',
+    ],
+
         'logs' => [
             'label' => 'Journal d\'activité',
             'icon' => 'la-history',
