@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Carbon\Carbon;
 use Livewire\WithPagination;
 
 #[Layout('layouts.app')]
@@ -31,6 +32,14 @@ class Show extends Component
     public bool $showActivityModal = false;
     public ?int $selectedActivityId = null;
     
+    // Total des activités par projet
+    public $totalActivities = 0;
+    public $totalActivitiesSubmitted = 0;
+    public $totalActivitiesApproved = 0;
+    public $totalActivitiesRejected = 0;
+    public $totalActivitiesDraft = 0;
+    public $totalHours = 0;
+
     /**
      * APRÈS (Correction validée)
      */
@@ -39,8 +48,22 @@ class Show extends Component
         $this->projectId = $projectId;
         $this->checkPermissionOrFail('projets.voir');
         $this->calculateProjectDashboardStats();
+        $this->loadActivityStats();
     }
     
+        /**
+     * Statistiques des activités
+     */
+    private function loadActivityStats()
+    {
+        $this->totalActivities = Activity::count();
+        $this->totalActivitiesSubmitted = Activity::where('status', 'soumis')->where('project_id', $this->projectId)->count();
+        $this->totalActivitiesApproved = Activity::where('status', 'approuvé')->where('project_id', $this->projectId)->count();
+        $this->totalActivitiesRejected = Activity::where('status', 'rejeté')->where('project_id', $this->projectId)->count();
+        $this->totalActivitiesDraft = Activity::where('status', 'brouillon')->where('project_id', $this->projectId)->count();
+        $this->totalHours = Activity::where('project_id', $this->projectId)->where('status', 'approuvé')->sum('duration');
+    }
+
     /**
      * Calcule toutes les statistiques du mini-dashboard de manière optimisée.
      */

@@ -148,10 +148,7 @@
                                     </div>
                                     <h4 class="text-sm font-bold text-gray-900 pt-1 line-clamp-1">{{ $project->name }}</h4>
                                 </div>
-
-                                <div class="mt-4 pt-3 border-t border-dashed border-gray-200/80 text-[10px] text-gray-400 flex items-center justify-between">
-                                    <span>Affecté le : <strong>{{ $project->pivot->assigned_at ? \Carbon\Carbon::parse($project->pivot->assigned_at)->format('d/m/Y') : '??' }}</strong></span>
-                                </div>
+                                
                                 <div class="mt-4 pt-3 border-t border-dashed border-gray-200/80 text-[10px] text-gray-400 flex items-center justify-between">
                                     <span>Affecté le : <strong>{{ $project->pivot->assigned_at ? \Carbon\Carbon::parse($project->pivot->assigned_at)->format('d/m/Y') : '??' }}</strong></span>
                                     @if($project->pivot->ended_at)

@@ -71,7 +71,7 @@
                 <div class="flex items-center justify-between">
                     <div class="flex-1">
                         <p class="text-sm font-medium text-gray-600">Projets actifs</p>
-                        <p class="mt-2 text-3xl font-bold text-gray-900">{{ $activeProjects }}</p>
+                        <p class="mt-2 text-3xl font-bold text-gray-900">{{ $activeProjects }} </p>
                     </div>
                     <div class="p-3 bg-blue-100 rounded-lg">
                         <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -111,7 +111,7 @@
             <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-300 p-5 border border-gray-100">
                 <div class="flex items-center justify-between">
                     <div class="flex-1">
-                        <p class="text-sm font-medium text-gray-600">Activités totales</p>
+                        <p class="text-sm font-medium text-gray-600">Total des Activités</p>
                         <p class="mt-2 text-3xl font-bold text-gray-900">{{ number_format($totalActivities) }}</p>
                     </div>
                     <div class="p-3 bg-green-100 rounded-lg">
@@ -122,8 +122,10 @@
                 </div>
                 <div class="mt-3 flex items-center text-xs text-gray-500">
                     <span>{{ $totalActivitiesMonth }} ce mois</span>
-                    <span class="mx-1">•</span>
-                    <span>{{ number_format($totalHours, 1) }} heures totales</span>
+                    <span class="mx-1"> - </span>
+                    <span class="font-semibold">
+                        {{ floor($totalHours) }}h : {{ round(($totalHours - floor($totalHours)) * 60) }}m réalisées
+                    </span>
                 </div>
             </div>
 
@@ -131,7 +133,7 @@
             <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-300 p-5 border border-gray-100">
                 <div class="flex items-center justify-between">
                     <div class="flex-1">
-                        <p class="text-sm font-medium text-gray-600">Taux de validation</p>
+                        <p class="text-sm font-medium text-gray-600">Rapports validés</p>
                         <p class="mt-2 text-3xl font-bold text-gray-900">{{ $validationRate }}%</p>
                     </div>
                     <div class="p-3 bg-emerald-100 rounded-lg">
@@ -154,57 +156,65 @@
 
         <!-- Statistiques détaillées -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
-            <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
+            <!-- Activités en brouillon -->
+            <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 hover:shadow-md transition-shadow">
                 <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium text-gray-500 uppercase">Projets</p>
-                        <p class="text-xl font-bold text-gray-900">{{ $totalProjects }}</p>
+                    <div class="min-w-0">
+                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Activités en brouillon</p>
+                        <p class="mt-1 text-2xl font-bold text-gray-900">{{ $totalActivitiesDraft }}</p>
                     </div>
-                    <div class="p-2 bg-blue-100 rounded-lg">
-                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    <div class="p-3 bg-amber-100 rounded-lg shrink-0" aria-label="Activités en brouillon">
+                        <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
+            <!-- Activités soumises -->
+            <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 hover:shadow-md transition-shadow">
                 <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium text-gray-500 uppercase">Sous-projets</p>
-                        <p class="text-xl font-bold text-gray-900">{{ $totalSubProjects }}</p>
+                    <div class="min-w-0">
+                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Activités soumises</p>
+                        <p class="mt-1 text-2xl font-bold text-gray-900">{{ $totalActivitiesSubmitted }}</p>
                     </div>
-                    <div class="p-2 bg-purple-100 rounded-lg">
-                        <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    <div class="p-3 bg-blue-100 rounded-lg shrink-0" aria-label="Activités soumises">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                         </svg>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
+            <!-- Activités approuvées -->
+            <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 hover:shadow-md transition-shadow">
                 <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium text-gray-500 uppercase">Utilisateurs</p>
-                        <p class="text-xl font-bold text-gray-900">{{ $totalUsers }}</p>
+                    <div class="min-w-0">
+                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Activités approuvées</p>
+                        <p class="mt-1 text-2xl font-bold text-gray-900">{{ $totalActivitiesApproved }}</p>
                     </div>
-                    <div class="p-2 bg-indigo-100 rounded-lg">
-                        <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    <div class="p-3 bg-green-100 rounded-lg shrink-0" aria-label="Activités approuvées">
+                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
+            <!-- Activités rejetées -->
+            <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 hover:shadow-md transition-shadow">
                 <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium text-gray-500 uppercase">Rapports en attente</p>
-                        <p class="text-xl font-bold text-gray-900">{{ $pendingReports }}</p>
+                    <div class="min-w-0">
+                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Activités rejetées</p>
+                        <p class="mt-1 text-2xl font-bold text-gray-900">{{ $totalActivitiesRejected }}</p>
                     </div>
-                    <div class="p-2 bg-yellow-100 rounded-lg">
-                        <svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <div class="p-3 bg-red-100 rounded-lg shrink-0" aria-label="Activités rejetées">
+                        <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
                 </div>
@@ -213,43 +223,7 @@
 
         <!-- Top Projets et Activités par mois -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <!-- Top Projets -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-100">
-                    <h2 class="text-lg font-semibold text-gray-900 flex items-center">
-                        <svg class="w-5 h-5 mr-2 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                        </svg>
-                        Top Projets les plus actifs
-                    </h2>
-                </div>
-                <div class="p-4 max-h-80 overflow-y-auto">
-                    @forelse($topProjects as $project)
-                        <div class="flex items-center justify-between py-3 border-b border-gray-50 hover:bg-gray-50 px-2 rounded-lg transition-colors">
-                            <div class="flex-1">
-                                <p class="text-sm font-medium text-gray-800">{{ $project['name'] }}</p>
-                                <div class="flex items-center text-xs text-gray-500 mt-1">
-                                    <span class="font-mono text-xs">{{ $project['code'] }}</span>
-                                    <span class="mx-1">•</span>
-                                    <span>{{ $project['activities_count'] }} activités</span>
-                                    <span class="mx-1">•</span>
-                                    <span>{{ $project['total_hours'] }}h</span>
-                                </div>
-                            </div>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
-                                {{ $project['status'] === 'actif' ? 'bg-green-100 text-green-800' :
-                                   ($project['status'] === 'terminé' ? 'bg-gray-100 text-gray-800' : 'bg-yellow-100 text-yellow-800') }}">
-                                {{ $project['status'] }}
-                            </span>
-                        </div>
-                    @empty
-                        <div class="text-center py-8 text-gray-500">
-                            <p>Aucun projet trouvé</p>
-                        </div>
-                    @endforelse
-                </div>
-            </div>
-
+        
             <!-- Activités par mois -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-100">
@@ -288,62 +262,77 @@
                     @endif
                 </div>
             </div>
-        </div>
 
-        <!-- Projets récents -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-                <h2 class="text-lg font-semibold text-gray-900 flex items-center">
-                    <svg class="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Projets récents
-                </h2>
-                <span class="text-sm text-gray-500">{{ count($recentProjects) }} projets</span>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Projet</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Responsable</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sous-projets</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100">
-                        @forelse($recentProjects as $project)
-                            <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="px-6 py-4">
-                                    <p class="text-sm font-medium text-gray-900">{{ $project['name'] }}</p>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span class="font-mono text-xs bg-gray-100 px-2 py-1 rounded">{{ $project['code'] }}</span>
-                                </td>
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ $project['manager_name'] }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ $project['sub_projects_count'] }}</td>
-                                <td class="px-6 py-4">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
-                                        {{ $project['status'] === 'actif' ? 'bg-green-100 text-green-800' :
-                                           ($project['status'] === 'terminé' ? 'bg-gray-100 text-gray-800' : 'bg-yellow-100 text-yellow-800') }}">
-                                        {{ $project['status'] }}
+            <!-- Top Projets -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100">
+                    <h2 class="text-lg font-semibold text-gray-900 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                        </svg>
+                        Projets les plus actifs
+                    </h2>
+                </div>
+                <div class="p-4 max-h-80 overflow-y-auto">
+                    @forelse($topProjects as $project)
+                        <a href="{{ route('projects.show', ['projectId' => $project['id']]) }}" wire:navigate 
+                            class="flex items-center justify-between py-3 cursor-pointer border-b border-gray-50 hover:bg-gray-50 px-2 rounded-lg transition-colors">
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-gray-800">{{ $project['name'] }}</p>
+                                <div class="flex items-center text-xs text-gray-500 mt-1">
+                                    <span class="font-mono text-xs">{{ $project['code'] }}</span>
+                                    <span class="mx-1">•</span>
+                                    <span>{{ $project['activities_count'] }} activités</span>
+                                    <span class="mx-1">•</span>
+                                    <span>
+                                        {{ floor($project['total_hours']) }}h : {{ round(($project['total_hours'] - floor($project['total_hours'])) * 60) }}m réalisées
                                     </span>
-                                </td>
-                                <td class="px-6 py-4 text-sm text-gray-500">{{ $project['created_at'] }}</td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6" class="px-6 py-8 text-center text-gray-500">
-                                    <p>Aucun projet trouvé</p>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                                </div>
+                            </div>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
+                                {{ $project['status'] === 'active' ? 'bg-green-100 text-green-800' :
+                                   ($project['status'] === 'terminé' ? 'bg-gray-100 text-gray-800' : 'bg-yellow-100 text-yellow-800') }}">
+                                {{ $project['status'] === 'active' ? 'Actif' : $project['status'] }}
+                            </span>
+                        <a/>
+                    @empty
+                        <div class="text-center py-8 text-gray-500">
+                            <p>Aucun projet trouvé</p>
+                        </div>
+                    @endforelse
+                </div>
             </div>
         </div>
 
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+
+            <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-gray-500 uppercase">Utilisateurs</p>
+                        <p class="text-xl font-bold text-gray-900">{{ $totalUsers }}</p>
+                    </div>
+                    <div class="p-2 bg-indigo-100 rounded-lg">
+                        <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-gray-500 uppercase">Rapports en attente</p>
+                        <p class="text-xl font-bold text-gray-900">{{ $pendingReports }}</p>
+                    </div>
+                    <div class="p-2 bg-yellow-100 rounded-lg">
+                        <svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
     @endif
 </div>

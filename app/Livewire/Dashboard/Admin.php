@@ -35,6 +35,10 @@ class Admin extends Component
     public $totalUsers = 0;
 
     public $totalActivities = 0;
+    public $totalActivitiesSubmitted = 0;
+    public $totalActivitiesApproved = 0;
+    public $totalActivitiesRejected = 0;
+    public $totalActivitiesDraft = 0;
 
     public $totalActivitiesMonth = 0;
 
@@ -54,8 +58,6 @@ class Admin extends Component
     public $reportsByStatus = [];
 
     public $topProjects = [];
-
-    public $recentProjects = [];
 
     public $projectStats = [];
 
@@ -95,7 +97,6 @@ class Admin extends Component
         $this->loadReportStats();
         $this->loadChartData();
         $this->loadTopProjects();
-        $this->loadRecentProjects();
     }
 
     // Méthode qui sera appelée lorsque l'événement est déclenché : statistics-updated
@@ -110,8 +111,8 @@ class Admin extends Component
     private function loadProjectStats()
     {
         $this->totalProjects = Project::count();
-        $this->activeProjects = Project::where('status', 'actif')->count();
-        $this->completedProjects = Project::where('status', 'terminé')->count();
+        $this->activeProjects = Project::where('status', 'active')->count();
+        $this->completedProjects = Project::where('status', 'complete')->count();
 
         // Projets par statut
         $this->projectsByStatus = Project::select('status', DB::raw('count(*) as total'))
@@ -143,6 +144,11 @@ class Admin extends Component
     private function loadActivityStats()
     {
         $this->totalActivities = Activity::count();
+        $this->totalActivitiesSubmitted = Activity::where('status', 'soumis')->count();
+        $this->totalActivitiesApproved = Activity::where('status', 'approuvé')->count();
+        $this->totalActivitiesRejected = Activity::where('status', 'rejeté')->count();
+        $this->totalActivitiesDraft = Activity::where('status', 'brouillon')->count();
+
         $this->totalActivitiesMonth = Activity::whereMonth('activity_date', Carbon::now()->month)
             ->whereYear('activity_date', Carbon::now()->year)
             ->count();
@@ -207,7 +213,7 @@ class Admin extends Component
                     'name' => $project->name,
                     'sub_projects_count' => $project->sub_projects_count,
                     'activities_count' => $project->activities_count,
-                    'total_hours' => number_format($project->activities_sum_duration ?? 0, 1),
+                    'total_hours' => $project->activities_sum_duration ?? 0,
                     'status' => $project->status,
                 ];
             })
@@ -217,50 +223,30 @@ class Admin extends Component
     /**
      * Top projets les plus actifs
      */
-    private function loadTopProjects()
-    {
-        $this->topProjects = Project::withCount(['activities'])
-            ->withSum('activities', 'duration')
-            ->orderBy('activities_count', 'desc')
-            ->limit(5)
-            ->get()
-            ->map(function ($project) {
-                return [
-                    'id' => $project->id,
-                    'name' => $project->name,
-                    'code' => $project->code,
-                    'activities_count' => $project->activities_count,
-                    'total_hours' => number_format($project->activities_sum_duration ?? 0, 1),
-                    'status' => $project->status,
-                ];
-            })
-            ->toArray();
-    }
+private function loadTopProjects()
+{
+    // Contrainte réutilisable : uniquement les activités approuvées
+    $approvedActivities = function ($query) {
+        $query->where('status', 'approuvé');
+    };
 
-    /**
-     * Projets récents
-     */
-    private function loadRecentProjects()
-    {
-        $this->recentProjects = Project::with(['manager', 'subProjects'])
-            ->orderBy('created_at', 'desc')
-            ->limit(10)
-            ->get()
-            ->map(function ($project) {
-                return [
-                    'id' => $project->id,
-                    'name' => $project->name,
-                    'code' => $project->code,
-                    'status' => $project->status,
-                    'manager_name' => $project->manager?->name ?? 'Non assigné',
-                    'sub_projects_count' => $project->subProjects->count(),
-                    'start_date' => $project->start_date?->format('d/m/Y'),
-                    'end_date' => $project->end_date?->format('d/m/Y'),
-                    'created_at' => $project->created_at->diffForHumans(),
-                ];
-            })
-            ->toArray();
-    }
+    $this->topProjects = Project::withCount(['activities' => $approvedActivities])
+        ->withSum(['activities' => $approvedActivities], 'duration')
+        ->orderBy('activities_count', 'desc')
+        ->limit(10)
+        ->get()
+        ->map(function ($project) {
+            return [
+                'id' => $project->id,
+                'name' => $project->name,
+                'code' => $project->code,
+                'activities_count' => $project->activities_count,
+                'total_hours' => $project->activities_sum_duration ?? 0,
+                'status' => $project->status,
+            ];
+        })
+        ->toArray();
+}
 
     public function render()
     {

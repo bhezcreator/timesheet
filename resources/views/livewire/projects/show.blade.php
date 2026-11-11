@@ -5,7 +5,7 @@
         </h2>
     </x-slot>
 
-        {{-- Bouton Retour --}}
+    {{-- Bouton Retour --}}
     <div class="flex items-center justify-between mb-3 p-0">
         <a href="{{ url()->previous() }}"
             wire:navigate class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-indigo-600 transition-colors font-medium">
@@ -18,11 +18,17 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight mt-1 mb-1">
                 {{ $project->name }}
             </h2>
-            <span class="text-xs font-mono uppercase bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-100">{{ $project->code }}</span>
+            <span class="text-xs font-mono uppercase bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-100">{{ $project->code }}</span> 
+            <span class="text-xs font-mono uppercase bg-yellow-50 text-yellow-700 px-2 py-0.5 rounded border border-yellow-100">Début : {{ $project->start_date?->locale('fr')->translatedFormat('d F Y') }}</span>
         </div>
+
         <div>
-            <x-ui.badge variant="{{ $project->status === 'Actif' ? 'success' : ($project->status === 'En pause' ? 'warning' : 'danger') }}">
-                {{ \Illuminate\Support\Str::ucfirst($project->status) }}
+            <x-ui.badge variant="warning">
+                {{ floor($totalHours) }}h : {{ round(($totalHours - floor($totalHours)) * 60) }}m réalisée(s) 
+            </x-ui.badge>
+
+            <x-ui.badge variant="{{ $project->status === 'active' ? 'success' : ($project->status === 'annuler' ? 'warning' : 'danger') }}">
+                {{ $project->status === 'active' ? \Illuminate\Support\Str::ucfirst("Actif") : \Illuminate\Support\Str::ucfirst($project->status) }}
             </x-ui.badge>
         </div>
     </div>
@@ -91,6 +97,73 @@
             </div>
         </div>
 
+        <!-- Statistiques détaillées -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+            <!-- Activités en brouillon -->
+            <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between">
+                    <div class="min-w-0">
+                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Activités en brouillon</p>
+                        <p class="mt-1 text-2xl font-bold text-gray-900">{{ $totalActivitiesDraft }}</p>
+                    </div>
+                    <div class="p-3 bg-amber-100 rounded-lg shrink-0" aria-label="Activités en brouillon">
+                        <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activités soumises -->
+            <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between">
+                    <div class="min-w-0">
+                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Activités soumises</p>
+                        <p class="mt-1 text-2xl font-bold text-gray-900">{{ $totalActivitiesSubmitted }}</p>
+                    </div>
+                    <div class="p-3 bg-blue-100 rounded-lg shrink-0" aria-label="Activités soumises">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activités approuvées -->
+            <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between">
+                    <div class="min-w-0">
+                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Activités approuvées</p>
+                        <p class="mt-1 text-2xl font-bold text-gray-900">{{ $totalActivitiesApproved }}</p>
+                    </div>
+                    <div class="p-3 bg-green-100 rounded-lg shrink-0" aria-label="Activités approuvées">
+                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activités rejetées -->
+            <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between">
+                    <div class="min-w-0">
+                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Activités rejetées</p>
+                        <p class="mt-1 text-2xl font-bold text-gray-900">{{ $totalActivitiesRejected }}</p>
+                    </div>
+                    <div class="p-3 bg-red-100 rounded-lg shrink-0" aria-label="Activités rejetées">
+                        <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- ZONE DU BAS : 2 COLONNES (Détails à gauche, Équipe à droite) -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
@@ -116,7 +189,7 @@
                             <div class="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
                                 <div class="space-y-0.5">
                                     <h4 class="text-sm font-bold text-gray-800">{{ $sub->name }}</h4>
-                                    <p class="text-xs text-gray-400">{{ $sub->activities_count }} activité(s) contenue(s)</p>
+                                    <p class="text-xs text-gray-400">{{ $sub->activities_count }} activité(s)</p>
                                 </div>
                                 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold {{ $sub->status === 'Terminé' ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-blue-50 text-blue-700 border border-blue-100' }}">
                                     {{ $sub->status }}
@@ -140,7 +213,7 @@
                         </div>
                         <div>
                             <h4 class="text-sm font-bold text-gray-900">{{ $project->manager->name ?? 'Non assigné' }}</h4>
-                            <p class="text-xs text-gray-400">Project Manager Senior</p>
+                            <p class="text-xs text-gray-400">{{ $project->manager->job_title ?? 'Pas de titre' }}</p>
                         </div>
                     </div>
                 </div>
@@ -152,17 +225,19 @@
                     </div>
                     <div class="divide-y divide-gray-100 max-h-64 overflow-y-auto">
                         @forelse($project->users as $user)
-                            <div class="p-3 flex items-center justify-between hover:bg-gray-50/70 transition">
+                            <a href="{{ route('users.show', ['userId' => $user->id]) }}" title="Voir le profil"
+                                wire:navigate class="p-3 flex items-center justify-between hover:bg-gray-50/70 transition">
                                 <div class="flex items-center gap-2">
                                     <div class="w-7 h-7 rounded-full bg-gray-200 text-gray-700 font-bold text-xs flex items-center justify-center uppercase">
                                         {{ Str::limit($user->name, 2, '') }}
                                     </div>
-                                    <span class="text-xs font-semibold text-gray-800">{{ $user->name }}</span>
+                                    <span class="text-xs font-semibold text-gray-800">{{ $user->name .' '. $user->first_name }}</span>
                                 </div>
                                 <span class="text-[10px] bg-gray-100 text-gray-500 font-medium px-2 py-0.5 rounded-full">
-                                    {{ $user->pivot->role ?? 'Collaborateur' }}
+                                    {{ $user->activities->count() ?? 0 }} activité(s) : 
+                                    <span class="font-bold text-gray-700">{{ floor($user->activities->sum('duration')) }}h : {{ round(($user->activities->sum('duration') - floor($user->activities->sum('duration'))) * 60) }}m</span>
                                 </span>
-                            </div>
+                            </a>
                         @empty
                             <div class="p-4 text-center text-xs text-gray-400 italic">Aucun agent assigné à ce projet.</div>
                         @endforelse

@@ -246,3 +246,70 @@ resources/
 - Arranger les navs mobile (limiter l'affichage de certaines options par rapport a leurs permissions)
 - Arranger l'affichage en mobile des composants (Comme le tableau comme page des personnels, )
 - Cacher la fenêtre : Permissions
+
+
+# Tableau de bord global 
+
+## Indicateurs principaux (KPI) : ok (Voir l'interface administrateur : Vue d'ensemble de la plateforme) : composant Dashbord/admin
+- Projets actifs	        Nombre de projets en cours  : Ok
+- Personnel actif	        Nombre de collaborateurs suivis
+- Activités soumises	    Activités en attente de validation
+- Activités approuvées	    Activités validées
+- Activités rejetées	    Activités retournées pour correction
+- Heures travaillées	    Total des heures enregistrées
+- Heures ce mois	        Total des heures du mois courant
+- Taux de validation	    Pourcentage des activités approuvées
+
+## Liste des projets avec un lien vers tableau de bord projet
+    Informations à afficher :
+- Élément	            Description
+- Code projet	        Identifiant du projet
+- Nom du projet	        Intitulé du projet
+- Responsable	        Responsable du projet
+- Date de début	        Début du projet
+- Date de fin	        Fin prévue
+- Personnel affecté	    Nombre de collaborateurs
+- Heures prévues	    Budget horaire prévu
+- Heures réalisées	    Total des heures enregistrées
+- Écart horaire	Différence entre prévu et réalisé
+- Statut	En préparation, actif, suspendu, terminé
+
+Fonctionnalités :
+- Consulter les activités d'un projet.
+- Voir les collaborateurs affectés.
+- Consulter les heures réalisées par projet.
+- Comparer les heures prévues et réalisées.
+- Consulter l'évolution mensuelle du projet.
+- Identifier les projets qui consomment beaucoup d'heures.
+
+## Suivi du personnel
+- Colonne	Description
+- Collaborateur	Nom et prénom
+- Département	Service ou département
+- Projets assignés	Nombre de projets
+- Heures prévues	Objectif horaire
+- Heures réalisées	Total des heures déclarées
+- Activités soumises	En attente
+- Activités approuvées	Validées
+- Activités rejetées	À corriger
+- Dernière activité	Date de dernière saisie
+- Statut	Actif / Inactif
+
+En cliquant sur un collaborateur, le superviseur doit pouvoir consulter :
+- Ses activités quotidiennes.
+- Ses activités par projet.
+- Ses heures par semaine et par mois.
+- Ses rapports mensuels.
+- Ses activités en attente de validation.
+- Son historique de validation.
+
+
+## Rapports mensuels (Monthly Reports)
+- Colonne	            Description
+- Collaborateur	        Auteur du rapport
+- Mois	                Période concernée
+- Nombre d'activités	Activités déclarées
+- Total des heures	    Heures réalisées
+- Projets concernés	    Projets travaillés
+- Date de soumission	Date d'envoi
+- Statut	Brouillon / Soumis / Approuvé / Rejeté
