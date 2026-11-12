@@ -40,6 +40,12 @@ class Show extends Component
     public $totalActivitiesDraft = 0;
     public $totalHours = 0;
 
+    public $totalSubProjects = 0;
+    public $completedActivities = 0;
+    
+    public ?int $moisChoisi = null;
+    public ?int $anneeChoisie = null;
+
     /**
      * APRÈS (Correction validée)
      */
@@ -49,19 +55,68 @@ class Show extends Component
         $this->checkPermissionOrFail('projets.voir');
         $this->calculateProjectDashboardStats();
         $this->loadActivityStats();
+        $this->anneeChoisie = Carbon::now()->year;
+        $this->moisChoisi = now()->month;
+    }
+
+    public function updated($property): void
+    {
+        if (in_array($property, ['moisChoisi', 'anneeChoisie'])) {
+            $this->loadActivityStats();
+        }
     }
     
-        /**
+    /**
      * Statistiques des activités
-     */
+    */
     private function loadActivityStats()
     {
-        $this->totalActivities = Activity::count();
-        $this->totalActivitiesSubmitted = Activity::where('status', 'soumis')->where('project_id', $this->projectId)->count();
-        $this->totalActivitiesApproved = Activity::where('status', 'approuvé')->where('project_id', $this->projectId)->count();
-        $this->totalActivitiesRejected = Activity::where('status', 'rejeté')->where('project_id', $this->projectId)->count();
-        $this->totalActivitiesDraft = Activity::where('status', 'brouillon')->where('project_id', $this->projectId)->count();
-        $this->totalHours = Activity::where('project_id', $this->projectId)->where('status', 'approuvé')->sum('duration');
+        // 1. Requête de base : scope projet + filtres mois/année sur activity_date
+        $base = Activity::query()->where('project_id', $this->projectId);
+
+        $mois  = $this->moisChoisi  ?? now()->month;
+        $annee = $this->anneeChoisie ?? now()->year;
+
+        $base = Activity::query()
+        ->where('project_id', $this->projectId)
+        ->whereMonth('activity_date', $mois)
+        ->whereYear('activity_date', $annee);
+
+        // 2. Déclinaison par statut (clone pour ne pas polluer la requête de base)
+        $this->totalActivities          = (clone $base)->count();
+        $this->totalActivitiesSubmitted = (clone $base)->where('status', 'soumis')->count();
+        $this->totalActivitiesApproved  = (clone $base)->where('status', 'approuvé')->count();
+        $this->totalActivitiesRejected  = (clone $base)->where('status', 'rejeté')->count();
+        $this->totalActivitiesDraft     = (clone $base)->where('status', 'brouillon')->count();
+
+        // 3. Somme des heures : uniquement les activités approuvées
+        $this->totalHours = (clone $base)
+            ->where('status', 'approuvé')
+            ->sum('duration') ?? 0;
+    }
+
+    public function getAnneesProperty(): array
+    {
+        $current = Carbon::now()->year;
+
+        // Ex : de l'année courante - 5 à l'année courante + 1
+        return collect(range($current - 5, $current + 1))
+            ->mapWithKeys(fn (int $y) => [
+                $y => (string) $y,
+            ])
+            ->all();
+    }
+
+        /**
+     * Remplir automatique le champ Mois
+     */
+    public function getMoisProperty(): array
+    {
+        return collect(range(1, 12))
+            ->mapWithKeys(fn (int $m) => [
+                $m => ucfirst(Carbon::create(null, $m, 1)->locale('fr')->translatedFormat('F')),
+            ])
+            ->all();
     }
 
     /**
@@ -82,20 +137,21 @@ class Show extends Component
             ->findOrFail($this->projectId);
         
         // 1. Calcul de l'avancement global
-        $totalSubProjects = $project->sub_projects_count;
+        $this->totalSubProjects = $project->sub_projects_count;
         $completedSubProjects = $project->subProjects->where('status', 'approuvé')->count();
         
         $totalActivities = $project->activities_count;
-        $completedActivities = $project->activities->where('status', 'approuvé')->count();
         
+        $this->completedActivities = $project->activities->where('status', 'approuvé')->count();
+
         // Calcul du pourcentage pondéré
-        $subProjectProgress = $totalSubProjects > 0 ? ($completedSubProjects / $totalSubProjects) * 100 : 0;
-        $activityProgress = $totalActivities > 0 ? ($completedActivities / $totalActivities) * 100 : 0;
+        $subProjectProgress = $this->totalSubProjects > 0 ? ($completedSubProjects / $this->totalSubProjects) * 100 : 0;
+        $activityProgress = $totalActivities > 0 ? ($this->completedActivities / $totalActivities) * 100 : 0;
         
         $globalProgress = 0;
-        if ($totalSubProjects > 0 && $totalActivities > 0) {
+        if ($this->totalSubProjects > 0 && $totalActivities > 0) {
             $globalProgress = round(($subProjectProgress + $activityProgress) / 2);
-        } elseif ($totalSubProjects > 0) {
+        } elseif ($this->totalSubProjects > 0) {
             $globalProgress = round($subProjectProgress);
         } elseif ($totalActivities > 0) {
             $globalProgress = round($activityProgress);
@@ -106,7 +162,7 @@ class Show extends Component
             'project' => $project,
             'global_progress' => $globalProgress,
             'sub_projects_completed' => $completedSubProjects,
-            'activities_completed' => $completedActivities,
+            'totalActivit' => $totalActivities,
             'days_remaining' => $project->end_date ? now()->diffInDays($project->end_date, false) : null,
         ];
     }

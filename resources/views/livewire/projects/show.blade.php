@@ -11,6 +11,28 @@
             wire:navigate class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-indigo-600 transition-colors font-medium">
             <i class="las la-arrow-left text-base"></i> <strong>Retour</strong>
         </a>
+
+        <div class="flex items-center justify-between gap-4">
+            <select
+                wire:model.live="moisChoisi"
+                class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 cursor-pointer"
+            >
+                <option value="">Choisir le mois...</option>
+                @foreach ($this->mois as $value => $label)
+                    <option value="{{ $value }}">{{ $label }}</option>
+                @endforeach
+            </select>
+
+            <select
+                wire:model.live="anneeChoisie"
+                class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 cursor-pointer"
+            >
+                <option value="">Choisir l'année...</option>
+                @foreach ($this->annees as $value => $label)
+                    <option value="{{ $value }}">{{ $label }}</option>
+                @endforeach
+            </select>
+        </div>
     </div>
 
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
@@ -60,7 +82,8 @@
                     <i class="las la-folder text-2xl text-amber-500"></i>
                 </div>
                 <div>
-                    <span class="text-3xl font-black text-gray-900">{{ $sub_projects_completed }}<span class="text-lg text-gray-400 font-normal"> / {{ $project->sub_projects_count }}</span></span>
+                    <span class="text-3xl font-black text-gray-900">{{ $sub_projects_completed }}
+                    <span class="text-lg text-gray-400 font-normal"> / {{ $totalSubProjects }}</span></span>
                     <p class="text-xs text-gray-400 mt-1">Sous-projets marqués comme terminés</p>
                 </div>
             </div>
@@ -72,7 +95,8 @@
                     <i class="las la-tasks text-2xl text-emerald-500"></i>
                 </div>
                 <div>
-                    <span class="text-3xl font-black text-gray-900">{{ $activities_completed }}<span class="text-lg text-gray-400 font-normal"> / {{ $project->activities_count }}</span></span>
+                    <span class="text-3xl font-black text-gray-900">{{ $completedActivities }}<span class="text-lg text-gray-400 font-normal"> 
+                    / {{ $totalActivit }}</span></span>
                     <p class="text-xs text-gray-400 mt-1">Actions complétées sur le terrain</p>
                 </div>
             </div>
@@ -212,7 +236,9 @@
                             {{ Str::limit($project->manager->name ?? 'N', 2, '') }}
                         </div>
                         <div>
-                            <h4 class="text-sm font-bold text-gray-900">{{ $project->manager->name ?? 'Non assigné' }}</h4>
+                            <h4 class="text-sm font-bold text-gray-900">{{ $project->manager->name ?? 'Non assigné' }} 
+                                {{ $project->manager->first_name ?? ' ' }}
+                            </h4>
                             <p class="text-xs text-gray-400">{{ $project->manager->job_title ?? 'Pas de titre' }}</p>
                         </div>
                     </div>
