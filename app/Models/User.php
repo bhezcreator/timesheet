@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Support\Facades\DB;
 
 #[Fillable(['num_order', 'name', 'first_name', 'last_name', 'job_title', 'supervisor_id', 'signature', 'photo', 'email', 'password', 'settings', 'is_active'])]
 #[Hidden(['password', 'remember_token'])]
@@ -649,5 +650,37 @@ class User extends Authenticatable
     public function attendanceRecords(): HasMany
     {
         return $this->hasMany(AttendanceRecord::class);
+    }
+
+    /**
+     * Retourne les statistiques (nombre d'activités + total heures)
+     * groupées par projet, uniquement pour cet utilisateur.
+     *
+     * @return \Illuminate\Support\Collection<int, object>
+     */
+    public function activitiesStatsByProject()
+    {
+        return $this->activities()
+            ->whereNotNull('project_id')
+            ->select('project_id')
+            ->selectRaw('COUNT(*) as activities_count')
+            ->selectRaw('COALESCE(SUM(duration), 0) as total_hours')
+            ->groupBy('project_id')
+            ->get()
+            ->keyBy('project_id'); // accès rapide par ID projet
+    }
+
+    // Retourne les statistiques (nombre d'activités + total heures)
+    // groupées par sous-projet, uniquement pour cet utilisateur.   
+    public function activitiesStatsBySubProject()
+    {
+        return $this->activities()
+            ->whereNotNull('sub_project_id')
+            ->select('sub_project_id')
+            ->selectRaw('COUNT(*) as activities_count')
+            ->selectRaw('COALESCE(SUM(duration), 0) as total_hours')
+            ->groupBy('sub_project_id')
+            ->get()
+            ->keyBy('sub_project_id');
     }
 }

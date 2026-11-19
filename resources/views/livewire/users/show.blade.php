@@ -119,85 +119,174 @@
             </div>
         </div>
 
-        {{-- COLONNE DROITE : Projets et Sous-projets rattachés --}}
-        <div class="lg:col-span-2 space-y-6">
+        {{-- COLONNE DROITE : Projets & Sous-projets unifiés --}}
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-2xl border border-gray-100 p-6 shadow-xs">
 
-            {{-- Liste des Projets liés --}}
-            <div class="bg-white rounded-2xl border border-gray-100 p-6 shadow-xs space-y-4">
-                <div class="flex justify-between items-center">
+                {{-- En-tête --}}
+                <div class="flex justify-between items-center mb-4">
                     <h3 class="text-sm font-bold text-gray-900 flex items-center gap-1.5">
-                        <i class="las la-project-diagram text-lg text-indigo-500"></i> Projets assignés
+                        <i class="las la-project-diagram text-lg text-indigo-500"></i>
+                        Projets & Sous-projets
                     </h3>
                     <span class="bg-indigo-50 text-indigo-700 text-xs font-bold px-2.5 py-0.5 rounded-full">
-                        {{ $user->projects->count() }}
+                        {{ $user->projects->count() + $orphanSubProjects->count() }}
                     </span>
                 </div>
 
-                @if($user->projects->isNotEmpty())
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        @foreach($user->projects as $project)
-                            <div class="border border-gray-100 rounded-xl p-4 bg-gray-50/30 flex flex-col justify-between">
-                                <div class="space-y-1">
-                                    <div class="flex items-center justify-between gap-2">
-                                        <span class="font-mono bg-white border border-gray-200 px-2 py-0.5 rounded text-[10px] text-gray-500 font-semibold tracking-wider">
-                                            {{ $project->code }}
-                                        </span>
-                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-md uppercase bg-indigo-50 text-indigo-700 border border-indigo-100">
-                                            {{ $project->pivot->role ?? 'Membre' }}
-                                        </span>
-                                    </div>
-                                    <h4 class="text-sm font-bold text-gray-900 pt-1 line-clamp-1">{{ $project->name }}</h4>
-                                </div>
-                                
-                                <div class="mt-4 pt-3 border-t border-dashed border-gray-200/80 text-[10px] text-gray-400 flex items-center justify-between">
-                                    <span>Affecté le : <strong>{{ $project->pivot->assigned_at ? \Carbon\Carbon::parse($project->pivot->assigned_at)->format('d/m/Y') : '??' }}</strong></span>
-                                    @if($project->pivot->ended_at)
-                                        <span>Fin : <strong>{{ \Carbon\Carbon::parse($project->pivot->ended_at)->format('d/m/Y') }}</strong></span>
-                                    @endif
-                                </div>
-                            </div>
-                        @endforeach
+                @if($user->projects->isNotEmpty() || $orphanSubProjects->isNotEmpty())
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm border-separate border-spacing-0">
+
+                            {{-- En-têtes de colonnes --}}
+                            <thead>
+                                <tr>
+                                    <th class="text-left py-2 px-3 text-[10px] font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                                        Projet / Sous-projet
+                                    </th>
+                                    <th class="text-center py-2 px-3 text-[10px] font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-24">
+                                        Activités
+                                    </th>
+                                    <th class="text-right py-2 px-3 text-[10px] font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-24">
+                                        Heures
+                                    </th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                @foreach($user->projects as $project)
+                                    @php
+                                        $stat        = $activityStats->get($project->id);
+                                        $pActivities = (int)   ($stat->activities_count ?? 0);
+                                        $pHours      = (float) ($stat->total_hours ?? 0);
+                                    @endphp
+
+                                    {{-- Ligne PROJET --}}
+                                    <tr class="hover:bg-gray-50/60 transition-colors">
+                                        <td class="py-2.5 px-3 border-b border-gray-50">
+                                            <div class="flex items-center gap-2 flex-wrap">
+                                                <span class="font-mono bg-white border border-gray-200 px-2 py-0.5 rounded text-[10px] text-gray-500 font-semibold tracking-wider">
+                                                    {{ $project->code }}
+                                                </span>
+                                                <span class="text-sm font-semibold text-gray-900">{{ $project->name }}</span>
+                                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-md uppercase bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                                    {{ $project->pivot->role ?? 'Membre' }}
+                                                </span>
+                                            </div>
+                                            <div class="text-[10px] text-gray-400 mt-1">
+                                                Affecté le
+                                                <strong>{{ $project->pivot->assigned_at ? \Carbon\Carbon::parse($project->pivot->assigned_at)->format('d/m/Y') : '—' }}</strong>
+                                                @if($project->pivot->ended_at)
+                                                    · Fin <strong>{{ \Carbon\Carbon::parse($project->pivot->ended_at)->format('d/m/Y') }}</strong>
+                                                @endif
+                                            </div>
+                                        </td>
+                                        <td class="py-2.5 px-3 border-b border-gray-50 text-center">
+                                            <span class="inline-flex items-center gap-1 text-xs font-bold text-gray-800">
+                                                <i class="las la-tasks text-blue-500 text-sm"></i>
+                                                {{ $pActivities }}
+                                            </span>
+                                        </td>
+                                        <td class="py-2.5 px-3 border-b border-gray-50 text-right">
+                                            <span class="text-xs font-bold text-gray-800">
+                                                {{ number_format($pHours, 1, ',', ' ') }} h
+                                            </span>
+                                        </td>
+                                    </tr>
+
+                                    {{-- Lignes SOUS-PROJETS rattachés --}}
+                                    @foreach($subProjectsByProject->get($project->id, collect()) as $subProject)
+                                        @php
+                                            $sStat       = $subActivityStats->get($subProject->id);
+                                            $sActivities = (int)   ($sStat->activities_count ?? 0);
+                                            $sHours      = (float) ($sStat->total_hours ?? 0);
+                                        @endphp
+                                        <tr class="bg-gray-50/30 hover:bg-gray-50/70 transition-colors">
+                                            <td class="py-2 px-3 pl-10 border-b border-gray-50">
+                                                <div class="flex items-center gap-2">
+                                                    <i class="las la-angle-right text-gray-300 text-xs"></i>
+                                                    <span class="text-xs font-medium text-gray-700">{{ $subProject->name }}</span>
+                                                    <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded border
+                                                        {{ $subProject->status === 'actif'
+                                                            ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                                                            : 'bg-gray-100 text-gray-600 border-gray-200' }}">
+                                                        {{ $subProject->status }}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td class="py-2 px-3 border-b border-gray-50 text-center text-xs text-gray-600">
+                                                {{ $sActivities }}
+                                            </td>
+                                            <td class="py-2 px-3 border-b border-gray-50 text-right text-xs text-gray-600">
+                                                {{ number_format($sHours, 1, ',', ' ') }} h
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                @endforeach
+
+                                {{-- Sous-projets orphelins (sans projet affiché) --}}
+                                @if($orphanSubProjects->isNotEmpty())
+                                    <tr>
+                                        <td colspan="3" class="pt-4 pb-1 px-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                                            Sous-projets hors projet
+                                        </td>
+                                    </tr>
+                                    @foreach($orphanSubProjects as $subProject)
+                                        @php
+                                            $sStat       = $subActivityStats->get($subProject->id);
+                                            $sActivities = (int)   ($sStat->activities_count ?? 0);
+                                            $sHours      = (float) ($sStat->total_hours ?? 0);
+                                        @endphp
+                                        <tr class="bg-gray-50/30 hover:bg-gray-50/70 transition-colors">
+                                            <td class="py-2 px-3 pl-10 border-b border-gray-50">
+                                                <div class="flex items-center gap-2">
+                                                    <i class="las la-angle-right text-gray-300 text-xs"></i>
+                                                    <span class="text-xs font-medium text-gray-700">{{ $subProject->name }}</span>
+                                                    <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded border
+                                                        {{ $subProject->status === 'actif'
+                                                            ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                                                            : 'bg-gray-100 text-gray-600 border-gray-200' }}">
+                                                        {{ $subProject->status }}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td class="py-2 px-3 border-b border-gray-50 text-center text-xs text-gray-600">
+                                                {{ $sActivities }}
+                                            </td>
+                                            <td class="py-2 px-3 border-b border-gray-50 text-right text-xs text-gray-600">
+                                                {{ number_format($sHours, 1, ',', ' ') }} h
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                @endif
+                            </tbody>
+
+                            {{-- Pied : TOTAL --}}
+                            <tfoot>
+                                <tr class="bg-indigo-50">
+                                    <td class="py-3 px-3 rounded-bl-lg text-sm font-bold text-indigo-900">
+                                        <i class="las la-calculator text-indigo-600 mr-1"></i> Total général
+                                    </td>
+                                    <td class="py-3 px-3 text-center text-sm font-bold text-indigo-900">
+                                        {{ $grandActivities }}
+                                    </td>
+                                    <td class="py-3 px-3 rounded-br-lg text-right text-sm font-bold text-indigo-900">
+                                        {{ number_format($grandHours, 1, ',', ' ') }} h
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
                     </div>
                 @else
                     <div class="text-center py-8 border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
                         <i class="las la-folder-open text-gray-300 text-3xl mb-1.5 block"></i>
-                        <p class="text-xs text-gray-400 font-medium">Aucun projet principal assigné à ce compte.</p>
+                        <p class="text-xs text-gray-400 font-medium">Aucun projet ou sous-projet assigné à ce compte.</p>
                     </div>
                 @endif
-            </div>
-            {{-- Liste des Sous-Projets (Lots) liés --}}
-            <div class="bg-white rounded-2xl border border-gray-100 p-6 shadow-xs space-y-4">
-                <div class="flex justify-between items-center">
-                    <h3 class="text-sm font-bold text-gray-900 flex items-center gap-1.5">
-                        <i class="las la-cubes text-lg text-emerald-500"></i> Sous-projets & Lots opérationnels
-                    </h3>
-                    <span class="bg-emerald-50 text-emerald-700 text-xs font-bold px-2.5 py-0.5 rounded-full">
-                        {{ $user->subProjects->count() }}
-                    </span>
-                </div>
 
-                @if($user->subProjects->isNotEmpty())
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        @foreach($user->subProjects as $subProject)
-                            <div class="flex items-center justify-between p-3 bg-white border border-gray-100 rounded-xl shadow-2xs hover:border-emerald-100 transition-colors">
-                                <div class="min-w-0 flex-1 pr-2">
-                                    <h4 class="text-xs font-bold text-gray-800 truncate">{{ $subProject->name }}</h4>
-                                    <p class="text-[10px] text-gray-400 truncate mt-0.5">{{ $subProject->description ?? 'Aucune description rédigée' }}</p>
-                                </div>
-                                <span class="shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded {{ $subProject->status === 'actif' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-gray-50 text-gray-600' }}">
-                                    {{ $subProject->status }}
-                                </span>
-                            </div>
-                        @endforeach
-                    </div>
-                @else
-                    <div class="text-center py-8 border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
-                        <i class="las la-cubes text-gray-300 text-3xl mb-1.5 block"></i>
-                        <p class="text-xs text-gray-400 font-medium">Aucun lot de sous-projet assigné.</p>
-                    </div>
-                @endif
             </div>
-        </div> {{-- Fin Colonne Droite --}}
+        </div>
+        {{-- Fin Colonne Droite --}}
     </div> {{-- Fin Grille Principale --}}
 </div> {{-- Fin Conteneur Global --}}
 
