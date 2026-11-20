@@ -123,8 +123,8 @@ class Scanner extends Component
 
             // 9. Succès
             $this->showResult('success', 'Pointage enregistré avec succès !', [
-                'office' => $office->name,
-                'time' => Carbon::now()->format('H:i:s'),
+                'bureau' => $office->name,
+                'heure' => Carbon::now()->format('H:i:s'),
                 'date' => Carbon::now()->format('d/m/Y'),
                 'distance' => $gpsCheck['distance'] ?? null,
                 'status' => $attendance->status,
@@ -147,15 +147,16 @@ class Scanner extends Component
      */
     protected function extractOfficeIdFromQR($qrContent)
     {
-        // Format attendu: https://exemple.com/presence/scanner/123 ou presence/office/123
-        preg_match('/(?:presence|office)[\/:](\d+)/i', $qrContent, $matches);
-        
+        // Format attendu: https://exemple.com/presence/scanner/123
+        preg_match('/\/presence\/scanner\/(\d+)/i', $qrContent, $matches);
+
         if (isset($matches[1])) {
             return (int) $matches[1];
         }
 
         // Essayer de parser comme JSON
         $data = json_decode($qrContent, true);
+
         if ($data && isset($data['office_id'])) {
             return (int) $data['office_id'];
         }
@@ -212,7 +213,7 @@ class Scanner extends Component
         }
 
         // Vérifier la précision GPS
-        if ($this->accuracy && $this->accuracy > 50) {
+        if ($this->accuracy && $this->accuracy > 300) {
             return [
                 'valid' => false,
                 'message' => "La précision GPS est insuffisante ({$this->accuracy}m). Précision requise: < 50m.",
@@ -456,7 +457,7 @@ class Scanner extends Component
 
         // Générer un token unique pour le QR
         $qrToken = bin2hex(random_bytes(16));
-
+    
         $attendance = AttendanceRecord::create([
             'user_id' => $user->id,
             'office_id' => $office->id,

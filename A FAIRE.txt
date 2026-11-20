@@ -313,3 +313,20 @@ En cliquant sur un collaborateur, le superviseur doit pouvoir consulter :
 - Projets concernés	    Projets travaillés
 - Date de soumission	Date d'envoi
 - Statut	Brouillon / Soumis / Approuvé / Rejeté
+
+
+## Profil
+### présence : 
+    - Interface pour marquer présence :
+        # Scan du QR Code du bureau
+        # Vérification de la position GPS
+        # Vérification des horaires de travail
+        # Vérification des doublons et fraudes
+        # Enregistrement dans AttendanceRecord
+    - Interface Bureau :
+        # Ajouter un bouton pour générer le code QR unique pour le Bureau :
+            - ID + Nom de Bureau + Code générer auto 
+            - 
+
+            Bureau : -4.34842, 15.35338
+            User : -4.3688845, 15.343147916667

@@ -231,7 +231,7 @@ class Index extends Component
         $this->loadCalendarData();
     }
 
-    // Export
+    // Export en Excel
     public function exportCsv()
     {
         $user = Auth::user();

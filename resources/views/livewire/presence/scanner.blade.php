@@ -7,10 +7,11 @@
 
     {{-- Bouton Retour --}}
     <div class="flex items-center justify-between mb-3 p-0">
-        <a href="{{ route('presente.index') }}"
-            wire:navigate class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-indigo-600 transition-colors font-medium">
-            <i class="las la-arrow-left text-base"></i> <strong>Retour</strong>
-        </a>
+        <button type="button"
+                onclick="history.back()"
+                class="inline-flex items-center gap-2 text-sm cursor-pointer text-gray-500 font-bold hover:text-indigo-600 transition-colors">
+            <i class="las la-arrow-left text-base"></i> Retour
+        </button>
     </div>
 
     <div class="max-w-md mx-auto px-4 py-8">

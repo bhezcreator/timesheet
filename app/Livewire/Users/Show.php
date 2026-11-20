@@ -4,6 +4,8 @@ namespace App\Livewire\Users;
 
 use App\Models\User;
 use Livewire\Attributes\Layout;
+use App\Models\Office;
+use App\Models\AttendanceRecord;
 use Livewire\Component;
 
 #[Layout('layouts.app')]
@@ -29,18 +31,32 @@ class Show extends Component
 
     public function render()
     {
-        // Stats agrégées par projet et par sous-projet
+        // 1. Stats agrégées (existantes)
         $activityStats    = $this->user->activitiesStatsByProject();
         $subActivityStats = $this->user->activitiesStatsBySubProject();
 
-        // Groupement des sous-projets sous leur projet
+        // 2. Activités détaillées de l'utilisateur (pour l'affichage des titres)
+        $userActivities = $this->user->activities()
+            ->with(['activityType:id,name'])
+            ->orderByDesc('activity_date')
+            ->get();
+
+        // Activités rattachées DIRECTEMENT à un projet (sans sous-projet)
+        $activitiesByProject = $userActivities
+            ->filter(fn ($a) => $a->project_id && !$a->sub_project_id)
+            ->groupBy('project_id');
+
+        // Activités rattachées à un sous-projet
+        $activitiesBySubProject = $userActivities
+            ->filter(fn ($a) => $a->sub_project_id)
+            ->groupBy('sub_project_id');
+
+        // 3. Hiérarchie
         $subProjectsByProject = $this->user->subProjects->groupBy('project_id');
+        $projectIds           = $this->user->projects->pluck('id');
+        $orphanSubProjects    = $this->user->subProjects->whereNotIn('project_id', $projectIds);
 
-        // Sous-projets « orphelins » (l'utilisateur est dessus, mais pas sur le projet parent)
-        $projectIds         = $this->user->projects->pluck('id');
-        $orphanSubProjects  = $this->user->subProjects->whereNotIn('project_id', $projectIds);
-
-        // Grand total (cohérent avec ce qui est affiché)
+        // 4. Grand total
         $grandActivities = $this->user->projects->sum(
             fn ($p) => (int) ($activityStats->get($p->id)?->activities_count ?? 0)
         );
@@ -54,13 +70,67 @@ class Show extends Component
             $grandHours      += (float) ($stat->total_hours ?? 0);
         }
 
+        $offices = Office::where('is_active', true)->orderBy('name')->get();
+
+        // Récupérer les présences
+        $attendances = $this->getAttendances($this->user);
+
         return view('livewire.users.show', compact(
             'activityStats',
             'subActivityStats',
+            'activitiesByProject',
+            'activitiesBySubProject',
             'subProjectsByProject',
             'orphanSubProjects',
             'grandActivities',
             'grandHours',
+            'attendances',
+            'offices',
         ));
+    }
+
+    protected function getAttendances($user)
+    {
+        $query = AttendanceRecord::with(['office', 'user'])
+            ->where('user_id', $user->id);
+
+        return $query->orderBy('attendance_date', 'desc')
+            ->orderBy('recorded_at', 'desc')
+            ->paginate(15);
+    }
+
+        // Export en Excel
+    public function exportCsv()
+    {
+        $attendances = $this->getAttendances($this->user)->getCollection();
+
+        $filename = 'presences_' . Carbon::now()->format('Y-m-d_H-i') . '.csv';
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        $callback = function () use ($attendances) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, ['Date', 'Heure', 'Bureau', 'Type', 'Statut', 'Motif', 'Localisation']);
+
+            foreach ($attendances as $attendance) {
+                fputcsv($file, [
+                    $attendance->attendance_date->format('d/m/Y'),
+                    $attendance->recorded_at->format('H:i:s'),
+                    $attendance->office?->name ?? 'N/A',
+                    $attendance->type,
+                    $attendance->status,
+                    $attendance->reason ?? '',
+                    $attendance->latitude && $attendance->longitude 
+                        ? $attendance->latitude . ', ' . $attendance->longitude 
+                        : 'N/A'
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }

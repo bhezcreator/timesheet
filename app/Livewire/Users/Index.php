@@ -13,6 +13,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Spatie\Permission\Models\Role;
+use Illuminate\Validation\Rule;
 
 #[Layout('layouts.app')]
 class Index extends Component
@@ -79,7 +80,7 @@ class Index extends Component
                     $fail('L\'utilisateur sélectionné doit avoir le rôle de superviseur.');
                 }
             }],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $this->userId],
+            'email' => ['required', 'string', 'email','rfc','dns', 'max:255', 'unique:users,email,' . $this->userId],
             'is_active' => ['required', 'boolean'],
             'selectedRoles' => [
                 'required',
@@ -309,7 +310,8 @@ class Index extends Component
                 ->toArray();
 
             $user->syncRoles($roleNames);
-
+            $user->sendEmailVerificationNotification();
+            
             session()->flash('success', 'Personnel créé et affecté avec succès.');
         }
 
@@ -430,7 +432,7 @@ class Index extends Component
                 ]);
                 
                 // Optionnel : Envoyer une notification par email
-                // $user->notify(new PasswordResetNotification('00000000'));
+                $user->notify(new PasswordResetNotification('00000000'));
             });
             
             // Message de succès
@@ -445,5 +447,4 @@ class Index extends Component
             ]);
         }
     }
-    
 }

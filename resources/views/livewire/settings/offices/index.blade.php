@@ -130,6 +130,7 @@
                                 >
                                     <i class="las {{ $office->is_active ? 'la-eye' : 'la-eye-slash' }}"></i>
                                 </x-ui.button>
+                                
                                 <x-ui.button 
                                     variant="outline" 
                                     wire:click="edit({{ $office->id }})" 
@@ -138,6 +139,7 @@
                                 >
                                     <i class="las la-edit"></i>
                                 </x-ui.button>
+                                
                                 <x-ui.button 
                                     variant="danger" 
                                     wire:click="confirmDelete({{ $office->id }})" 
@@ -145,6 +147,15 @@
                                     class="!p-1.5"
                                 >
                                     <i class="las la-trash"></i>
+                                </x-ui.button>
+
+                                <x-ui.button 
+                                    variant="outline" 
+                                    wire:click="downloadQrCode({{ $office->id }})" 
+                                    title="Télécharger le QR Code"
+                                    class="!p-1.5"
+                                >
+                                    <i class="las la-qrcode text-base"></i>
                                 </x-ui.button>
                             </td>
                         </tr>
@@ -165,7 +176,7 @@
         title="{{ $officeId ? 'Modifier le bureau' : 'Ajouter un nouveau bureau' }}"
         size="xl"
         subtitle="{{ $officeId ? 'Modifiez les informations du bureau' : 'Configurez un nouveau bureau pour la gestion des présences' }}"
-    >
+        >
         <div class="space-y-6">
             <!-- Informations de base -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -308,8 +319,7 @@
         :show="$showDeleteModal"
         id="delete-office-modal"
         title="Confirmation de suppression"
-        size="sm"
-    >
+        size="sm">
         <div class="text-center py-2">
             <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
                 <i class="las la-exclamation-triangle text-red-500 text-3xl"></i>

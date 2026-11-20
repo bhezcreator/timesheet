@@ -8,6 +8,7 @@ use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class Index extends Component
 {
@@ -273,5 +274,26 @@ class Index extends Component
     public function getStatusColorProperty()
     {
         return $this->is_active ? 'success' : 'danger';
+    }
+
+    public function downloadQrCode(int $id)
+    {
+        $this->checkPermissionOrFail('offices.creer');
+
+        $office = Office::findOrFail($id);
+
+        $content = url("/presence/scanner/{$office->id}");
+
+        $qrCode = QrCode::format('png')
+            ->size(400)
+            ->margin(1)
+            ->errorCorrection('H')
+            ->generate($content);
+
+        return response()->streamDownload(function () use ($qrCode) {
+            echo $qrCode;
+        }, 'qr-code-' . $office->code . '.png', [
+            'Content-Type' => 'image/png',
+        ]);
     }
 }

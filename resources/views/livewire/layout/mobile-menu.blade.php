@@ -33,21 +33,46 @@
             </button>
         </div>
 
-        <!-- Navigation -->
-        <div class="flex-1 overflow-y-auto p-4 space-y-2">
-            @foreach($menus as $menu)
-                @php
-                    $active = $menu['route'] !== '#' && request()->routeIs($menu['route']);
-                @endphp
+        <!-- Mobile Navigation -->
+        <div class="flex-1 overflow-y-auto p-4 flex flex-col justify-between">
 
-                <a href="{{ $menu['route'] === '#' ? '#' : route($menu['route']) }}"
-                    @if($menu['route'] !== '#') wire:navigate @endif
+            <!-- Liens du menu principal -->
+            <div class="space-y-1.5">
+                @foreach($filteredMenus as $menu)
+                    @php
+                        $isActive = $this->isMenuActive($menu);
+                    @endphp
+
+                    <a
+                        href="{{ $menu['route'] === '#' ? '#' : route($menu['route']) }}"
+                        @if($menu['route'] !== '#') wire:navigate @endif
+                        @click="open = false"
+                        class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group font-medium text-sm
+                        {{ $isActive
+                            ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20 font-semibold'
+                            : 'text-gray-600 hover:bg-gray-50 hover:text-indigo-600'
+                        }}"
+                    >
+                        <i class="las {{ $menu['icon'] }} text-xl transition-colors {{ $isActive ? 'text-white' : 'text-gray-400 group-hover:text-indigo-600' }}"></i>
+
+                        <span>{{ $menu['title'] }}</span>
+                    </a>
+                @endforeach
+            </div>
+
+            <!-- Pied du menu : Bouton Déconnexion -->
+            <div class="pt-3 mt-4 border-t border-gray-100">
+                <button
+                    type="button"
+                    wire:click="logout"
                     @click="open = false"
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl transition duration-200 {{ $active ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 font-medium' : 'text-gray-700 hover:bg-gray-100' }}">
-                    <i class="las {{ $menu['icon'] }} text-xl"></i>
-                    <span>{{ $menu['title'] }}</span>
-                </a>
-            @endforeach
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50/70 transition cursor-pointer focus:outline-none"
+                >
+                    <i class="las la-sign-out-alt text-xl"></i>
+                    <span>Déconnexion</span>
+                </button>
+            </div>
+
         </div>
 
         <!-- Logout -->
