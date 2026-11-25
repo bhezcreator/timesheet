@@ -78,8 +78,6 @@
                             class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2">
                         <option value="arrivée">Arrivée</option>
                         <option value="départ">Départ</option>
-                        <option value="pause">Pause</option>
-                        <option value="reprise">Reprise</option>
                     </select>
                     @error('type') <p class="mt-1 text-xs text-rose-500">{{ $message }}</p> @enderror
                 </div>
@@ -91,7 +89,7 @@
                     </label>
                     <select wire:model="status"
                             class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2">
-                        <option value="présent">Présent</option>
+                        <option value="present">Présent</option>
                         <option value="retard">Retard</option>
                         <option value="absent">Absent</option>
                         <option value="congé">Congé</option>

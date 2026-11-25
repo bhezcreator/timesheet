@@ -35,8 +35,8 @@ return new class extends Migration
             $table->dateTime('recorded_at');
 
             // Position GPS de l'agent
-            $table->decimal('latitude', 10, 8);
-            $table->decimal('longitude', 11, 8);
+            $table->decimal('latitude', 10, 8)->nullable();
+            $table->decimal('longitude', 11, 8)->nullable();
 
             // Précision GPS en mètres
             $table->decimal('accuracy', 8, 2)->nullable();
@@ -53,9 +53,12 @@ return new class extends Migration
 
             // Résultat du contrôle
             $table->enum('status', [
-                'accepted',
-                'rejected',
-            ])->default('accepted');
+                'présent',
+                'retard',
+                'absent',
+                'congé',
+                'mission',
+            ])->default('présent');
 
             // Explication en cas de refus
             $table->string('reason')->nullable();

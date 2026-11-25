@@ -36,11 +36,11 @@ class MarkAttendance extends Component
         $this->userId = $userId;
         $this->user   = User::findOrFail($userId);
 
-        if (!Gate::allows('presences.creer') && !Gate::allows('presences.enregistrer')) {
+/*         if (!Gate::allows('presences.creer') && !Gate::allows('presences.enregistrer')) {
             throw ValidationException::withMessages([
                 'permission' => ['Action non autorisée : Privilèges insuffisants pour enregistrer une présence.'],
             ]);
-        }
+        } */
 
         $this->attendanceDate = now()->format('Y-m-d');
         $this->recordedAt     = now()->format('H:i');
@@ -107,7 +107,7 @@ class MarkAttendance extends Component
             'longitude'       => $this->longitude,
             'accuracy'        => $this->accuracy,
             'distance'        => $this->distance,
-            'qr_token'        => null, // enregistrement manuel par superviseur
+            'qr_token'        => null, 
             'ip_address'      => request()->ip(),
             'user_agent'      => substr((string) request()->userAgent(), 0, 500),
             'status'          => $this->status,
@@ -116,8 +116,7 @@ class MarkAttendance extends Component
 
         session()->flash('success', "Présence enregistrée avec succès pour {$this->user->name}.");
 
-        // ⚠️ Ajuste le nom de route selon ton projet
-        return redirect()->route('activities.user', ['userId' => $this->userId]);
+        return redirect()->route('activities.supervise', ['userId' => $this->userId]);
     }
 
     public function resetForm(): void
