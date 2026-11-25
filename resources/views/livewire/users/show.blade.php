@@ -1,7 +1,7 @@
 <div class="p-0">
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Fiche
+            Fiche du personnel
         </h2>
     </x-slot>
 
@@ -39,8 +39,13 @@
                 <h1 class="text-2xl font-bold text-gray-900 tracking-tight">{{ $user->first_name }} {{ $user->name }} {{ $user->last_name }}</h1>
                 <p class="text-sm font-semibold text-indigo-600 flex items-center justify-center md:justify-start gap-1">
                     <i class="las la-briefcase text-base"></i> {{ $user->job_title ?? 'Poste non défini' }}
-                </p>
+                </p> 
+                <span class="flex items-center gap-1 text-xs text-gray-500">
+                    <i class="las la-building text-base"></i>
+                    {{ $user->office->name ?? 'Bureau non défini' }}
+                </span>
             </div>
+
             <div class="text-xs text-gray-500 flex flex-wrap justify-center md:justify-start gap-x-4 gap-y-1 pt-1">
                 <span class="flex items-center gap-1"><i class="las la-envelope text-sm text-gray-400"></i> {{ $user->email }}</span>
                 @if($user->supervisor)

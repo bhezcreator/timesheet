@@ -38,6 +38,11 @@ class Office extends Model
         return $this->hasMany(AttendanceRecord::class);
     }
 
+    public function users()
+    {
+        return $this->hasMany(User::class);
+    }
+
     /**
      * Horaires associés à ce bureau.
      */

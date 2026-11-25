@@ -15,7 +15,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Support\Facades\DB;
 
-#[Fillable(['num_order', 'name', 'first_name', 'last_name', 'job_title', 'supervisor_id', 'signature', 'photo', 'email', 'password', 'settings', 'is_active'])]
+#[Fillable(['num_order', 'name', 'first_name', 'last_name', 'job_title', 'supervisor_id', 'signature', 'photo', 'email', 'password', 'settings', 'is_active', 'office_id'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -54,6 +54,11 @@ class User extends Authenticatable
                 'restored' => "Utilisateur '{$this->full_name}' restauré",
                 default => "Utilisateur '{$this->full_name}' {$eventName}",
             });
+    }
+
+    public function office()
+    {
+        return $this->belongsTo(Office::class);
     }
 
     public function supervisor()

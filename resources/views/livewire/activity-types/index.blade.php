@@ -127,8 +127,7 @@
         :show="$showModal"
         title="{{ $activityTypeId ? 'Modifier le type activité' : 'Ajouter un nouveau type activité' }}"
         size="xl"
-        subtitle="{{ $activityTypeId ? 'Modifiez les informations du type d\'activité' : 'Créez un nouveau type d\'activité' }}"
-    >
+        subtitle="{{ $activityTypeId ? 'Modifiez les informations du type d\'activité' : 'Créez un nouveau type d\'activité' }}">
         <form wire:submit.prevent="save" class="space-y-6">
             <!-- Nom -->
             <x-ui.forms.input
@@ -224,8 +223,7 @@
         :show="$showDeleteModal"
         id="delete-activity-type-modal"
         title="Confirmer la suppression"
-        size="md"
-    >
+        size="md">
         <div class="space-y-4">
             <div class="flex items-center gap-3 text-red-600">
                 <i class="las la-exclamation-triangle text-3xl"></i>

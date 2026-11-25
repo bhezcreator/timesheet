@@ -234,6 +234,21 @@
                 </div>
 
                 <div>
+                    <x-ui.forms.select
+                        wire:model="officeId"
+                        name="officeId"
+                        label="Bureau"
+                        placeholder="Choisir le bureau..."
+                        :selected="$officeId"
+                        :options="$offices->map(fn($o) => [
+                            'value'       => (string)$o->id,
+                            'label'       => $o->name,
+                        ])->toArray()"
+                    />
+                    <x-ui.forms.error name="officeId" />
+                </div>
+
+                <div>
                     <x-ui.forms.input
                         label="{{ $userId ? 'Mot de passe (laissez vide pour conserver)' : 'Mot de passe' }}"
                         name="password"
@@ -325,8 +340,7 @@
         :show="$showDeleteModal"
         id="delete-user-modal"
         title="Confirmation de suppression"
-        size="sm"
-    >
+        size="sm">
         <div class="text-center py-2">
             <i class="las la-exclamation-triangle text-red-500 text-5xl block mb-3 animate-pulse"></i>
             <h3 class="text-lg font-bold text-gray-800 mb-1">Supprimer l'utilisateur ?</h3>

@@ -11,6 +11,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Office;
 use App\Models\AttendanceRecord;
+use Carbon\Carbon;
 
 #[Layout('layouts.app')]
 class UserActivities extends Component
@@ -35,6 +36,12 @@ class UserActivities extends Component
     public ?int $selectedActivityId = null;
     public string $newStatus = '';
     public string $rejectionReason = '';
+
+
+    // Variables pour la suppression d'une présence
+    public bool $showDeleteModal = false;
+    public ?int $deleteId = null;
+    public ?string $deleteName = null;
 
     // Variables pour les statistiques
     public array $stats = [];
@@ -354,5 +361,50 @@ class UserActivities extends Component
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Ouvrir le modal de confirmation de suppression d'une présence
+     */
+    public function confirmDelete(int $id)
+    {
+        $attendance = AttendanceRecord::findOrFail($id);
+        $this->deleteId = $attendance->id;
+
+        $this->deleteName = $this->getTypeLabel($attendance->type)
+            . ' du '
+            . Carbon::parse($attendance->attendance_date)->format('d/m/Y')
+            . ' à '
+            . Carbon::parse($attendance->recorded_at)->format('H:i');
+
+        $this->showDeleteModal = true;
+    }
+
+    /**
+     * Supprimer définitivement une présence
+     */
+    public function delete()
+    {
+        if (!$this->deleteId) {
+            return;
+        }
+
+        $attendance = AttendanceRecord::findOrFail($this->deleteId);
+
+        $attendance->delete();
+
+        session()->flash('success', 'Présence supprimée avec succès.');
+
+        $this->closeDeleteModal();
+    }
+
+    /**
+     * Fermer le modal de suppression
+     */
+    public function closeDeleteModal()
+    {
+        $this->showDeleteModal = false;
+        $this->deleteId = null;
+        $this->deleteName = null;
     }
 }

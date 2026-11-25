@@ -14,6 +14,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Spatie\Permission\Models\Role;
 use Illuminate\Validation\Rule;
+use App\Models\Office;
 
 #[Layout('layouts.app')]
 class Index extends Component
@@ -55,6 +56,9 @@ class Index extends Component
 
     // Recherche réactive
     public string $search = '';
+    
+    public ?int $officeId = null;
+    public $offices;
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -68,6 +72,7 @@ class Index extends Component
     protected function rules(): array
     {
         return [
+            'officeId'   => ['required', 'exists:offices,id'],
             'num_order' => ['required', 'string', 'max:50', 'unique:users,num_order,' . $this->userId],
             'name' => ['required', 'string', 'max:255'],
             'first_name' => ['required', 'string', 'max:255'],
@@ -113,6 +118,8 @@ class Index extends Component
     {
         return [
             // Messages génériques réutilisés par Laravel (:attribute sera remplacé par le nom lisible)
+            'officeId.required'              => 'Veuillez sélectionner un bureau.',
+            'officeId.exists'                => 'Le bureau sélectionné est invalide.',
             'required' => 'Le champ :attribute est obligatoire.',
             'string' => 'Le champ :attribute doit être du texte.',
             'max' => 'Le champ :attribute ne doit pas dépasser :max caractères.',
@@ -153,6 +160,12 @@ class Index extends Component
     {
         // 1. Nettoyer le mot de passe en mémoire
         $this->password = '';
+
+        $this->offices = Office::where('is_active', true)->get();
+
+        if ($this->offices->count() === 1) {
+            $this->officeId = $this->offices->first()->id;
+        }
     }
 
     protected function checkPermissionOrFail(string $permission): bool
@@ -222,6 +235,7 @@ class Index extends Component
 
         $user = User::findOrFail($id);
         $this->userId = $user->id;
+        $this->office_id = $user->office_id;
         $this->num_order = $user->num_order;
         $this->name = $user->name;
         $this->first_name = $user->first_name;
@@ -251,6 +265,7 @@ class Index extends Component
             $user = User::findOrFail($this->userId);
 
             $data = [
+                'office_id' => $this->officeId,
                 'num_order' => trim($this->num_order),
                 'name' => trim($this->name),
                 'first_name' => trim($this->first_name),
@@ -286,6 +301,7 @@ class Index extends Component
             }
 
             $user = User::create([
+                'office_id' => $this->officeId,
                 'num_order' => trim($this->num_order),
                 'name' => trim($this->name),
                 'first_name' => trim($this->first_name),
@@ -405,6 +421,7 @@ class Index extends Component
             'is_active',
             'selectedRoles',
             'userId',
+            'officeId',
         ]);
         $this->resetValidation();
         $this->resetPage();

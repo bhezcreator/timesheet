@@ -7,6 +7,7 @@ use Livewire\Attributes\Layout;
 use App\Models\Office;
 use App\Models\AttendanceRecord;
 use Livewire\Component;
+use Carbon\Carbon;
 
 #[Layout('layouts.app')]
 class Show extends Component
@@ -97,6 +98,39 @@ class Show extends Component
         return $query->orderBy('attendance_date', 'desc')
             ->orderBy('recorded_at', 'desc')
             ->paginate(15);
+    }
+
+    
+    public function getTypeIcon($type): string
+    {
+        return match ($type) {
+            'arrivée', 'check_in' => 'la-sign-in-alt',
+            'départ', 'check_out' => 'la-sign-out-alt',
+            default => 'la-clock',
+        };
+    }
+
+    public function getTypeLabel($type): string
+    {
+        return match ($type) {
+            'arrivée' => 'Arrivée au bureau',
+            'départ' => 'Départ du bureau',
+            'check_in' => 'Arrivée au bureau',
+            'check_out' => 'Départ du bureau',
+            default => 'Type inconnu',
+        };
+    }
+
+    public function getStatusColor($status): string
+    {
+        return match ($status) {
+            'présent'  => 'green',
+            'absent'   => 'red',
+            'retard'   => 'yellow',
+            'congé' => 'blue',
+            'mission' => 'gray',
+            default    => 'gray',
+        };
     }
 
         // Export en Excel

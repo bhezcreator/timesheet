@@ -544,7 +544,7 @@
             </h3>
 
             <button wire:click="exportCsv" 
-                    class="px-4 py-2 text-sm bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors flex items-center gap-2">
+                    class="px-4 py-2 text-sm bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 cursor-pointer transition-colors flex items-center gap-2">
                 <i class="las la-file-csv"></i>
                 Exporter CSV
             </button>
@@ -593,6 +593,7 @@
                             <td class="px-6 py-4 text-sm text-gray-500 max-w-[150px] truncate">
                                 {{ $attendance->reason ?? '-' }}
                             </td>
+
                             <td class="px-6 py-4 text-sm text-gray-500">
                                 @if($attendance->latitude && $attendance->longitude)
                                     <span class="flex items-center gap-1">
@@ -608,6 +609,16 @@
                                 @else
                                     <span class="text-gray-400">-</span>
                                 @endif
+                            </td>
+
+                            <td class="px-6 py-4 text-sm">
+                                <button
+                                    type="button"
+                                    wire:click="confirmDelete({{ $attendance->id }})"
+                                    class="text-red-600 hover:text-red-800 transition-colors cursor-pointer"
+                                    title="Supprimer cette présence">
+                                    <i class="las la-trash text-lg"></i>
+                                </button>
                             </td>
                         </tr>
                     @empty
@@ -627,4 +638,61 @@
             <x-ui.pagination :paginator="$attendances" />
         </div>
     </div>
+
+
+    <!-- MODALE : Confirmation de suppression d'une présence -->
+    <x-ui.modal
+        :show="$showDeleteModal"
+        id="delete-attendance-modal"
+        title="Confirmer la suppression"
+        size="md">
+
+        <div class="space-y-4">
+
+            <div class="flex items-center gap-3 text-red-600">
+                <i class="las la-exclamation-triangle text-3xl"></i>
+
+                <h3 class="text-lg font-bold">
+                    Attention : Action irréversible
+                </h3>
+            </div>
+
+            <p class="text-sm text-gray-600">
+                Êtes-vous sûr de vouloir supprimer définitivement cette présence :
+                <strong class="text-gray-900">
+                    "{{ $deleteName }}"
+                </strong> ?
+            </p>
+
+            <div class="flex justify-end gap-2 border-t border-gray-100 pt-4">
+
+                <x-ui.button
+                    variant="outline"
+                    wire:click="closeDeleteModal"
+                    wire:loading.attr="disabled"
+                    wire:target="closeDeleteModal"
+                >
+                    Annuler
+                </x-ui.button>
+
+                <x-ui.button
+                    variant="danger"
+                    wire:click="delete"
+                    wire:loading.attr="disabled"
+                    wire:target="delete"
+                >
+                    <span wire:loading.remove wire:target="delete">
+                        <i class="las la-trash mr-1"></i>
+                        Supprimer définitivement
+                    </span>
+
+                    <span wire:loading wire:target="delete">
+                        <i class="las la-spinner la-spin mr-1"></i>
+                        Suppression...
+                    </span>
+                </x-ui.button>
+
+            </div>
+        </div>
+    </x-ui.modal>
 </div>
