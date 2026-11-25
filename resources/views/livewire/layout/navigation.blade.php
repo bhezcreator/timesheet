@@ -17,7 +17,7 @@ new class extends Component
             'title' => 'Feuilles de temps',
             'icon'  => 'la-business-time',
             'route' => 'timesheet.calendar',
-            'permission' => 'presente.voir',
+            'permission' => null,
         ],
         [
             'title' => 'Mes présences',
@@ -32,19 +32,19 @@ new class extends Component
             'permission' => 'projets.voir',
         ],
         [
-            'title' => 'Activités',
+            'title' => 'Mes Activités',
             'icon'  => 'la-tasks',
             'route' => 'activities.index',
             'permission' => 'activites.voir',
         ],
         [
-            'title' => 'Rapports',
+            'title' => 'Mes Rapports',
             'icon'  => 'la-chart-bar',
             'route' => 'rapports.index',
             'permission' => 'rapports.voir',
         ],
         [
-            'title' => 'Liste des rapports',
+            'title' => 'Rapports',
             'icon'  => 'la-list',
             'route' => 'reports.index',
             'permission' => 'Voir_liste_rapport',

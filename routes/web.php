@@ -25,6 +25,7 @@ use App\Livewire\Validates\ValidationShow;
 use App\Livewire\Presente\Index as PresenteIndex;
 use App\Livewire\Presence\Scanner;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use App\Livewire\Attendance\MarkAttendance;
 
 // Dans routes/web.php
 use Illuminate\Support\Facades\Route;
@@ -84,7 +85,12 @@ Route::middleware(['auth'])
 
         // Superviseur : voir les activités du supervisé et modifier le statut
         Route::get('/activities/supervise/{userId}', UserActivities::class)
-            ->name('activities.supervise');
+          ->name('activities.supervise');
+        
+            
+        // Superviseur : marquer la présence d'un agent (pointage) pour un bureau spécifique
+        Route::get('/users/{userId}/attendance/mark', MarkAttendance::class)
+            ->name('attendance.mark');
 
         Route::get('/activities/Timesheet/Calendar', ActivitiesTimesheetCalendar::class)->name('timesheet.calendar');
 

@@ -21,10 +21,23 @@
         <!-- Header Menu -->
         <div class="h-20 flex items-center justify-between px-6 border-b border-gray-100">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-center text-white">
-                    <i class="las la-clock text-2xl"></i>
-                </div>
-                <span class="font-bold text-xl">TimeSheet</span>
+                 <a href="{{ route('dashboard') }}" class="flex items-center gap-2 sm:gap-3">
+                    <!-- Logo CNRSC -->
+                    <div class="w-14 h-14 rounded-xl overflow-hidden shadow-md">
+                        <img src="{{ asset('images/logo.jpg') }}"
+                            alt="Logo CNRSC"
+                            class="w-full h-full object-cover">
+                    </div>
+
+                    <div>
+                        <h1 class="font-bold text-lg sm:text-xl text-black-800">
+                            CNRSC <span class="text-red-600 font-light">ASBL</span>
+                        </h1>
+                        <p class="text-[10px] sm:text-xs text-gray-500">
+                            Gestion intelligente du temps
+                        </p>
+                    </div>
+                </a>
             </div>
 
             <!-- Close -->
@@ -58,19 +71,6 @@
                         <span>{{ $menu['title'] }}</span>
                     </a>
                 @endforeach
-            </div>
-
-            <!-- Pied du menu : Bouton Déconnexion -->
-            <div class="pt-3 mt-4 border-t border-gray-100">
-                <button
-                    type="button"
-                    wire:click="logout"
-                    @click="open = false"
-                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50/70 transition cursor-pointer focus:outline-none"
-                >
-                    <i class="las la-sign-out-alt text-xl"></i>
-                    <span>Déconnexion</span>
-                </button>
             </div>
 
         </div>

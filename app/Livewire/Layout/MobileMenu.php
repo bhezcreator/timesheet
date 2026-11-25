@@ -20,7 +20,7 @@ class MobileMenu extends Component
             'title' => 'Feuilles de temps',
             'icon'  => 'la-business-time',
             'route' => 'timesheet.calendar',
-            'permission' => 'projets.voir',
+            'permission' => null,
         ],
         [
             'title' => 'Mes présences',
@@ -35,19 +35,19 @@ class MobileMenu extends Component
             'permission' => 'projets.voir',
         ],
         [
-            'title' => 'Activités',
+            'title' => 'Mes Activités',
             'icon'  => 'la-tasks',
             'route' => 'activities.index',
             'permission' => 'activites.voir',
         ],
         [
-            'title' => 'Rapports',
+            'title' => 'Mes Rapports',
             'icon'  => 'la-chart-bar',
             'route' => 'rapports.index',
             'permission' => 'rapports.voir',
         ],
         [
-            'title' => 'Liste des rapports',
+            'title' => 'Rapports',
             'icon'  => 'la-list',
             'route' => 'reports.index',
             'permission' => 'Voir_liste_rapport',

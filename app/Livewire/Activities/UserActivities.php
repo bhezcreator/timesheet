@@ -9,6 +9,8 @@ use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
+use App\Models\Office;
+use App\Models\AttendanceRecord;
 
 #[Layout('layouts.app')]
 class UserActivities extends Component
@@ -264,10 +266,61 @@ class UserActivities extends Component
      */
     public function render()
     {
+        // Récupérer les présences
+        $attendances = $this->getAttendances($this->user);
+        $offices = Office::where('is_active', true)->orderBy('name')->get();
+
         return view('livewire.activities.user-activities', [
             'activities' => $this->activities,
             'user' => $this->user,
             'stats' => $this->stats,
+            'offices' => $offices,
+            'attendances' => $attendances,
         ]);
+    }
+
+        protected function getAttendances($user)
+    {
+        $query = AttendanceRecord::with(['office', 'user'])
+            ->where('user_id', $user->id);
+
+        return $query->orderBy('attendance_date', 'desc')
+            ->orderBy('recorded_at', 'desc')
+            ->paginate(15);
+    }
+
+        // Export en Excel
+    public function exportCsv()
+    {
+        $attendances = $this->getAttendances($this->user)->getCollection();
+
+        $filename = 'presences_' . Carbon::now()->format('Y-m-d_H-i') . '.csv';
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        $callback = function () use ($attendances) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, ['Date', 'Heure', 'Bureau', 'Type', 'Statut', 'Motif', 'Localisation']);
+
+            foreach ($attendances as $attendance) {
+                fputcsv($file, [
+                    $attendance->attendance_date->format('d/m/Y'),
+                    $attendance->recorded_at->format('H:i:s'),
+                    $attendance->office?->name ?? 'N/A',
+                    $attendance->type,
+                    $attendance->status,
+                    $attendance->reason ?? '',
+                    $attendance->latitude && $attendance->longitude 
+                        ? $attendance->latitude . ', ' . $attendance->longitude 
+                        : 'N/A'
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }

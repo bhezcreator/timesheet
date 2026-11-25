@@ -1,7 +1,7 @@
 <div class="py-0">
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Détail des activités
+            Détail des Activités/Présences
         </h2>
     </x-slot>
 
@@ -16,7 +16,7 @@
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-gray-100">
         <div>
             <h2 class="text-2xl font-bold text-gray-800 tracking-tight">
-                <i class="las la-user-circle text-indigo-500 text-3xl align-middle mr-2"></i>
+                <i class="las la-tasks text-indigo-500 text-3xl align-middle mr-2"></i>
                 Activités de <span class="text-indigo-600">{{ $user->name }}</span>
             </h2>
             <p class="text-sm text-gray-400 mt-1 flex items-center gap-2">
@@ -517,4 +517,114 @@
             </div>
         </x-slot:footer>
     </x-ui.modal>
+
+
+    <!-- Liste des présences -->
+     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-3 border-b border-gray-100">
+        <h2 class="text-2xl font-bold text-gray-800 tracking-tight">
+            <i class="las la-user-check text-indigo-500 text-3xl align-middle mr-2"></i>
+            Présences de <span class="text-indigo-600">{{ $user->name }}</span>
+        </h2>
+
+        <a href="{{ route('attendance.mark', ['userId' => $user->id]) }}" wire:navigate
+            class="inline-flex items-center gap-2 px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+            <i class="las la-user-plus"></i>
+            Présence
+        </a>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div class="p-4 gap-2 border-b border-gray-100 flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                <i class="las la-list text-indigo-500"></i>
+                Détail des présences
+                <span class="text-sm font-normal text-gray-400">
+                    ({{ $attendances->total() }})
+                </span>
+            </h3>
+
+            <button wire:click="exportCsv" 
+                    class="px-4 py-2 text-sm bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors flex items-center gap-2">
+                <i class="las la-file-csv"></i>
+                Exporter CSV
+            </button>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Heure</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bureau</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Motif</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Localisation</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    @forelse($attendances as $attendance)
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-4 text-sm text-gray-700">
+                                {{ $attendance->attendance_date->format('d/m/Y') }}
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-700">
+                                {{ $attendance->recorded_at->format('H:i:s') }}
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-700">
+                                {{ $attendance->office?->name ?? 'N/A' }}
+                            </td>
+                            <td class="px-6 py-4 text-sm">
+                                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                                    <i class="las {{ $this->getTypeIcon($attendance->type) }}"></i>
+                                    {{ $this->getTypeLabel($attendance->type) }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-sm">
+                                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium 
+                                    bg-{{ $this->getStatusColor($attendance->status) }}-50 
+                                    text-{{ $this->getStatusColor($attendance->status) }}-700">
+                                    <span class="w-1.5 h-1.5 rounded-full 
+                                        bg-{{ $this->getStatusColor($attendance->status) }}-500"></span>
+                                    {{ ucfirst($attendance->status) }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-500 max-w-[150px] truncate">
+                                {{ $attendance->reason ?? '-' }}
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-500">
+                                @if($attendance->latitude && $attendance->longitude)
+                                    <span class="flex items-center gap-1">
+                                        <i class="las la-map-pin text-indigo-400"></i>
+                                        {{ number_format($attendance->latitude, 4) }},
+                                        {{ number_format($attendance->longitude, 4) }}
+                                        @if($attendance->distance)
+                                            <span class="text-xs text-gray-400">
+                                                ({{ number_format($attendance->distance, 0) }}m)
+                                            </span>
+                                        @endif
+                                    </span>
+                                @else
+                                    <span class="text-gray-400">-</span>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                                <i class="las la-calendar-plus text-4xl block mb-2 text-gray-300"></i>
+                                <p class="text-sm">Aucune présence enregistrée</p>
+                                <p class="text-xs text-gray-400 mt-1">Scannez un QR code pour commencer</p>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        <div class="px-6 py-4 border-t border-gray-100">
+            <x-ui.pagination :paginator="$attendances" />
+        </div>
+    </div>
 </div>

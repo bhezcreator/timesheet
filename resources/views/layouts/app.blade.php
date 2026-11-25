@@ -39,7 +39,7 @@
                         </div>
 
                         <div>
-                            <h1 class="font-bold text-lg sm:text-xl text-blue-800">
+                            <h1 class="font-bold text-lg sm:text-xl text-black-800">
                                 CNRSC <span class="text-red-600 font-light">ASBL</span>
                             </h1>
                             <p class="text-[10px] sm:text-xs text-gray-500">

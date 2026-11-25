@@ -80,7 +80,7 @@ class Index extends Component
                     $fail('L\'utilisateur sélectionné doit avoir le rôle de superviseur.');
                 }
             }],
-            'email' => ['required', 'string', 'email','rfc','dns', 'max:255', 'unique:users,email,' . $this->userId],
+            'email' => ['required', 'string', 'email:rfc,dns', 'max:255', 'unique:users,email,' . $this->userId],
             'is_active' => ['required', 'boolean'],
             'selectedRoles' => [
                 'required',
