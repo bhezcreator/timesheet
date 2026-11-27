@@ -55,7 +55,7 @@
             </aside>
 
             <!-- Main Area -->
-            <div class="flex-1 flex flex-col min-h-screen lg:min-h-0">
+            <div class="flex-1 flex flex-col min-h-screen lg:min-h-0 min-w-0 overflow-x-hidden">
                 <!-- Header -->
                 <header class="h-16 sm:h-20 bg-white border-b border-gray-200 flex items-center justify-between px-3 sm:px-6 flex-shrink-0">
                     <div class="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -82,7 +82,7 @@
 
                 <!-- Page Content -->
                 <main class="flex-1 min-h-0">
-                    <div class="w-full p-3 sm:p-6 overflow-y-auto h-[calc(100vh-64px)] sm:h-[calc(100vh-80px)] relative">
+                    <div class="w-full min-w-0 p-3 sm:p-6 overflow-y-auto h-[calc(100vh-64px)] sm:h-[calc(100vh-80px)] relative">
 
                         <!-- Écran de chargement (Overlay) Livewire -->
                         <div wire:loading class="absolute inset-0 bg-gray-900/10 backdrop-blur-[2px] z-50 flex items-center justify-center transition-all">
@@ -95,12 +95,13 @@
                         </div>
 
                         <!-- Contenu dynamique -->
-                        <div class="w-full">
+                        <div class="w-full min-w-0 max-w-full">
                             {{ $slot }}
                         </div>
-
                     </div>
                 </main>
+
+                
             </div>
         </div>
 

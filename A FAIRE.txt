@@ -316,7 +316,7 @@ En cliquant sur un collaborateur, le superviseur doit pouvoir consulter :
 
 
 ## Profil
-### présence : 
+### présence : Ok
     - Interface pour marquer présence :
         # Scan du QR Code du bureau
         # Vérification de la position GPS

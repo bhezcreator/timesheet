@@ -38,7 +38,7 @@
                         <h1 class="text-xl sm:text-2xl font-bold text-gray-900 truncate">
                             Personnel
                         </h1>
-                        <x-ui.button wire:click="openModal" class="w-full sm:w-auto justify-center">
+                        <x-ui.button wire:click="openModal" class="w-full sm:w-auto justify-center" size="sm">
                             <i class="las la-plus mr-1.5 sm:mr-2"></i>
                             <span class="hidden sm:inline text-sm sm:text-base">Ajouter un personnel</span>
                             <span class="inline sm:hidden text-sm">Ajouter</span>

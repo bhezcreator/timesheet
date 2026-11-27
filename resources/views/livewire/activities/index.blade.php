@@ -38,7 +38,7 @@
                             Mon journal d'activités
                         </h1>
                         <a href="{{ route('activities.create') }}" wire:navigate class="w-full sm:w-auto justify-center">
-                            <x-ui.button class="w-full xs:w-auto justify-center">
+                            <x-ui.button class="w-full xs:w-auto justify-center" size="sm">
                                 <i class="las la-plus mr-1.5 sm:mr-2"></i>
                                 <span class="hidden xs:inline text-sm sm:text-base">Déclarer une activité</span>
                                 <span class="inline xs:hidden text-sm">Nouvelle</span>
